@@ -1,7 +1,7 @@
 ---
 import PrototypeLayout from "../layouts/PrototypeLayout.astro";
 import { createServiceClient } from "../lib/supabase";
-import { AUTHOR_LABELS } from "../lib/types";
+import { authorDisplayName } from "../lib/author-display";
 import type { AuthorKey, Place, PlaceTone } from "../lib/types";
 
 const supabase = createServiceClient();
@@ -86,7 +86,7 @@ const deleted = Astro.url.searchParams.get("deleted");
               <h3 class="place-card__name">{place.name}</h3>
               <p class="place-card__note">{place.note}</p>
               <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:8px;">
-                <small style="color:#7a8aa0;font-size:12px;font-weight:850;">{AUTHOR_LABELS[author]} 添加</small>
+                <small style="color:#7a8aa0;font-size:12px;font-weight:850;">{authorDisplayName(place.profiles, author)} 添加</small>
                 {isOwner && (
                   <form action="/api/places/delete" method="post" data-confirm={`确定删除「${place.name}」吗？`} style="display:inline;">
                     <input type="hidden" name="return_to" value="/places" />

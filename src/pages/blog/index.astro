@@ -1,16 +1,20 @@
 ---
 import PrototypeLayout from "../../layouts/PrototypeLayout.astro";
 import { createServiceClient } from "../../lib/supabase";
-import { AUTHOR_LABELS } from "../../lib/types";
+import { authorDisplayName, makeAuthorNames } from "../../lib/author-display";
 import type { AuthorKey, BlogPost } from "../../lib/types";
 
 const supabase = createServiceClient();
-const { data } = await supabase
-  .from("blog_posts")
-  .select("id,slug,title,excerpt,tags,published_at,created_at,profiles(display_name,author_key)")
-  .order("published_at", { ascending: false });
+const [{ data }, { data: authorRows }] = await Promise.all([
+  supabase
+    .from("blog_posts")
+    .select("id,slug,title,excerpt,tags,published_at,created_at,profiles(display_name,author_key)")
+    .order("published_at", { ascending: false }),
+  supabase.from("profiles").select("author_key,display_name"),
+]);
 
 const posts = (data || []) as BlogPost[];
+const authorNames = makeAuthorNames(authorRows || []);
 const user = Astro.locals.user;
 const noticeError = Astro.url.searchParams.get("error");
 
@@ -59,8 +63,8 @@ const currentYear = posts.length ? postYear(posts[0]) : new Date().getFullYear()
 
       <div class="bi-toolbar">
         <button class="bi-filter is-active" type="button" data-filter="all">全部文章</button>
-        <button class="bi-filter bi-filter--white" type="button" data-filter="white">白狗写的</button>
-        <button class="bi-filter bi-filter--brown" type="button" data-filter="brown">棕狗写的</button>
+        <button class="bi-filter bi-filter--white" type="button" data-filter="white">{authorNames.white}写的</button>
+        <button class="bi-filter bi-filter--brown" type="button" data-filter="brown">{authorNames.brown}写的</button>
         {user ? (
           <button class="bi-upload-toggle" id="blogUploadToggle" type="button" aria-expanded="false" aria-controls="blogUploadPanel">上传 Markdown</button>
         ) : (
@@ -111,7 +115,7 @@ const currentYear = posts.length ? postYear(posts[0]) : new Date().getFullYear()
                 <h2>{post.title}</h2>
                 <p>{post.excerpt || "打开看看正文吧。"}</p>
                 <div class="post-item__meta">
-                  <span>{authorEmoji(author)} {AUTHOR_LABELS[author]}</span>
+                  <span>{authorEmoji(author)} {authorDisplayName(post.profiles, author, authorNames)}</span>
                   <span>{readMinutes(post)} 分钟阅读</span>
                 </div>
                 <div class="post-item__tags">

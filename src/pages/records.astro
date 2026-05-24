@@ -1,7 +1,8 @@
 ---
 import PrototypeLayout from "../layouts/PrototypeLayout.astro";
 import { createServiceClient } from "../lib/supabase";
-import { AUTHOR_LABELS, MOOD_LABELS } from "../lib/types";
+import { authorDisplayName, makeAuthorNames } from "../lib/author-display";
+import { MOOD_LABELS } from "../lib/types";
 import type { AuthorKey, LifeRecord, Photo } from "../lib/types";
 
 const supabase = createServiceClient();
@@ -9,7 +10,7 @@ const user = Astro.locals.user;
 const profile = Astro.locals.profile;
 const canCreate = !!user;
 
-const [{ data: recordsData }, { data: photosData }] = await Promise.all([
+const [{ data: recordsData }, { data: photosData }, { data: authorRows }] = await Promise.all([
   supabase
     .from("life_records")
     .select("id,owner_id,record_on,mood,body,created_at,profiles(display_name,author_key)")
@@ -21,9 +22,13 @@ const [{ data: recordsData }, { data: photosData }] = await Promise.all([
     .not("taken_on", "is", null)
     .order("taken_on", { ascending: false })
     .order("created_at", { ascending: false }),
+  supabase.from("profiles").select("author_key,display_name"),
 ]);
 
 const records = (recordsData || []) as LifeRecord[];
+const authorNames = makeAuthorNames(authorRows || []);
+const currentAuthor = (profile?.author_key || "white") as AuthorKey;
+const currentAuthorName = authorDisplayName(profile, currentAuthor, authorNames);
 const photos = ((photosData || []) as Photo[]).map((photo) => ({
   ...photo,
   publicUrl: supabase.storage.from("photos").getPublicUrl(photo.storage_path).data.publicUrl,
@@ -96,9 +101,9 @@ const created = Astro.url.searchParams.get("created");
           </label>
           <div class="rec-field">
             <span>作者</span>
-            <div class="rec-who" id="recWho" aria-label={`当前账号：${AUTHOR_LABELS[(profile?.author_key || "white") as AuthorKey]}`}>
-              <span class={`rec-who__btn ${profile?.author_key === "white" ? "is-active" : ""}`} data-who="white">🐶 白狗</span>
-              <span class={`rec-who__btn ${profile?.author_key === "brown" ? "is-active" : ""}`} data-who="brown">🐕 棕狗</span>
+            <div class="rec-who" id="recWho" aria-label={`当前账号：${currentAuthorName}`}>
+              <span class={`rec-who__btn ${profile?.author_key === "white" ? "is-active" : ""}`} data-who="white">🐶 {authorNames.white}</span>
+              <span class={`rec-who__btn ${profile?.author_key === "brown" ? "is-active" : ""}`} data-who="brown">🐕 {authorNames.brown}</span>
             </div>
           </div>
         </div>
@@ -136,8 +141,8 @@ const created = Astro.url.searchParams.get("created");
 
     <nav class="rec-filter" id="recFilter" aria-label="筛选作者">
       <button class="rec-filter__btn is-active" type="button" data-who="all">全部</button>
-      <button class="rec-filter__btn" type="button" data-who="white">🐶 白狗</button>
-      <button class="rec-filter__btn" type="button" data-who="brown">🐕 棕狗</button>
+      <button class="rec-filter__btn" type="button" data-who="white">🐶 {authorNames.white}</button>
+      <button class="rec-filter__btn" type="button" data-who="brown">🐕 {authorNames.brown}</button>
     </nav>
 
     <div class="rec-timeline" id="recTimeline">
@@ -164,7 +169,7 @@ const created = Astro.url.searchParams.get("created");
                     <div class="note__card" role="button" tabindex="0" aria-expanded="false">
                       <span class="note__tape" aria-hidden="true"></span>
                       <div class="note__top">
-                        <span class="note__author">{author === "white" ? "🐶 白狗" : "🐕 棕狗"}</span>
+                        <span class="note__author">{author === "white" ? "🐶" : "🐕"} {authorDisplayName(record.profiles, author, authorNames)}</span>
                         <span class="note__mood">{MOOD_LABELS[record.mood] || record.mood}</span>
                       </div>
                       {samePhotos.length > 0 && (

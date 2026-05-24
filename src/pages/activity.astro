@@ -1,11 +1,11 @@
 ---
 import PrototypeLayout from "../layouts/PrototypeLayout.astro";
 import { createServiceClient } from "../lib/supabase";
+import { authorDisplayName, makeAuthorNames } from "../lib/author-display";
 import {
   ACTIVITY_CATEGORIES,
   ACTIVITY_PERIODS,
   AUTHOR_COLORS,
-  AUTHOR_LABELS,
   CATEGORY_COLORS,
 } from "../lib/types";
 import type { ActivityEntry, AuthorKey } from "../lib/types";
@@ -20,11 +20,14 @@ const created = Astro.url.searchParams.get("created");
 const deleted = Astro.url.searchParams.get("deleted");
 const returnTo = `/activity?date=${encodeURIComponent(selectedDate)}&view=${selectedView}`;
 
-const { data } = await supabase
-  .from("activity_entries")
-  .select("id,owner_id,activity_on,period,category,minutes,body,created_at,profiles(display_name,author_key)")
-  .eq("activity_on", selectedDate)
-  .order("created_at", { ascending: true });
+const [{ data }, { data: authorRows }] = await Promise.all([
+  supabase
+    .from("activity_entries")
+    .select("id,owner_id,activity_on,period,category,minutes,body,created_at,profiles(display_name,author_key)")
+    .eq("activity_on", selectedDate)
+    .order("created_at", { ascending: true }),
+  supabase.from("profiles").select("author_key,display_name"),
+]);
 
 const allEntries = ((data || []) as ActivityEntry[]).sort((a, b) => {
   const ai = ACTIVITY_PERIODS.findIndex((p) => p.key === a.period);
@@ -34,9 +37,12 @@ const allEntries = ((data || []) as ActivityEntry[]).sort((a, b) => {
 });
 
 const entries = allEntries.filter((entry) => (entry.profiles?.author_key || "white") === selectedView);
-const selectedLabel = AUTHOR_LABELS[selectedView];
+const authorNames = makeAuthorNames(authorRows || []);
+const selectedLabel = authorNames[selectedView];
 const selectedColor = AUTHOR_COLORS[selectedView];
 const canCreateForView = user && profile?.author_key === selectedView;
+const currentAuthor = (profile?.author_key || "white") as AuthorKey;
+const currentAuthorName = authorDisplayName(profile, currentAuthor, authorNames);
 
 function fmtMinutes(value: number) {
   const minutes = Number(value) || 0;
@@ -94,8 +100,8 @@ const total = totalMinutes(entries);
 
         <div class="act-head__tools">
           <div class="act-view" id="actView" aria-label="查看谁的时间安排">
-            <a class:list={["act-view__btn", { "is-active": selectedView === "white" }]} href={`/activity?date=${selectedDate}&view=white`} data-view="white">白狗</a>
-            <a class:list={["act-view__btn", { "is-active": selectedView === "brown" }]} href={`/activity?date=${selectedDate}&view=brown`} data-view="brown">棕狗</a>
+            <a class:list={["act-view__btn", { "is-active": selectedView === "white" }]} href={`/activity?date=${selectedDate}&view=white`} data-view="white">{authorNames.white}</a>
+            <a class:list={["act-view__btn", { "is-active": selectedView === "brown" }]} href={`/activity?date=${selectedDate}&view=brown`} data-view="brown">{authorNames.brown}</a>
           </div>
           <form class="act-date-form" method="get" action="/activity" style="display:inline-flex;gap:8px;padding:6px;border-radius:999px;background:rgba(255,255,255,.48);">
             <input type="hidden" name="view" value={selectedView} />
@@ -117,9 +123,9 @@ const total = totalMinutes(entries);
           </label>
           <div class="act-field">
             <span>作者</span>
-            <div class="act-who" id="actWho" aria-label={`当前账号：${AUTHOR_LABELS[(profile?.author_key || "white") as AuthorKey]}`}>
-              <span class={`act-who__btn ${selectedView === "white" ? "is-active" : ""}`} data-who="white">🐶 白狗</span>
-              <span class={`act-who__btn ${selectedView === "brown" ? "is-active" : ""}`} data-who="brown">🐕 棕狗</span>
+            <div class="act-who" id="actWho" aria-label={`当前账号：${currentAuthorName}`}>
+              <span class={`act-who__btn ${selectedView === "white" ? "is-active" : ""}`} data-who="white">🐶 {authorNames.white}</span>
+              <span class={`act-who__btn ${selectedView === "brown" ? "is-active" : ""}`} data-who="brown">🐕 {authorNames.brown}</span>
             </div>
           </div>
         </div>
@@ -127,7 +133,7 @@ const total = totalMinutes(entries);
         {!user ? (
           <p style="color:#7a8aa0;font-size:13px;padding:14px 0;">登录后才能添加活动记录。<a href="/auth/login" style="color:#d49356;font-weight:800;">去登录 →</a></p>
         ) : !canCreateForView ? (
-          <p style="color:#7a8aa0;font-size:13px;padding:14px 0;">当前登录账号是 {AUTHOR_LABELS[(profile?.author_key || "white") as AuthorKey]}，只能给自己的时间线添加记录。</p>
+          <p style="color:#7a8aa0;font-size:13px;padding:14px 0;">当前登录账号是 {currentAuthorName}，只能给自己的时间线添加记录。</p>
         ) : (
           <>
             <div class="act-form__row">
@@ -163,8 +169,8 @@ const total = totalMinutes(entries);
         <div class="act-section__head">
           <h2 id="timelineTitle">{selectedLabel}的时间线</h2>
           <div class="act-legend">
-            <span><i class="act-dot act-dot--white"></i>白狗</span>
-            <span><i class="act-dot act-dot--brown"></i>棕狗</span>
+            <span><i class="act-dot act-dot--white"></i>{authorNames.white}</span>
+            <span><i class="act-dot act-dot--brown"></i>{authorNames.brown}</span>
           </div>
         </div>
         <div class="act-timeline" id="actTimeline">
