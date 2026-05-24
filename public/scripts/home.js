@@ -13,6 +13,7 @@
   };
   var PLACES_KEY = "cuteblog.places.v1";
   var STATUS_KEY = "cuteblog.home.status.v1";
+  var WEATHER_CACHE_MS = 30 * 60 * 1000;
   var DEFAULT_PLACES = [
     { name: "京都", note: "想在傍晚慢慢走过小巷，找一家安静的店吃热乎乎的晚饭。", tone: "night" },
     { name: "大理", note: "去有风的地方，看湖面、云影和很慢很慢的下午。", tone: "desert" },
@@ -21,6 +22,36 @@
   var QUOTES = {
     white: ["今天也要把小事认真收好。", "慢慢来，小窝会一点点长大。", "如果风正好，就多晒一会儿太阳。"],
     brown: ["先把想去的地方写下来，路会慢慢出现。", "今天适合做一点可爱的事。", "出发之前，先把期待装进口袋。"]
+  };
+  var WEATHER_LABELS = {
+    0: "晴",
+    1: "晴间多云",
+    2: "多云",
+    3: "阴",
+    45: "有雾",
+    48: "雾凇",
+    51: "小毛雨",
+    53: "毛毛雨",
+    55: "密集毛雨",
+    56: "冻毛雨",
+    57: "强冻毛雨",
+    61: "小雨",
+    63: "中雨",
+    65: "大雨",
+    66: "冻雨",
+    67: "强冻雨",
+    71: "小雪",
+    73: "中雪",
+    75: "大雪",
+    77: "雪粒",
+    80: "阵雨",
+    81: "强阵雨",
+    82: "暴阵雨",
+    85: "阵雪",
+    86: "强阵雪",
+    95: "雷雨",
+    96: "雷雨带冰雹",
+    99: "强雷雨带冰雹"
   };
   var quoteTimers = {};
 
@@ -65,12 +96,31 @@
     return item && item.date === todayStr() ? String(item.value || "").trim() : "";
   }
 
+  function storedWeatherText(value) {
+    if (!value) return "";
+    if (typeof value === "string") return value;
+    return String(value.text || "").trim();
+  }
+
   function saveManualValue(who, field, value) {
     var saved = readJson(STATUS_KEY, {});
     saved[who] = saved[who] || {};
     if (value) saved[who][field] = { date: todayStr(), value: value };
     else delete saved[who][field];
     writeJson(STATUS_KEY, saved);
+  }
+
+  function saveWeatherValue(who, weather) {
+    var saved = readJson(STATUS_KEY, {});
+    saved[who] = saved[who] || {};
+    saved[who].weather = weather;
+    writeJson(STATUS_KEY, saved);
+  }
+
+  function setWeatherText(who, text) {
+    var prefix = who === "brown" ? "brown" : "white";
+    var weather = document.getElementById(prefix + "Weather");
+    if (weather && text) weather.textContent = text;
   }
 
   function renderStatus() {
@@ -84,8 +134,146 @@
       var weather = document.getElementById(item.prefix + "Weather");
       if (mood) mood.textContent = manualValue(saved, item.who, "mood") || item.mood;
       if (doing) doing.textContent = manualValue(saved, item.who, "doing") || item.doing;
-      if (weather) weather.textContent = (saved[item.who] && saved[item.who].weather) || "所在地待设置 · 天气待同步";
+      if (weather) weather.textContent = storedWeatherText(saved[item.who] && saved[item.who].weather) || "所在地待设置 · 天气待同步";
     });
+  }
+
+  function weatherLabel(code) {
+    return WEATHER_LABELS[Number(code)] || "天气";
+  }
+
+  function roundedTemp(value) {
+    var num = Number(value);
+    return Number.isFinite(num) ? Math.round(num) : null;
+  }
+
+  function buildLocationLabel(location) {
+    if (!location) return "当前位置";
+    return (
+      location.city ||
+      location.locality ||
+      location.principalSubdivision ||
+      location.countryName ||
+      "当前位置"
+    );
+  }
+
+  function fetchJson(url) {
+    return fetch(url).then(function (response) {
+      if (!response.ok) throw new Error("request failed");
+      return response.json();
+    });
+  }
+
+  function geocodeUrl(latitude, longitude) {
+    var url = "https://api.bigdatacloud.net/data/reverse-geocode-client?localityLanguage=zh";
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+      url += "&latitude=" + encodeURIComponent(latitude) + "&longitude=" + encodeURIComponent(longitude);
+    }
+    return url;
+  }
+
+  function browserPosition() {
+    return new Promise(function (resolve, reject) {
+      if (!navigator.geolocation) {
+        reject(new Error("geolocation unavailable"));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+        },
+        reject,
+        {
+          enableHighAccuracy: false,
+          maximumAge: WEATHER_CACHE_MS,
+          timeout: 8000
+        }
+      );
+    });
+  }
+
+  function detectLocation() {
+    return browserPosition()
+      .then(function (coords) {
+        return fetchJson(geocodeUrl(coords.latitude, coords.longitude))
+          .then(function (location) {
+            return {
+              latitude: coords.latitude,
+              longitude: coords.longitude,
+              label: buildLocationLabel(location)
+            };
+          })
+          .catch(function () {
+            return {
+              latitude: coords.latitude,
+              longitude: coords.longitude,
+              label: "当前位置"
+            };
+          });
+      })
+      .catch(function () {
+        return fetchJson(geocodeUrl()).then(function (location) {
+          return {
+            latitude: Number(location.latitude),
+            longitude: Number(location.longitude),
+            label: buildLocationLabel(location)
+          };
+        });
+      });
+  }
+
+  function fetchWeather(latitude, longitude) {
+    var params = [
+      "latitude=" + encodeURIComponent(latitude),
+      "longitude=" + encodeURIComponent(longitude),
+      "current=temperature_2m,apparent_temperature,weather_code",
+      "timezone=auto",
+      "forecast_days=1"
+    ];
+    return fetchJson("https://api.open-meteo.com/v1/forecast?" + params.join("&"));
+  }
+
+  function weatherText(location, weather) {
+    var current = weather && weather.current;
+    var temp = roundedTemp(current && current.temperature_2m);
+    if (temp === null) return "";
+    return location.label + " · " + weatherLabel(current.weather_code) + " " + temp + "°C";
+  }
+
+  function setupWeather() {
+    var home = document.getElementById("home");
+    var who = home && home.getAttribute("data-current-weather-who");
+    if (who !== "white" && who !== "brown") return;
+
+    var saved = readJson(STATUS_KEY, {});
+    var cached = saved[who] && saved[who].weather;
+    var cachedText = storedWeatherText(cached);
+    if (cachedText) setWeatherText(who, cachedText);
+    if (cached && typeof cached === "object" && Date.now() - Number(cached.updatedAt || 0) < WEATHER_CACHE_MS) return;
+    if (!window.fetch) return;
+
+    setWeatherText(who, cachedText || "正在同步所在地天气");
+    detectLocation()
+      .then(function (location) {
+        if (!Number.isFinite(location.latitude) || !Number.isFinite(location.longitude)) {
+          throw new Error("missing coordinates");
+        }
+        return fetchWeather(location.latitude, location.longitude).then(function (weather) {
+          return weatherText(location, weather);
+        });
+      })
+      .then(function (text) {
+        if (!text) throw new Error("empty weather");
+        setWeatherText(who, text);
+        saveWeatherValue(who, { text: text, updatedAt: Date.now() });
+      })
+      .catch(function () {
+        if (!cachedText) setWeatherText(who, "所在地待设置 · 天气待同步");
+      });
   }
 
   function typeQuote(id, text) {
@@ -117,6 +305,11 @@
   }
 
   function setupStatusActions() {
+    function statusName(who) {
+      var title = document.querySelector('[data-status-name="' + who + '"]');
+      return title && title.textContent.trim() ? title.textContent.trim() : (who === "brown" ? "棕狗" : "白狗");
+    }
+
     Array.prototype.slice.call(document.querySelectorAll(".home-status__edit")).forEach(function (btn) {
       btn.addEventListener("click", function () {
         var who = btn.getAttribute("data-who");
@@ -124,7 +317,7 @@
         var prefix = who === "brown" ? "brown" : "white";
         var label = field === "mood" ? "今日心情" : "正在干什么";
         var current = document.getElementById(prefix + (field === "mood" ? "Mood" : "Doing"));
-        var value = window.prompt("编辑" + (who === "brown" ? "棕狗" : "白狗") + "的" + label + "，留空则恢复默认：", current ? current.textContent : "");
+        var value = window.prompt("编辑" + statusName(who) + "的" + label + "，留空则恢复默认：", current ? current.textContent : "");
         if (value === null) return;
         saveManualValue(who, field, value.trim());
         renderStatus();
@@ -247,6 +440,7 @@
 
   setPeriod(periodForHour(new Date().getHours()));
   renderStatus();
+  setupWeather();
   setupStatusActions();
   setupPhotos();
   setupPlaces();

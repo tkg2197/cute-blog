@@ -2,7 +2,7 @@
 import PrototypeLayout from "../layouts/PrototypeLayout.astro";
 import { createServiceClient } from "../lib/supabase";
 import { AUTHOR_LABELS } from "../lib/types";
-import type { AuthorKey, BlogPost, Photo, Place, PlaceTone } from "../lib/types";
+import type { AuthorKey, BlogPost, Photo, Place, PlaceTone, Profile } from "../lib/types";
 
 const user = Astro.locals.user;
 const profile = Astro.locals.profile;
@@ -42,6 +42,23 @@ const photoFallbacks = [
   { publicUrl: "/assets/晚上-白狗.png", title: "晚上", caption: "", taken_on: "晚上", profiles: { display_name: "白狗" } },
 ];
 const displayPhotos = [...recentPhotos, ...photoFallbacks].slice(0, 5);
+const { data: profileRows } = user
+  ? await supabase
+      .from("profiles")
+      .select("id,email,author_key,display_name,created_at")
+      .order("created_at", { ascending: true })
+      .limit(2)
+  : { data: [] };
+const homeProfiles = (profileRows || []) as Profile[];
+const brownDisplayName = user ? homeProfiles[0]?.display_name || "棕狗" : "棕狗";
+const whiteDisplayName = user ? homeProfiles[1]?.display_name || "白狗" : "白狗";
+const currentWeatherWho = user
+  ? homeProfiles[0]?.id === user.id
+    ? "brown"
+    : homeProfiles[1]?.id === user.id
+      ? "white"
+      : profile?.author_key || ""
+  : "";
 const postFallbacks = [
   { href: "/blog", date: "2026.05.22", title: "把我们的小窝变成可以一起写下去的地方" },
   { href: "/photos", date: "2026.05.21", title: "照片墙、生活记录和时段活动的第一版" },
@@ -139,7 +156,7 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
     </div>
   </header>
 
-  <main class="home-profile" id="home">
+  <main class="home-profile" id="home" data-current-weather-who={currentWeatherWho}>
     <section class="home-hero" aria-labelledby="homeTitle">
       <div class="home-avatar" aria-hidden="true">
         <img class="home-avatar__img" src="/assets/首页头像.png" alt="" />
@@ -149,9 +166,9 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
 
       <div class="home-duo-status" aria-label="两个人的今日状态">
         <article class="home-status home-status--white">
-          <img class="home-status__dog" src="/assets/小白首页形象.png" alt="白狗形象" />
+          <img class="home-status__dog" src="/assets/小白首页形象.png" alt={`${whiteDisplayName}形象`} />
           <div class="home-status__info">
-            <h2>白狗</h2>
+            <h2 data-status-name="white">{whiteDisplayName}</h2>
             <dl>
               <div>
                 <dt>所在地天气</dt>
@@ -161,24 +178,24 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
                 <dt>今日心情</dt>
                 <dd class="home-status__editable">
                   <span id="whiteMood">软乎乎地开心</span>
-                  <button class="home-status__edit" type="button" data-who="white" data-field="mood" aria-label="编辑白狗今日心情">编辑</button>
+                  <button class="home-status__edit" type="button" data-who="white" data-field="mood" aria-label={`编辑${whiteDisplayName}今日心情`}>编辑</button>
                 </dd>
               </div>
               <div>
                 <dt>正在干什么</dt>
                 <dd class="home-status__editable">
                   <span id="whiteDoing">整理今天的小记录</span>
-                  <button class="home-status__edit" type="button" data-who="white" data-field="doing" aria-label="编辑白狗正在干什么">编辑</button>
+                  <button class="home-status__edit" type="button" data-who="white" data-field="doing" aria-label={`编辑${whiteDisplayName}正在干什么`}>编辑</button>
                 </dd>
               </div>
             </dl>
-            <p class="home-status__quote" id="whiteQuote" data-who="white" role="button" tabindex="0" aria-label="重新生成白狗的一句话">今天也要把小事认真收好。</p>
+            <p class="home-status__quote" id="whiteQuote" data-who="white" role="button" tabindex="0" aria-label={`重新生成${whiteDisplayName}的一句话`}>今天也要把小事认真收好。</p>
           </div>
         </article>
 
         <article class="home-status home-status--brown">
           <div class="home-status__info">
-            <h2>棕狗</h2>
+            <h2 data-status-name="brown">{brownDisplayName}</h2>
             <dl>
               <div>
                 <dt>所在地天气</dt>
@@ -188,20 +205,20 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
                 <dt>今日心情</dt>
                 <dd class="home-status__editable">
                   <span id="brownMood">精神满满</span>
-                  <button class="home-status__edit" type="button" data-who="brown" data-field="mood" aria-label="编辑棕狗今日心情">编辑</button>
+                  <button class="home-status__edit" type="button" data-who="brown" data-field="mood" aria-label={`编辑${brownDisplayName}今日心情`}>编辑</button>
                 </dd>
               </div>
               <div>
                 <dt>正在干什么</dt>
                 <dd class="home-status__editable">
                   <span id="brownDoing">计划下一次出门</span>
-                  <button class="home-status__edit" type="button" data-who="brown" data-field="doing" aria-label="编辑棕狗正在干什么">编辑</button>
+                  <button class="home-status__edit" type="button" data-who="brown" data-field="doing" aria-label={`编辑${brownDisplayName}正在干什么`}>编辑</button>
                 </dd>
               </div>
             </dl>
-            <p class="home-status__quote" id="brownQuote" data-who="brown" role="button" tabindex="0" aria-label="重新生成棕狗的一句话">先把想去的地方写下来，路会慢慢出现。</p>
+            <p class="home-status__quote" id="brownQuote" data-who="brown" role="button" tabindex="0" aria-label={`重新生成${brownDisplayName}的一句话`}>先把想去的地方写下来，路会慢慢出现。</p>
           </div>
-          <img class="home-status__dog" src="/assets/小棕首页形象.jpg" alt="棕狗形象" />
+          <img class="home-status__dog" src="/assets/小棕首页形象.jpg" alt={`${brownDisplayName}形象`} />
         </article>
       </div>
 
