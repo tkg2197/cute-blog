@@ -71,7 +71,7 @@
   z-index: 1;
   font-size: 23px !important;
   line-height: 1.2;
-  font-weight: 900 !important;
+  font-weight: 600 !important;
   letter-spacing: 0;
   white-space: nowrap;
 }
@@ -102,7 +102,7 @@
   box-shadow: none !important;
   font-size: 15px !important;
   line-height: 1.2;
-  font-weight: 850 !important;
+  font-weight: 650 !important;
   letter-spacing: 0;
   opacity: 0.82;
   transform: translateY(0);

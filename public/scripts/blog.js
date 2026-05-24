@@ -179,7 +179,7 @@
       current.lines = currentLines;
       bodyLines.push(current);
     } else {
-      bodyLines.push({ title: "正文", id: "content", lines: currentLines });
+      bodyLines.push({ title: "Content", id: "content", lines: currentLines });
     }
 
     article.textContent = "";
@@ -188,7 +188,7 @@
     head.className = "article-head";
     var kicker = document.createElement("p");
     kicker.className = "article-kicker";
-    kicker.textContent = "双人博客 / Markdown 上传";
+    kicker.textContent = "Blog / Markdown upload";
     var title = document.createElement("h1");
     title.textContent = post.title;
     var summary = document.createElement("p");
@@ -196,7 +196,7 @@
     summary.textContent = post.summary;
     var authors = document.createElement("div");
     authors.className = "article-authors";
-    authors.setAttribute("aria-label", "作者");
+    authors.setAttribute("aria-label", "Author");
     post.authors.forEach(function (who) {
       var data = window.CBBlog.authors[who];
       var span = document.createElement("span");
@@ -222,7 +222,7 @@
       article.appendChild(section);
     });
 
-    document.title = post.title + " · 我们的小窝";
+    document.title = post.title + " · Our Nest";
   }
 
   function renderTags(post) {
@@ -232,7 +232,7 @@
       var data = window.CBBlog.authors[who];
       var span = document.createElement("span");
       span.className = "blog-tag blog-tag--" + who;
-      span.textContent = data ? data.name + " · 作者" : who;
+      span.textContent = data ? data.name + " · Author" : who;
       tags.appendChild(span);
     });
     var date = document.createElement("span");
@@ -241,7 +241,7 @@
     tags.appendChild(date);
     var minutes = document.createElement("span");
     minutes.className = "blog-tag";
-    minutes.textContent = post.readMinutes + " 分钟阅读";
+    minutes.textContent = post.readMinutes + " min read";
     tags.appendChild(minutes);
     post.tags.forEach(function (tag) {
       var span = document.createElement("span");

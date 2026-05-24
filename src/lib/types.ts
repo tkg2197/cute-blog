@@ -61,10 +61,10 @@ export interface Place {
 }
 
 export const PLACE_TONE_LABELS: Record<PlaceTone, string> = {
-  night: "星夜",
-  desert: "日落",
-  forest: "山林",
-  sea: "海边",
+  night: "Starlight",
+  desert: "Sunset",
+  forest: "Forest",
+  sea: "Seaside",
 };
 
 export interface ActivityEntry {
@@ -81,8 +81,8 @@ export interface ActivityEntry {
 }
 
 export const AUTHOR_LABELS: Record<AuthorKey, string> = {
-  white: "白狗",
-  brown: "棕狗",
+  white: "White",
+  brown: "Brown",
 };
 
 export const AUTHOR_COLORS: Record<AuthorKey, string> = {
@@ -91,25 +91,36 @@ export const AUTHOR_COLORS: Record<AuthorKey, string> = {
 };
 
 export const MOOD_LABELS: Record<string, string> = {
-  happy: "开心",
-  loved: "幸福",
-  calm: "平静",
-  tired: "疲惫",
-  down: "难过",
-  moody: "烦躁",
+  happy: "Happy",
+  loved: "Loved",
+  calm: "Calm",
+  tired: "Tired",
+  down: "Low",
+  moody: "Moody",
 };
 
 export const ACTIVITY_PERIODS = [
-  { key: "morning", label: "早晨", time: "05:00-08:00", minutes: 180 },
-  { key: "forenoon", label: "上午", time: "08:00-11:00", minutes: 180 },
-  { key: "noon", label: "中午", time: "11:00-14:00", minutes: 180 },
-  { key: "afternoon", label: "下午", time: "14:00-17:00", minutes: 180 },
-  { key: "dusk", label: "傍晚", time: "17:00-19:00", minutes: 120 },
-  { key: "evening", label: "晚上", time: "19:00-23:00", minutes: 240 },
-  { key: "midnight", label: "半夜", time: "23:00-05:00", minutes: 360 },
+  { key: "morning", label: "Early Morning", time: "05:00-08:00", minutes: 180 },
+  { key: "forenoon", label: "Morning", time: "08:00-11:00", minutes: 180 },
+  { key: "noon", label: "Noon", time: "11:00-14:00", minutes: 180 },
+  { key: "afternoon", label: "Afternoon", time: "14:00-17:00", minutes: 180 },
+  { key: "dusk", label: "Dusk", time: "17:00-19:00", minutes: 120 },
+  { key: "evening", label: "Evening", time: "19:00-23:00", minutes: 240 },
+  { key: "midnight", label: "Late Night", time: "23:00-05:00", minutes: 360 },
 ] as const;
 
 export const ACTIVITY_CATEGORIES = ["学习", "工作", "约会", "家务", "娱乐", "休息", "运动", "其他"] as const;
+
+export const ACTIVITY_CATEGORY_LABELS: Record<string, string> = {
+  学习: "Study",
+  工作: "Work",
+  约会: "Date",
+  家务: "Chores",
+  娱乐: "Fun",
+  休息: "Rest",
+  运动: "Workout",
+  其他: "Other",
+};
 
 export const CATEGORY_COLORS: Record<string, string> = {
   学习: "#7aa6d4",

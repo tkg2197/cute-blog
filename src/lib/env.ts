@@ -4,7 +4,7 @@ export function getSupabaseEnv() {
   const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !anonKey) {
-    throw new Error("缺少 SUPABASE_URL 或 SUPABASE_ANON_KEY");
+    throw new Error("Missing SUPABASE_URL or SUPABASE_ANON_KEY");
   }
 
   return { url, anonKey, serviceRoleKey };

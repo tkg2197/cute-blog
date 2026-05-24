@@ -89,7 +89,7 @@ body {
   border-radius: 999px;
   color: #5b6478;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
   transition: transform 0.15s ease, background 0.2s ease;
 }
@@ -105,7 +105,7 @@ body {
   border-radius: 999px;
   color: #647084;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
   text-decoration: none;
   transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
@@ -132,19 +132,19 @@ body {
   margin-bottom: 12px;
   color: #7f91a6;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
 }
 .bi-head h1 {
   color: var(--heading);
   font-size: 42px;
   line-height: 1.18;
-  font-weight: 900;
+  font-weight: 600;
 }
 .bi-count {
   margin-top: 13px;
   color: #7a8aa0;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .bi-toolbar {
@@ -164,7 +164,7 @@ body {
   box-shadow: 0 3px 10px rgba(70, 80, 110, 0.12);
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
   text-decoration: none;
   transition: transform 0.15s var(--spring), background 0.2s ease, color 0.2s ease;
 }
@@ -213,7 +213,7 @@ body {
   background: rgba(255, 255, 255, 0.48);
   color: #58728b;
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 600;
   cursor: pointer;
 }
 .bi-upload__file input {
@@ -222,7 +222,7 @@ body {
   color: #647084;
   font-family: var(--font);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 .bi-upload__actions {
   display: flex;
@@ -234,7 +234,7 @@ body {
 .bi-upload__hint {
   color: #7a8aa0;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.65;
 }
 .bi-upload__save {
@@ -247,7 +247,7 @@ body {
   box-shadow: 0 6px 16px rgba(80, 130, 150, 0.24);
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 600;
   cursor: pointer;
   transition: transform 0.15s var(--spring), box-shadow 0.2s ease;
 }
@@ -284,14 +284,14 @@ body {
   margin-bottom: 8px;
   color: #8b98aa;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 650;
   letter-spacing: 0;
 }
 .post-item h2 {
   color: #3f5a72;
   font-size: 21px;
   line-height: 1.35;
-  font-weight: 900;
+  font-weight: 600;
 }
 .post-item p {
   margin-top: 7px;
@@ -311,7 +311,7 @@ body {
 .post-item__meta span {
   color: #778497;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 650;
 }
 .post-item__tags {
   margin-top: 14px;
@@ -322,7 +322,7 @@ body {
   background: rgba(255, 255, 255, 0.68);
   color: #738198;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 650;
 }
 .post-item__arrow {
   position: absolute;
@@ -352,7 +352,7 @@ body {
   color: #7a8aa0;
   text-align: center;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .bi-pager {
@@ -370,7 +370,7 @@ body {
   color: #647084;
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
 }
 .bi-pager__btn.is-disabled {
   opacity: 0.52;
@@ -379,7 +379,7 @@ body {
 .bi-pager__now {
   color: #7a8aa0;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .bi-side {
@@ -415,14 +415,14 @@ body {
   background: #ffffff;
   color: #e8895b;
   font-size: 20px;
-  font-weight: 900;
+  font-weight: 600;
   box-shadow: 0 3px 10px rgba(70, 80, 110, 0.12);
 }
 .tag-panel h2,
 .archive-panel h2 {
   color: #3f5a72;
   font-size: 20px;
-  font-weight: 900;
+  font-weight: 600;
 }
 .tag-grid {
   display: flex;
@@ -437,7 +437,7 @@ body {
   color: #758196;
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease, transform 0.15s var(--spring);
 }
@@ -460,7 +460,7 @@ body {
   color: #647084;
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 600;
   cursor: pointer;
   transition: transform 0.15s var(--spring), background 0.2s ease;
 }
@@ -478,7 +478,7 @@ body {
 .archive-panel a {
   color: #647084;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 650;
   text-decoration: none;
 }
 .archive-panel a:hover { color: #e8895b; }

@@ -13,79 +13,79 @@
   var DOGS = [
     {
       key: "white",
-      label: "白狗",
+      label: "White",
       idle: IDLE.white,
       actions: [
-        { id: "white-code", src: "/gif/白狗-写出代码.gif", duration: 2500, line: "白狗正在认真写代码！" },
-        { id: "white-sing", src: "/gif/白狗-唱歌.gif", duration: 2300, line: "白狗给你唱一小段歌。" },
-        { id: "white-heart", src: "/gif/白狗-抛出爱心.gif", duration: 2100, line: "白狗抛出一颗爱心！", after: "brown-catch-heart" },
-        { id: "white-crawl", src: "/gif/白狗-爬行.gif", duration: 3600, line: "白狗偷偷爬过来了。" },
-        { id: "white-question", src: "/gif/白狗-翻身问号.gif", duration: 2600, line: "白狗翻身：发生什么啦？" },
-        { id: "white-jump", src: "/gif/白狗-跳跳.gif", duration: 2300, line: "白狗开心地跳起来了！" }
+        { id: "white-code", src: "/gif/白狗-写出代码.gif", duration: 2500, line: "White is writing code with great focus." },
+        { id: "white-sing", src: "/gif/白狗-唱歌.gif", duration: 2300, line: "White hums a tiny song for you." },
+        { id: "white-heart", src: "/gif/白狗-抛出爱心.gif", duration: 2100, line: "White tosses out a heart.", after: "brown-catch-heart" },
+        { id: "white-crawl", src: "/gif/白狗-爬行.gif", duration: 3600, line: "White quietly crawls over." },
+        { id: "white-question", src: "/gif/白狗-翻身问号.gif", duration: 2600, line: "White rolls over: what happened?" },
+        { id: "white-jump", src: "/gif/白狗-跳跳.gif", duration: 2300, line: "White jumps up happily." }
       ]
     },
     {
       key: "brown",
-      label: "棕狗",
+      label: "Brown",
       idle: IDLE.brown,
       actions: [
-        { id: "brown-workout", src: "/gif/棕狗-健身.gif", duration: 2600, line: "小狗正在努力健身！" },
-        { id: "brown-food", src: "/gif/棕狗-想开饭.gif", duration: 2600, line: "棕狗已经开始想开饭了。" },
-        { id: "brown-heart", src: "/gif/棕狗-甩爱心.gif", duration: 2500, line: "棕狗也甩出一颗爱心！" },
-        { id: "brown-leave", src: "/gif/棕狗-跳走.gif", duration: 2300, line: "棕狗跳走去探路啦。" },
-        { id: "brown-duck", src: "/gif/棕狗-鸭子跳跳.gif", duration: 2500, line: "棕狗和小鸭子一起跳跳。" }
+        { id: "brown-workout", src: "/gif/棕狗-健身.gif", duration: 2600, line: "Brown is getting a workout in." },
+        { id: "brown-food", src: "/gif/棕狗-想开饭.gif", duration: 2600, line: "Brown is already thinking about dinner." },
+        { id: "brown-heart", src: "/gif/棕狗-甩爱心.gif", duration: 2500, line: "Brown tosses out a heart too." },
+        { id: "brown-leave", src: "/gif/棕狗-跳走.gif", duration: 2300, line: "Brown hops away to scout ahead." },
+        { id: "brown-duck", src: "/gif/棕狗-鸭子跳跳.gif", duration: 2500, line: "Brown jumps along with the little duck." }
       ],
       hiddenActions: {
-        "brown-catch-heart": { id: "brown-catch-heart", src: "/gif/棕狗-接住爱心.gif", duration: 2600, line: "棕狗接住了白狗的爱心！" }
+        "brown-catch-heart": { id: "brown-catch-heart", src: "/gif/棕狗-接住爱心.gif", duration: 2600, line: "Brown catches White's heart." }
       }
     }
   ];
 
   var RANDOM_LINES = [
-    "今天也要把小事认真收好。",
-    "小窝正在轻轻发光。",
-    "喝口水，再继续看吧。",
-    "我们在角落陪着你。",
-    "今天适合收藏一点开心。",
-    "慢慢来，页面会等你。",
-    "白狗闻到了新的灵感。",
-    "棕狗觉得这里很舒服。",
-    "要不要去看看最近的照片？",
-    "有些故事适合晚一点写。",
-    "今天也可以很可爱。",
-    "小狗巡逻中，一切正常。",
-    "想去的地方会慢慢变近。",
-    "记得给今天留一张照片。",
-    "风很轻，适合发呆。",
-    "这里藏着两个人的小世界。",
-    "如果累了，就在小窝歇一会儿。",
-    "我们刚刚发现一颗好心情。",
-    "今天的云看起来很好摸。",
-    "小狗正在认真守护角落。",
-    "写一点点，也算向前走。",
-    "你来了，小窝就热闹一点。",
-    "别急，好东西会慢慢出现。",
-    "今天的小狗电量很足。"
+    "Keep the little things tucked away with care today.",
+    "The nest is glowing softly.",
+    "Take a sip of water, then keep browsing.",
+    "We're keeping you company from the corner.",
+    "Today is good for saving a bit of joy.",
+    "Take your time. The page can wait.",
+    "White smells a new idea nearby.",
+    "Brown thinks this place feels cozy.",
+    "Want to peek at the latest photos?",
+    "Some stories are better written later.",
+    "Today can still be sweet.",
+    "Corner patrol complete. All is well.",
+    "The places you want to visit are getting closer.",
+    "Remember to leave a photo for today.",
+    "The breeze is soft. A good time to daydream.",
+    "This is a tiny world for two.",
+    "If you're tired, rest here for a while.",
+    "We just found a good mood.",
+    "Today's clouds look very touchable.",
+    "The corner is carefully guarded.",
+    "Writing a little still counts as moving forward.",
+    "Now that you're here, the nest feels livelier.",
+    "No rush. Good things arrive slowly.",
+    "The corner pups have plenty of energy today."
   ];
 
   var FEATURE_LINES = [
-    { test: /今年想去|places/i, line: "来看看今年有哪些想去的地方吧！" },
-    { test: /首页|home|index/i, line: "回到首页，看看我们的小窝吧！" },
-    { test: /双人博客|博客|blog/i, line: "来读读我们一起写下的故事吧。" },
-    { test: /生活记录|记录|records/i, line: "今天的小心情也要好好收起来。" },
-    { test: /照片墙|照片|photos/i, line: "去照片墙翻翻最近的画面吧！" },
-    { test: /时段活动|活动|activity/i, line: "看看今天每个时段都发生了什么吧。" },
-    { test: /上传|选择照片|file/i, line: "要把新的照片放进小窝了吗？" },
-    { test: /添加|保存|发布|写|submit/i, line: "把新的小事认真放进去吧。" },
-    { test: /筛选|全部|白狗|棕狗|filter/i, line: "换个角度看看，也许有新发现。" },
-    { test: /返回|back/i, line: "慢慢退回去，小狗陪你。" },
-    { test: /取消|关闭|close/i, line: "先收起来也没关系。" }
+    { test: /places|want to go/i, line: "Let's see the places you want to visit this year." },
+    { test: /home|index/i, line: "Back home to Our Nest." },
+    { test: /blog|stories/i, line: "Let's read the stories you wrote together." },
+    { test: /records|life/i, line: "Today's little moods deserve a place to stay." },
+    { test: /photos|photo/i, line: "Let's flip through the latest photos." },
+    { test: /activity|timeline/i, line: "Let's see what happened in each part of the day." },
+    { test: /upload|choose photo|file/i, line: "Adding something new to the nest?" },
+    { test: /add|save|publish|write|submit/i, line: "Tuck the new little thing in carefully." },
+    { test: /filter|all|white|brown/i, line: "Try another angle. There may be something new." },
+    { test: /back/i, line: "Step back slowly. We'll keep you company." },
+    { test: /cancel|close/i, line: "It is fine to tuck it away for now." }
   ];
   var SPEECH_HOLD_MS = 2000;
 
   var root = document.createElement("div");
   root.className = "corner-dogs";
-  root.setAttribute("aria-label", "角落小狗");
+  root.setAttribute("aria-label", "Corner pups");
   document.body.appendChild(root);
 
   var dogMap = {};
@@ -93,7 +93,7 @@
     var btn = document.createElement("button");
     btn.className = "corner-dog corner-dog--" + dog.key;
     btn.type = "button";
-    btn.setAttribute("aria-label", dog.label + "，点击播放随机动作");
+    btn.setAttribute("aria-label", dog.label + ", play a random action");
 
     var shadow = document.createElement("span");
     shadow.className = "corner-dog__shadow";

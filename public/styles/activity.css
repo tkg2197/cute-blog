@@ -87,7 +87,7 @@ body {
   border-radius: 999px;
   color: #5b6478;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
   transition: transform 0.15s ease, background 0.2s ease;
 }
@@ -103,7 +103,7 @@ body {
   border-radius: 999px;
   color: #647084;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
   text-decoration: none;
   transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
@@ -130,19 +130,19 @@ body {
   margin-bottom: 10px;
   color: #7f91a6;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
 }
 .act-head h1 {
   color: var(--heading);
   font-size: 42px;
   line-height: 1.18;
-  font-weight: 900;
+  font-weight: 600;
 }
 .act-summary {
   margin-top: 12px;
   color: var(--muted);
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 650;
 }
 .act-head__tools {
   display: flex;
@@ -166,7 +166,7 @@ body {
   border-radius: 999px;
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 600;
   cursor: pointer;
   transition: transform 0.16s var(--spring), background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -227,7 +227,7 @@ body {
 .act-field span {
   color: #627084;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
 }
 .act-field input,
 .act-field select,
@@ -239,7 +239,7 @@ body {
   color: #4a4f5c;
   font-family: var(--font);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
 }
 .act-field input,
 .act-field select {
@@ -272,7 +272,7 @@ body {
   color: #647084;
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
   cursor: pointer;
   transition: transform 0.15s var(--spring), border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
@@ -297,7 +297,7 @@ body {
   color: #ffffff;
   font-family: var(--font);
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 600;
   cursor: pointer;
   box-shadow: 0 6px 16px rgba(80, 130, 150, 0.28);
   transition: transform 0.18s var(--spring), box-shadow 0.2s ease;
@@ -321,14 +321,14 @@ body {
 .act-stat h2 {
   color: var(--heading);
   font-size: 22px;
-  font-weight: 900;
+  font-weight: 600;
 }
 .act-legend {
   display: flex;
   gap: 12px;
   color: #6b7385;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 650;
 }
 .act-dot {
   display: inline-block;
@@ -360,14 +360,14 @@ body {
   display: block;
   color: var(--heading);
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 600;
 }
 .time-row__label span {
   display: block;
   margin-top: 4px;
   color: #8794a6;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 650;
 }
 .time-row__track {
   min-height: 70px;
@@ -401,7 +401,7 @@ body {
   margin-bottom: 4px;
   color: #4f85b8;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 600;
 }
 .time-block--brown .time-block__cat { color: #b6783c; }
 .time-block__text {
@@ -409,7 +409,7 @@ body {
   overflow: hidden;
   color: #536070;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 650;
   line-height: 1.45;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -419,7 +419,7 @@ body {
   margin-top: 4px;
   color: #8794a6;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 600;
 }
 .time-block__del {
   position: absolute;
@@ -439,7 +439,7 @@ body {
   min-height: 52px;
   color: #98a4b3;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .act-side {
@@ -472,7 +472,7 @@ body {
   z-index: 1;
   color: var(--heading);
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 600;
   text-align: center;
 }
 .act-bars,
@@ -489,7 +489,7 @@ body {
   gap: 12px;
   color: #627084;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 600;
 }
 .stat-bar__rail,
 .period-pill__rail {
@@ -510,7 +510,7 @@ body {
   padding: 20px 4px;
   color: #8a93a4;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
   line-height: 1.7;
 }
 

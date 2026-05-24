@@ -77,7 +77,7 @@ body {
 .places-kicker {
   color: #7aa6d4;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .places-hero h1 {
@@ -85,7 +85,7 @@ body {
   color: #284158;
   font-size: clamp(40px, 6vw, 66px);
   line-height: 1;
-  font-weight: 900;
+  font-weight: 600;
   letter-spacing: 0;
 }
 
@@ -112,7 +112,7 @@ body {
   background: rgba(255,255,255,0.56);
   color: #637589;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 650;
   box-shadow: 0 10px 24px rgba(68, 88, 112, 0.08);
 }
 
@@ -123,7 +123,7 @@ body {
   border-radius: 999px;
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -173,7 +173,7 @@ body {
 .place-form span {
   color: #627084;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 650;
 }
 
 .place-form input,
@@ -396,7 +396,7 @@ body {
 .place-card__name {
   font-size: 24px;
   line-height: 1.24;
-  font-weight: 900;
+  font-weight: 600;
   text-shadow: 0 2px 10px rgba(36, 42, 58, 0.18);
 }
 
@@ -404,7 +404,7 @@ body {
   color: rgba(255,255,255,0.86);
   font-size: 13px;
   line-height: 1.76;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 @media (max-width: 780px) {

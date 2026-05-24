@@ -14,7 +14,7 @@ export function createAnonClient() {
 export function createServiceClient() {
   const { url, serviceRoleKey } = getSupabaseEnv();
   if (!serviceRoleKey) {
-    throw new Error("缺少 SUPABASE_SERVICE_ROLE_KEY");
+    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY");
   }
 
   return createClient(url, serviceRoleKey, {

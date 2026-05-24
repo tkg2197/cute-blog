@@ -15,12 +15,12 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const authorKey = String(form.get("author_key") || "") === "brown" ? "brown" : "white";
 
   if (!email || !password || !displayName) {
-    return redirect(registerUrl("请填写完整注册信息。"), 303);
+    return redirect(registerUrl("Please complete the registration form."), 303);
   }
 
   const allowed = getAllowedSignupEmails();
   if (allowed.length && !allowed.includes(email)) {
-    return redirect(registerUrl("这个邮箱不在允许注册列表里。"), 303);
+    return redirect(registerUrl("This email is not on the allowed registration list."), 303);
   }
 
   const supabase = createAnonClient();
@@ -36,7 +36,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   });
 
   if (error || !data.user) {
-    return redirect(registerUrl(error?.message || "注册失败。"), 303);
+    return redirect(registerUrl(error?.message || "Registration failed."), 303);
   }
 
   const service = createServiceClient();

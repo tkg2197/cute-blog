@@ -16,15 +16,15 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const sep = safeReturn.includes("?") ? "&" : "?";
 
   if (!name || name.length > 32) {
-    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("请填写 1-32 字的地点名")}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Please enter a place name between 1 and 32 characters.")}`, 303);
   }
 
   if (!note || note.length > 140) {
-    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("请填写 1-140 字的想去理由")}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Please enter a reason between 1 and 140 characters.")}`, 303);
   }
 
   if (!validTones.has(tone)) {
-    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("请选择有效氛围")}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Please choose a valid vibe.")}`, 303);
   }
 
   const supabase = createServiceClient();

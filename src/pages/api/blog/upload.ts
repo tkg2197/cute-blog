@@ -15,11 +15,11 @@ export const POST: APIRoute = async ({ request, cookies, locals, redirect }) => 
   const sep = safeReturn.includes("?") ? "&" : "?";
 
   if (!(file instanceof File) || file.size === 0) {
-    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("请选择要上传的 Markdown 文件。")}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Please choose a Markdown file to upload.")}`, 303);
   }
 
   if (!file.name.toLowerCase().endsWith(".md")) {
-    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("博客上传只接受 .md 文件。")}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Blog uploads only accept .md files.")}`, 303);
   }
 
   const content = await file.text();
@@ -31,7 +31,7 @@ export const POST: APIRoute = async ({ request, cookies, locals, redirect }) => 
   try {
     await ensureStorageBuckets();
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Storage 初始化失败";
+    const message = error instanceof Error ? error.message : "Storage initialization failed";
     return redirect(`${safeReturn}${sep}error=${encodeURIComponent(message)}`, 303);
   }
 

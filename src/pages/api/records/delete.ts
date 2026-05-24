@@ -8,7 +8,7 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const form = await request.formData();
   const id = String(form.get("id") || "");
   if (!id) {
-    return redirect("/admin?error=缺少生活记录 ID", 303);
+    return redirect("/admin?error=Missing%20life%20record%20ID", 303);
   }
 
   const supabase = createServiceClient();

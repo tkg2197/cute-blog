@@ -54,41 +54,41 @@ const dates = Array.from(grouped.keys()).sort((a, b) => b.localeCompare(a));
 
 function prettyDate(value: string) {
   const [, mm, dd] = value.split("-");
-  return `${Number(mm)}月${Number(dd)}日`;
+  return `${Number(mm)}/${Number(dd)}`;
 }
 
 const today = new Date().toISOString().slice(0, 10);
 const moods: Array<{ key: string; label: string }> = [
-  { key: "happy", label: "😄 开心" },
-  { key: "loved", label: "🥰 幸福" },
-  { key: "calm", label: "😌 平静" },
-  { key: "tired", label: "🥱 疲惫" },
-  { key: "down", label: "😢 难过" },
-  { key: "moody", label: "😤 烦躁" },
+  { key: "happy", label: "😄 Happy" },
+  { key: "loved", label: "🥰 Loved" },
+  { key: "calm", label: "😌 Calm" },
+  { key: "tired", label: "🥱 Tired" },
+  { key: "down", label: "😢 Low" },
+  { key: "moody", label: "😤 Moody" },
 ];
 
 const noticeError = Astro.url.searchParams.get("error");
 const created = Astro.url.searchParams.get("created");
 ---
 
-<PrototypeLayout title="生活记录 · 我们的小窝" current="records" bgClass="rec-bg" backHref="/?skipCover=1#home">
+<PrototypeLayout title="Records · Our Nest" current="records" bgClass="rec-bg" backHref="/?skipCover=1#home">
   <Fragment slot="head">
     <link rel="stylesheet" href="/styles/records.css" />
   </Fragment>
 
   <main class="rec-main">
     <header class="rec-header">
-      <h1 class="rec-title">📖 生活记录</h1>
-      <p class="rec-subtitle">一天一页，慢慢攒起来的小日子</p>
+      <h1 class="rec-title">📖 Records</h1>
+      <p class="rec-subtitle">One page a day, slowly collecting ordinary moments</p>
       {canCreate ? (
         <button class="rec-add-toggle" id="recAddToggle" type="button" aria-expanded="false" aria-controls="recForm">
-          ＋ 添加生活记录
+          ＋ Add record
         </button>
       ) : (
-        <a class="rec-add-toggle" href="/auth/login">登录后即可添加</a>
+        <a class="rec-add-toggle" href="/auth/login">Log in to add</a>
       )}
       {noticeError && <p style="margin-top:14px;color:#9d3f3f;background:rgba(255,242,242,.8);padding:10px 14px;border-radius:12px;display:inline-block;">{noticeError}</p>}
-      {created === "record" && <p style="margin-top:14px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">生活记录已经保存。</p>}
+      {created === "record" && <p style="margin-top:14px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">Record saved.</p>}
     </header>
 
     {canCreate && (
@@ -96,12 +96,12 @@ const created = Astro.url.searchParams.get("created");
         <input type="hidden" name="return_to" value="/records" />
         <div class="rec-form__row">
           <label class="rec-field">
-            <span>日期</span>
+            <span>Date</span>
             <input name="record_on" id="recDate" type="date" value={today} required />
           </label>
           <div class="rec-field">
-            <span>作者</span>
-            <div class="rec-who" id="recWho" aria-label={`当前账号：${currentAuthorName}`}>
+            <span>Author</span>
+            <div class="rec-who" id="recWho" aria-label={`Current account: ${currentAuthorName}`}>
               <span class={`rec-who__btn ${profile?.author_key === "white" ? "is-active" : ""}`} data-who="white">🐶 {authorNames.white}</span>
               <span class={`rec-who__btn ${profile?.author_key === "brown" ? "is-active" : ""}`} data-who="brown">🐕 {authorNames.brown}</span>
             </div>
@@ -109,7 +109,7 @@ const created = Astro.url.searchParams.get("created");
         </div>
 
         <div class="rec-field">
-          <span>心情</span>
+          <span>Mood</span>
           <div class="rec-moods" id="recMoods">
             {moods.map((m, idx) => (
               <button class={`rec-mood ${idx === 0 ? "is-active" : ""}`} type="button" data-mood={m.key}>{m.label}</button>
@@ -119,28 +119,28 @@ const created = Astro.url.searchParams.get("created");
         </div>
 
         <label class="rec-field">
-          <span>今天发生了什么</span>
-          <textarea name="body" id="recText" rows="4" maxlength="500" placeholder="写一点今天的小事、心情或者想记住的瞬间" required></textarea>
+          <span>What happened today</span>
+          <textarea name="body" id="recText" rows="4" maxlength="500" placeholder="Write a small moment, feeling, or anything worth remembering." required></textarea>
         </label>
 
         <div class="rec-field">
-          <span>照片</span>
+          <span>Photos</span>
           <label class="rec-file">
-            ＋ 选择照片（可多选，保存后同步进入照片墙）
+            ＋ Choose photos (multiple allowed)
             <input name="photos" id="recPhotos" type="file" accept="image/*" multiple hidden />
           </label>
-          <p class="rec-file__hint" id="recPhotoHint">照片会同步进入照片墙。</p>
+          <p class="rec-file__hint" id="recPhotoHint">Photos will also appear in Photos.</p>
         </div>
 
         <div class="rec-form__actions">
-          <button class="rec-form__cancel" id="recCancel" type="button">取消</button>
-          <button class="rec-form__save" type="submit">保存记录</button>
+          <button class="rec-form__cancel" id="recCancel" type="button">Cancel</button>
+          <button class="rec-form__save" type="submit">Save record</button>
         </div>
       </form>
     )}
 
-    <nav class="rec-filter" id="recFilter" aria-label="筛选作者">
-      <button class="rec-filter__btn is-active" type="button" data-who="all">全部</button>
+    <nav class="rec-filter" id="recFilter" aria-label="Filter by author">
+      <button class="rec-filter__btn is-active" type="button" data-who="all">All</button>
       <button class="rec-filter__btn" type="button" data-who="white">🐶 {authorNames.white}</button>
       <button class="rec-filter__btn" type="button" data-who="brown">🐕 {authorNames.brown}</button>
     </nav>
@@ -157,7 +157,7 @@ const created = Astro.url.searchParams.get("created");
           <section class="rec-day" data-date={date} data-whites={dayRecords.filter((r) => (r.profiles?.author_key || "white") === "white").length} data-browns={dayRecords.filter((r) => (r.profiles?.author_key || "white") === "brown").length}>
             <div class="rec-day__label">
               <span class="rec-day__date">{prettyDate(date)}</span>
-              <span class="rec-day__count">{dayRecords.length} 条</span>
+              <span class="rec-day__count">{dayRecords.length} items</span>
             </div>
             <div class="rec-day__notes">
               {dayRecords.map((record) => {
@@ -176,7 +176,7 @@ const created = Astro.url.searchParams.get("created");
                         <div class="note__photos">
                           {samePhotos.map((p, idx) => (
                             <button class="note__photo" type="button" data-lb-index={idx} data-lb-group={`${author}|${record.record_on}`}>
-                              <img src={p.publicUrl} alt={p.title || "照片"} loading="lazy" />
+                              <img src={p.publicUrl} alt={p.title || "Photo"} loading="lazy" />
                             </button>
                           ))}
                         </div>
@@ -184,7 +184,7 @@ const created = Astro.url.searchParams.get("created");
                       <div class="note__body">
                         <p class="note__text">{record.body}</p>
                       </div>
-                      <span class="note__hint">点击展开 ▾</span>
+                      <span class="note__hint">Click to expand ▾</span>
                     </div>
                   </article>
                 );
@@ -193,15 +193,15 @@ const created = Astro.url.searchParams.get("created");
           </section>
         );
       }) : (
-        <div class="rec-empty">还没有生活记录，点上方按钮写一篇吧~</div>
+        <div class="rec-empty">No records yet. Add the first one above.</div>
       )}
     </div>
   </main>
 
-  <div class="rec-lb is-hidden" id="recLb" role="dialog" aria-modal="true" aria-label="查看照片">
-    <button class="rec-lb__close" id="recLbClose" type="button" aria-label="关闭">✕</button>
-    <button class="rec-lb__nav rec-lb__nav--prev" id="recLbPrev" type="button" aria-label="上一张">‹</button>
-    <button class="rec-lb__nav rec-lb__nav--next" id="recLbNext" type="button" aria-label="下一张">›</button>
+  <div class="rec-lb is-hidden" id="recLb" role="dialog" aria-modal="true" aria-label="View photo">
+    <button class="rec-lb__close" id="recLbClose" type="button" aria-label="Close">✕</button>
+    <button class="rec-lb__nav rec-lb__nav--prev" id="recLbPrev" type="button" aria-label="Previous photo">‹</button>
+    <button class="rec-lb__nav rec-lb__nav--next" id="recLbNext" type="button" aria-label="Next photo">›</button>
     <img class="rec-lb__img" id="recLbImg" alt="" />
   </div>
 
@@ -238,7 +238,7 @@ const created = Astro.url.searchParams.get("created");
             });
             day.style.display = visible ? "" : "none";
             var count = day.querySelector(".rec-day__count");
-            if (count) count.textContent = visible + " 条";
+            if (count) count.textContent = visible + " items";
           });
         }
         if (filterEl) {
@@ -260,7 +260,7 @@ const created = Astro.url.searchParams.get("created");
           function toggle() {
             var open = note.classList.toggle("is-open");
             card.setAttribute("aria-expanded", String(open));
-            if (hint) hint.textContent = open ? "点击收起 ▴" : "点击展开 ▾";
+            if (hint) hint.textContent = open ? "Click to collapse ▴" : "Click to expand ▾";
           }
           card.addEventListener("click", function (ev) {
             if (ev.target.closest(".note__photo")) return;
@@ -338,7 +338,7 @@ const created = Astro.url.searchParams.get("created");
           if (!formEl || !addToggle) return;
           formEl.classList.toggle("is-hidden", !open);
           addToggle.setAttribute("aria-expanded", open ? "true" : "false");
-          addToggle.textContent = open ? "收起添加面板" : "＋ 添加生活记录";
+          addToggle.textContent = open ? "Close form" : "＋ Add record";
         }
         if (addToggle && formEl) {
           addToggle.addEventListener("click", function () {
@@ -361,7 +361,7 @@ const created = Astro.url.searchParams.get("created");
         if (photosEl && photoHint) {
           photosEl.addEventListener("change", function () {
             var count = photosEl.files ? photosEl.files.length : 0;
-            photoHint.textContent = count ? ("已选择 " + count + " 张照片，保存后同步进入照片墙。") : "照片会同步进入照片墙。";
+            photoHint.textContent = count ? ("Selected " + count + " photos. They will also appear in Photos.") : "Photos will also appear in Photos.";
           });
         }
       })();

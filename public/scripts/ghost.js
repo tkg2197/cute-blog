@@ -23,26 +23,26 @@
 
   // 鼠标悬停时随机说一句（≥15 句），跑掉前停留 ~1.2s 给用户读
   var BUBBLE_PHRASES = [
-    "抓不住我~",
-    "嘿嘿，找到我啦？",
-    "我可是会消失的哦",
-    "别过来啦~",
-    "你好呀～",
-    "嘘…我在玩躲猫猫",
-    "啊！被你看见了",
-    "拜拜咯～",
-    "不要靠近我啦",
-    "我没那么容易被抓住的",
-    "你也想一起飘吗？",
-    "我会守着这个小窝呀",
-    "嗯哼？",
-    "下次见！",
-    "你猜我下一秒在哪？",
-    "今天也要开心呀～",
-    "嘘——",
-    "我要藏起来咯",
-    "看到啦看到啦",
-    "晚安~"
+    "You can't catch me~",
+    "Hehe, you found me?",
+    "I can disappear, you know.",
+    "Don't come too close~",
+    "Hello there~",
+    "Shh... I'm hiding.",
+    "Ah! You saw me.",
+    "Bye bye~",
+    "No closer, please.",
+    "I'm not that easy to catch.",
+    "Want to float with me?",
+    "I'll keep watch over the nest.",
+    "Mm-hmm?",
+    "See you next time.",
+    "Guess where I'll be next.",
+    "Stay happy today.",
+    "Shhh.",
+    "I'm going to hide now.",
+    "I see you too.",
+    "Good night~"
   ];
   var BUBBLE_HOLD = 700;    // 气泡停留时间(ms)，到点鬼魂就跑掉
   var lastPhraseIdx = -1;

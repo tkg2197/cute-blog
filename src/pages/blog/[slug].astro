@@ -29,25 +29,25 @@ const sections = renderArticleSections(post.content_markdown || "");
 const readMinutes = Math.max(3, Math.ceil((post.content_markdown || "").length / 280));
 ---
 
-<PrototypeLayout title={`${post.title} · 我们的小窝`} current="blog" bgClass="blog-bg" backHref="/blog" backLabel="返回博客">
+<PrototypeLayout title={`${post.title} · Our Nest`} current="blog" bgClass="blog-bg" backHref="/blog" backLabel="Back to blog">
   <Fragment slot="head">
     <link rel="stylesheet" href="/styles/blog.css" />
   </Fragment>
 
-  <div class="blog-tags" id="blogTags" aria-label="文章标签">
+  <div class="blog-tags" id="blogTags" aria-label="Post tags">
     <span class={`blog-tag blog-tag--${author}`}>{authorName}</span>
     <span class="blog-tag">{formatDate(dateValue)}</span>
-    <span class="blog-tag">{readMinutes} 分钟阅读</span>
+    <span class="blog-tag">{readMinutes} min read</span>
     {(post.tags || []).map((tag) => <span class="blog-tag">{tag}</span>)}
   </div>
 
   <main class="blog-shell">
     <article class="article">
       <header class="article-head">
-        <p class="article-kicker">双人博客 / Markdown 上传</p>
+        <p class="article-kicker">Blog / Markdown upload</p>
         <h1>{post.title}</h1>
         {post.excerpt && <p class="article-summary">{post.excerpt}</p>}
-        <div class="article-authors" aria-label="作者">
+        <div class="article-authors" aria-label="Author">
           <span class={`article-author article-author--${author}`}>
             {author === "white" ? "🐶" : "🐕"} {authorName}
           </span>
@@ -62,9 +62,9 @@ const readMinutes = Math.max(3, Math.ceil((post.content_markdown || "").length /
       ))}
     </article>
 
-    <aside class="toc" aria-label="文章目录">
+    <aside class="toc" aria-label="Table of contents">
       <div class="toc__inner">
-        <p class="toc__title">文章目录</p>
+        <p class="toc__title">Contents</p>
         <div class="toc__body">
           <span class="toc__track" aria-hidden="true">
             <span class="toc__fill" id="tocFill"></span>

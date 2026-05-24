@@ -14,14 +14,14 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const redirectTo = String(form.get("redirect") || "/?skipCover=1#home");
 
   if (!email || !password) {
-    return redirect(backToLogin("请填写邮箱和密码。", redirectTo), 303);
+    return redirect(backToLogin("Please enter your email and password.", redirectTo), 303);
   }
 
   const supabase = createAnonClient();
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error || !data.session) {
-    return redirect(backToLogin(error?.message || "登录失败，请检查邮箱和密码。", redirectTo), 303);
+    return redirect(backToLogin(error?.message || "Login failed. Please check your email and password.", redirectTo), 303);
   }
 
   setSessionCookies(cookies, data.session);

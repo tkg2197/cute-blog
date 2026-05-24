@@ -47,7 +47,7 @@ const dates = Array.from(byDate.keys()).sort((a, b) => b.localeCompare(a));
 
 function prettyDate(value: string) {
   const [, mm, dd] = value.split("-");
-  return `${Number(mm)}月${Number(dd)}日`;
+  return `${Number(mm)}/${Number(dd)}`;
 }
 
 const today = new Date().toISOString().slice(0, 10);
@@ -85,7 +85,7 @@ const uploaded = Astro.url.searchParams.get("uploaded");
 const deleted = Astro.url.searchParams.get("deleted");
 ---
 
-<PrototypeLayout title="照片墙 · 我们的小窝" current="photos" bgClass="pw-bg" backHref="/?skipCover=1#home">
+<PrototypeLayout title="Photos · Our Nest" current="photos" bgClass="pw-bg" backHref="/?skipCover=1#home">
   <Fragment slot="head">
     <link rel="stylesheet" href="/styles/photos.css" />
   </Fragment>
@@ -93,17 +93,17 @@ const deleted = Astro.url.searchParams.get("deleted");
   <main class="pw-main">
     <section class="pw-wall" id="pwWall">
       <header class="pw-header">
-        <h1 class="pw-title">📷 照片墙</h1>
-        <p class="pw-subtitle">用照片记录生活的每一个瞬间</p>
+        <h1 class="pw-title">📷 Photos</h1>
+        <p class="pw-subtitle">Keeping everyday moments in pictures</p>
         {noticeError && <p style="margin-top:14px;color:#9d3f3f;background:rgba(255,242,242,.8);padding:10px 14px;border-radius:12px;display:inline-block;">{noticeError}</p>}
-        {uploaded === "photo" && <p style="margin-top:14px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">照片已经上传。</p>}
-        {deleted === "photo" && <p style="margin-top:14px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">照片已经删除。</p>}
+        {uploaded === "photo" && <p style="margin-top:14px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">Photo uploaded.</p>}
+        {deleted === "photo" && <p style="margin-top:14px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">Photo deleted.</p>}
       </header>
       <div class="pw-toolbar">
         {user ? (
-          <button class="pw-upload-btn" id="pwUploadBtn" type="button">＋ 上传照片</button>
+          <button class="pw-upload-btn" id="pwUploadBtn" type="button">＋ Upload photo</button>
         ) : (
-          <a class="pw-upload-btn" href="/auth/login">登录后即可上传</a>
+          <a class="pw-upload-btn" href="/auth/login">Log in to upload</a>
         )}
       </div>
       <div class="pw-stacks" id="pwStacks">
@@ -121,25 +121,25 @@ const deleted = Astro.url.searchParams.get("deleted");
                   const ty = (Math.random() * 10 - 5).toFixed(1);
                   return (
                     <span class="pw-stack__layer" style={`--rot:${rot}deg;--tx:${tx}px;--ty:${ty}px;z-index:${10 - idx}`}>
-                      <img src={photo.publicUrl} alt={photo.title || "照片"} loading="lazy" />
+                      <img src={photo.publicUrl} alt={photo.title || "Photo"} loading="lazy" />
                     </span>
                   );
                 })}
-                <span class="pw-stack__count">{list.length} 张</span>
+                <span class="pw-stack__count">{list.length} photos</span>
               </button>
               <div class="pw-stack__meta">
                 <div class="pw-stack__name">{prettyDate(date)}</div>
-                <div class="pw-stack__sub">{firstAuthorName} · {list.length} 张</div>
+                <div class="pw-stack__sub">{firstAuthorName} · {list.length} photos</div>
               </div>
             </div>
           );
-        }) : <div class="pw-empty">还没有照片，点上方按钮上传第一张吧~</div>}
+        }) : <div class="pw-empty">No photos yet. Upload the first one above.</div>}
       </div>
     </section>
 
     <section class="pw-detail is-hidden" id="pwDetail">
       <div class="pw-detail__bar">
-        <button class="pw-back-btn" id="pwBackBtn" type="button">← 照片墙</button>
+        <button class="pw-back-btn" id="pwBackBtn" type="button">← Photos</button>
         <div class="pw-detail__meta">
           <span class="pw-detail__date" id="pwDetailDate"></span>
           <span class="pw-detail__count" id="pwDetailCount"></span>
@@ -150,43 +150,43 @@ const deleted = Astro.url.searchParams.get("deleted");
   </main>
 
   {user && (
-    <div class="pw-modal is-hidden" id="pwModal" role="dialog" aria-modal="true" aria-label="上传照片">
+    <div class="pw-modal is-hidden" id="pwModal" role="dialog" aria-modal="true" aria-label="Upload photo">
       <div class="pw-modal__mask" id="pwModalMask"></div>
       <form class="pw-modal__card" action="/api/photos/upload" method="post" enctype="multipart/form-data">
         <input type="hidden" name="return_to" value="/photos" />
-        <h2 class="pw-modal__title">上传照片</h2>
+        <h2 class="pw-modal__title">Upload photo</h2>
         <div class="pw-field">
-          <span class="pw-field__label">谁上传的</span>
-          <div class="pw-who" aria-label={`当前账号：${currentAuthorName}`}>
+          <span class="pw-field__label">Uploader</span>
+          <div class="pw-who" aria-label={`Current account: ${currentAuthorName}`}>
             <span class={`pw-who__btn ${myAuthorKey === "white" ? "is-active" : ""}`}>🐶 {authorNames.white}</span>
             <span class={`pw-who__btn ${myAuthorKey === "brown" ? "is-active" : ""}`}>🐕 {authorNames.brown}</span>
           </div>
         </div>
         <div class="pw-field">
-          <span class="pw-field__label">日期</span>
+          <span class="pw-field__label">Date</span>
           <input class="pw-date" name="taken_on" type="date" value={today} />
         </div>
         <div class="pw-field">
-          <span class="pw-field__label">说明（可选）</span>
-          <input class="pw-date" name="title" type="text" maxlength="80" placeholder="一张小照片" />
+          <span class="pw-field__label">Caption (optional)</span>
+          <input class="pw-date" name="title" type="text" maxlength="80" placeholder="A small photo" />
         </div>
         <label class="pw-filebtn">
-          ＋ 选择照片
+          ＋ Choose photo
           <input type="file" name="photo" accept="image/*" required hidden />
         </label>
         <p class="pw-modal__status" id="pwStatus"></p>
         <div style="display:flex;gap:10px;margin-top:14px;justify-content:flex-end;">
-          <button class="pw-modal__close" id="pwModalClose" type="button">取消</button>
-          <button class="pw-modal__close" type="submit" style="background:#7aa6d4;color:#fff;border-color:#7aa6d4;">保存</button>
+          <button class="pw-modal__close" id="pwModalClose" type="button">Cancel</button>
+          <button class="pw-modal__close" type="submit" style="background:#7aa6d4;color:#fff;border-color:#7aa6d4;">Save</button>
         </div>
       </form>
     </div>
   )}
 
-  <div class="pw-lb is-hidden" id="pwLb" role="dialog" aria-modal="true" aria-label="查看照片">
-    <button class="pw-lb__close" id="pwLbClose" type="button" aria-label="关闭">✕</button>
-    <button class="pw-lb__nav pw-lb__nav--prev" id="pwLbPrev" type="button" aria-label="上一张">‹</button>
-    <button class="pw-lb__nav pw-lb__nav--next" id="pwLbNext" type="button" aria-label="下一张">›</button>
+  <div class="pw-lb is-hidden" id="pwLb" role="dialog" aria-modal="true" aria-label="View photo">
+    <button class="pw-lb__close" id="pwLbClose" type="button" aria-label="Close">✕</button>
+    <button class="pw-lb__nav pw-lb__nav--prev" id="pwLbPrev" type="button" aria-label="Previous photo">‹</button>
+    <button class="pw-lb__nav pw-lb__nav--next" id="pwLbNext" type="button" aria-label="Next photo">›</button>
     <figure class="pw-lb__stage">
       <img class="pw-lb__img" id="pwLbImg" alt="" />
       <figcaption class="pw-lb__cap" id="pwLbCap"></figcaption>
@@ -212,14 +212,14 @@ const deleted = Astro.url.searchParams.get("deleted");
 
         function prettyDate(s) {
           var p = s.split("-");
-          return Number(p[1]) + "月" + Number(p[2]) + "日";
+          return Number(p[1]) + "/" + Number(p[2]);
         }
 
         function openDetail(date) {
           var list = bundles[date] || [];
           if (!list.length) return;
           detailDate.textContent = prettyDate(date);
-          detailCount.textContent = list.length + " 张";
+          detailCount.textContent = list.length + " photos";
           gridEl.textContent = "";
           list.forEach(function (item, idx) {
             var card = document.createElement("button");
@@ -229,7 +229,7 @@ const deleted = Astro.url.searchParams.get("deleted");
             card.setAttribute("data-date", date);
             var img = document.createElement("img");
             img.src = item.url;
-            img.alt = item.title || "照片";
+            img.alt = item.title || "Photo";
             img.loading = "lazy";
             card.appendChild(img);
             card.addEventListener("click", function () { openLb(date, idx); });

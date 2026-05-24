@@ -18,15 +18,15 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const sep = safeReturn.includes("?") ? "&" : "?";
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(recordOn)) {
-    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("请选择生活记录日期")}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Please choose a life record date.")}`, 303);
   }
 
   if (!body) {
-    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("请填写生活记录正文")}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Please write the life record body.")}`, 303);
   }
 
   if (!validMoods.has(mood)) {
-    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("请选择有效心情")}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Please choose a valid mood.")}`, 303);
   }
 
   const supabase = createServiceClient();
@@ -49,7 +49,7 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     try {
       await ensureStorageBuckets();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Storage 初始化失败";
+      const message = error instanceof Error ? error.message : "Storage initialization failed";
       return redirect(`${safeReturn}${sep}error=${encodeURIComponent(message)}`, 303);
     }
 

@@ -66,7 +66,7 @@ body {
   border-radius: 999px;
   color: #5b6478;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
   box-shadow: 0 4px 14px rgba(70, 80, 110, 0.16);
   backdrop-filter: blur(6px);
@@ -87,7 +87,7 @@ body {
 .rec-header { text-align: center; margin-bottom: 22px; }
 .rec-title {
   font-size: 30px;
-  font-weight: 800;
+  font-weight: 650;
   color: #3f5a72;
 }
 .rec-subtitle {
@@ -105,7 +105,7 @@ body {
   box-shadow: 0 6px 16px rgba(70, 80, 110, 0.12);
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 600;
   cursor: pointer;
   transition: transform 0.16s var(--spring), background 0.2s ease, color 0.2s ease;
 }
@@ -142,7 +142,7 @@ body {
 .rec-field span {
   color: #627084;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
 }
 .rec-field input,
 .rec-field textarea {
@@ -153,7 +153,7 @@ body {
   color: #4a4f5c;
   font-family: var(--font);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
 }
 .rec-field input {
   height: 43px;
@@ -184,7 +184,7 @@ body {
   color: #647084;
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
   cursor: pointer;
   transition: transform 0.15s var(--spring), border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
@@ -228,13 +228,13 @@ body {
   background: rgba(255, 255, 255, 0.52);
   color: #5b748d;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 600;
   cursor: pointer;
 }
 .rec-file__hint {
   color: #8995a6;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 .rec-form__actions {
   display: flex;
@@ -248,7 +248,7 @@ body {
   border-radius: 999px;
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 600;
   cursor: pointer;
 }
 .rec-form__cancel {
@@ -276,7 +276,7 @@ body {
   color: #6b7385;
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease, transform 0.13s ease;
 }
@@ -310,7 +310,7 @@ body {
 }
 .rec-day__date {
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 650;
   color: #4a6076;
 }
 .rec-day__count {
@@ -377,10 +377,10 @@ body {
   align-items: center;
   margin-bottom: 9px;
 }
-.note__author { font-size: 13px; font-weight: 800; }
+.note__author { font-size: 13px; font-weight: 650; }
 .note--white .note__author { color: var(--white-accent); }
 .note--brown .note__author { color: var(--brown-accent); }
-.note__mood { font-size: 13px; font-weight: 700; color: #6b7385; }
+.note__mood { font-size: 13px; font-weight: 600; color: #6b7385; }
 
 /* 内容：折叠时限高，展开时弹簧打开 */
 .note__body {
@@ -414,7 +414,7 @@ body {
   display: inline-block;
   margin-top: 10px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   color: #abb3c2;
 }
 

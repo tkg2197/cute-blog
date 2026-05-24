@@ -67,7 +67,7 @@ body {
   border-radius: 999px;
   color: #5b6478;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
   box-shadow: 0 4px 14px rgba(70, 80, 110, 0.16);
   backdrop-filter: blur(6px);
@@ -88,7 +88,7 @@ body {
 .pw-header { text-align: center; }
 .pw-title {
   font-size: 30px;
-  font-weight: 800;
+  font-weight: 650;
   color: #3f5a72;
 }
 .pw-subtitle {
@@ -111,7 +111,7 @@ body {
   color: #ffffff;
   font-family: var(--font);
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 650;
   cursor: pointer;
   box-shadow: 0 6px 16px rgba(80, 130, 150, 0.3);
   transition: transform 0.18s var(--spring), box-shadow 0.2s ease;
@@ -203,7 +203,7 @@ body {
   background: linear-gradient(135deg, #57b6ea, #3f9bd6);
   color: #ffffff;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 650;
   border-radius: 999px;
   box-shadow: 0 3px 9px rgba(40, 110, 160, 0.42);
 }
@@ -215,7 +215,7 @@ body {
 }
 .pw-stack__name {
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 650;
   color: #3f5a72;
 }
 .pw-stack__sub {
@@ -243,7 +243,7 @@ body {
   color: #5b6478;
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(70, 80, 110, 0.16);
   transition: transform 0.15s ease, background 0.2s ease;
@@ -251,7 +251,7 @@ body {
 .pw-back-btn:hover { transform: translateY(-2px); background: #ffffff; }
 .pw-detail__date {
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 650;
   color: #3f5a72;
 }
 .pw-detail__count {
@@ -306,7 +306,7 @@ body {
 .pw-photo__cap {
   margin-top: 9px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 650;
   text-align: center;
 }
 .pw-photo--white .pw-photo__cap { color: var(--white-accent); }
@@ -341,7 +341,7 @@ body {
 }
 .pw-modal__title {
   font-size: 19px;
-  font-weight: 800;
+  font-weight: 650;
   color: #3f5a72;
   text-align: center;
   margin-bottom: 22px;
@@ -351,7 +351,7 @@ body {
 .pw-field__label {
   display: block;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   color: #6b7385;
   margin-bottom: 8px;
 }
@@ -365,7 +365,7 @@ body {
   color: #6b7385;
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
 }
@@ -400,7 +400,7 @@ body {
   background: #f4f9fd;
   color: #5a87a8;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 650;
   cursor: pointer;
   transition: background 0.18s ease, border-color 0.18s ease;
 }
@@ -422,7 +422,7 @@ body {
   color: #9aa3b2;
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
 }
 .pw-modal__close:hover { color: #6b7385; }
@@ -475,7 +475,7 @@ body {
 }
 .pw-lb__diary-head {
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 650;
   color: #ffe2ad;
   margin-bottom: 5px;
 }
@@ -534,7 +534,7 @@ body {
   color: #ffd2cf;
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   transition: background 0.18s ease;
 }

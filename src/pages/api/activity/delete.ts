@@ -10,7 +10,7 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const returnTo = String(form.get("return_to") || "/admin");
   const failTo = returnTo.startsWith("/") ? returnTo : "/admin";
   if (!id) {
-    return redirect(`${failTo}${failTo.includes("?") ? "&" : "?"}error=${encodeURIComponent("缺少活动记录 ID")}`, 303);
+    return redirect(`${failTo}${failTo.includes("?") ? "&" : "?"}error=${encodeURIComponent("Missing activity record ID.")}`, 303);
   }
 
   const supabase = createServiceClient();

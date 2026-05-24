@@ -16,14 +16,14 @@ interface Props {
 
 const {
   title,
-  description = "我们的小窝，双人生活博客。",
+  description = "Our Nest, a shared life blog.",
   current,
   bgClass,
   bodyClass = "",
   htmlClass = "",
   hideNav = false,
   backHref,
-  backLabel = "返回",
+  backLabel = "Back",
 } = Astro.props;
 
 const user = Astro.locals.user;
@@ -62,23 +62,23 @@ const authorKey = (profile?.author_key || "white") as AuthorKey;
     {!hideNav && (
       <header class="site-nav" data-site-nav>
         <div class="site-nav__bar">
-          <a class="site-nav__brand" href="/?skipCover=1#home">我们的小窝</a>
-          <nav class="site-nav__links" aria-label="站内导航">
-            <a class:list={{ "is-active": current === "home" }} href="/?skipCover=1#home" aria-current={current === "home" ? "page" : undefined}>首页</a>
-            <a class:list={{ "is-active": current === "places" }} href="/places" aria-current={current === "places" ? "page" : undefined}>今年想去</a>
-            <a class:list={{ "is-active": current === "blog" }} href="/blog" aria-current={current === "blog" ? "page" : undefined}>双人博客</a>
-            <a class:list={{ "is-active": current === "records" }} href="/records" aria-current={current === "records" ? "page" : undefined}>生活记录</a>
-            <a class:list={{ "is-active": current === "photos" }} href="/photos" aria-current={current === "photos" ? "page" : undefined}>照片墙</a>
-            <a class:list={{ "is-active": current === "activity" }} href="/activity" aria-current={current === "activity" ? "page" : undefined}>时段活动</a>
+          <a class="site-nav__brand" href="/?skipCover=1#home">Our Nest</a>
+          <nav class="site-nav__links" aria-label="Site navigation">
+            <a class:list={{ "is-active": current === "home" }} href="/?skipCover=1#home" aria-current={current === "home" ? "page" : undefined}>Home</a>
+            <a class:list={{ "is-active": current === "places" }} href="/places" aria-current={current === "places" ? "page" : undefined}>Places</a>
+            <a class:list={{ "is-active": current === "blog" }} href="/blog" aria-current={current === "blog" ? "page" : undefined}>Blog</a>
+            <a class:list={{ "is-active": current === "records" }} href="/records" aria-current={current === "records" ? "page" : undefined}>Records</a>
+            <a class:list={{ "is-active": current === "photos" }} href="/photos" aria-current={current === "photos" ? "page" : undefined}>Photos</a>
+            <a class:list={{ "is-active": current === "activity" }} href="/activity" aria-current={current === "activity" ? "page" : undefined}>Activity</a>
             {!user && (
-              <a class="site-nav__auth-link" href="/auth/login">登录</a>
+              <a class="site-nav__auth-link" href="/auth/login">Log in</a>
             )}
           </nav>
           {user && (
             <div class="site-nav__auth">
               <form action="/api/auth/logout" method="post">
                 <span class={`auth-pill auth-pill--${authorKey}`} title={profile?.display_name || AUTHOR_LABELS[authorKey]}>{profile?.display_name || AUTHOR_LABELS[authorKey]}</span>
-                <button class="auth-link" type="submit" aria-label="退出登录">退出</button>
+                <button class="auth-link" type="submit" aria-label="Log out">Log out</button>
               </form>
             </div>
           )}
@@ -128,7 +128,7 @@ const authorKey = (profile?.author_key || "white") as AuthorKey;
     border-radius: 999px;
     color: #fff;
     font-size: 13px;
-    font-weight: 850;
+    font-weight: 650;
     line-height: 1.4;
     box-shadow: 0 4px 12px rgba(70,80,110,.16);
     max-width: 9em;
@@ -144,7 +144,7 @@ const authorKey = (profile?.author_key || "white") as AuthorKey;
     background: rgba(255,255,255,.6);
     color: #3f5a72;
     font-size: 13px;
-    font-weight: 850;
+    font-weight: 650;
     line-height: 1.4;
     text-decoration: none;
     border: 1px solid rgba(122,166,212,.32);
@@ -177,7 +177,7 @@ const authorKey = (profile?.author_key || "white") as AuthorKey;
     color: #5b6478;
     font-family: "Satoshi", "PingFang SC", "Microsoft YaHei", sans-serif;
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 650;
     text-decoration: none;
     box-shadow: 0 8px 20px rgba(70,80,110,.16);
     -webkit-backdrop-filter: blur(6px);

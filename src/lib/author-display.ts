@@ -6,7 +6,7 @@ type AuthorProfile = Pick<Profile, "author_key" | "display_name"> | null | undef
 export function makeAuthorNames(profiles: AuthorProfile[] = []) {
   const hasProfiles = profiles.some((profile) => !!profile?.display_name?.trim());
   const names: Record<AuthorKey, string> = hasProfiles
-    ? { white: "用户2", brown: "用户1" }
+    ? { white: "User 2", brown: "User 1" }
     : { ...AUTHOR_LABELS };
 
   profiles.forEach((profile) => {

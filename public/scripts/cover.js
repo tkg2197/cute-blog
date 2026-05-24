@@ -12,8 +12,8 @@
 
   var DISCOVERY_KEY = "cuteblog.discoveryIntro.v1";
   var DISCOVERY_LINES = [
-    "咦？你是怎么发现这里的",
-    "那就来看看我们的小世界吧"
+    "Oh, how did you find this place?",
+    "Come in and take a look at our little world."
   ];
   var ctx = canvas.getContext("2d");
   var petals = [];

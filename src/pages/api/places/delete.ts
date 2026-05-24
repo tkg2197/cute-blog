@@ -12,7 +12,7 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const sep = safeReturn.includes("?") ? "&" : "?";
 
   if (!id) {
-    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("缺少地点 ID")}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Missing place ID.")}`, 303);
   }
 
   const supabase = createServiceClient();

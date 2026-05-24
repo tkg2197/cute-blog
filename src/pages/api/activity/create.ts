@@ -19,23 +19,23 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const failTo = returnTo.startsWith("/") ? returnTo : "/admin";
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(activityOn)) {
-    return redirect(`${failTo}${failTo.includes("?") ? "&" : "?"}error=${encodeURIComponent("请选择活动日期")}`, 303);
+    return redirect(`${failTo}${failTo.includes("?") ? "&" : "?"}error=${encodeURIComponent("Please choose an activity date.")}`, 303);
   }
 
   if (!periodKeys.has(period as (typeof ACTIVITY_PERIODS)[number]["key"])) {
-    return redirect(`${failTo}${failTo.includes("?") ? "&" : "?"}error=${encodeURIComponent("请选择有效时段")}`, 303);
+    return redirect(`${failTo}${failTo.includes("?") ? "&" : "?"}error=${encodeURIComponent("Please choose a valid time period.")}`, 303);
   }
 
   if (!categories.has(category)) {
-    return redirect(`${failTo}${failTo.includes("?") ? "&" : "?"}error=${encodeURIComponent("请选择有效分类")}`, 303);
+    return redirect(`${failTo}${failTo.includes("?") ? "&" : "?"}error=${encodeURIComponent("Please choose a valid category.")}`, 303);
   }
 
   if (!Number.isInteger(minutes) || minutes < 1 || minutes > 720) {
-    return redirect(`${failTo}${failTo.includes("?") ? "&" : "?"}error=${encodeURIComponent("分钟数必须是 1 到 720 的整数")}`, 303);
+    return redirect(`${failTo}${failTo.includes("?") ? "&" : "?"}error=${encodeURIComponent("Minutes must be an integer from 1 to 720.")}`, 303);
   }
 
   if (!body) {
-    return redirect(`${failTo}${failTo.includes("?") ? "&" : "?"}error=${encodeURIComponent("请填写活动内容")}`, 303);
+    return redirect(`${failTo}${failTo.includes("?") ? "&" : "?"}error=${encodeURIComponent("Please describe the activity.")}`, 303);
   }
 
   const supabase = createServiceClient();

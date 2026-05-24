@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    我们的小窝 — 里程碑 1：时段背景系统
    纯代码实现：7 时段天空 + 日月星云 + 过渡动画
    ============================================================ */
@@ -104,7 +104,7 @@ html, body {
   color: #29435a;
   font-size: clamp(24px, 4.2vw, 48px);
   line-height: 1.45;
-  font-weight: 900;
+  font-weight: 600;
   letter-spacing: 0;
 }
 
@@ -240,7 +240,7 @@ html, body {
   background: rgba(255, 255, 255, 0.12);
   color: rgba(255, 252, 247, 0.9);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
   letter-spacing: 0;
   box-shadow: 0 12px 30px rgba(38, 45, 66, 0.18);
   -webkit-backdrop-filter: blur(14px);
@@ -253,7 +253,7 @@ html, body {
   font-family: "Cormorant Garamond", "Playfair Display", Georgia, "Times New Roman", serif;
   font-size: 92px;
   line-height: 0.98;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0;
   white-space: nowrap;
 }
@@ -270,7 +270,7 @@ html, body {
   background: rgba(255, 255, 255, 0.82);
   color: #3f5a72;
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 600;
   letter-spacing: 0;
   cursor: pointer;
   overflow: hidden;
@@ -959,7 +959,7 @@ html, body {
   border-radius: 999px;
   color: #5b6478;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
   box-shadow: 0 4px 14px rgba(70, 80, 110, 0.18);
   backdrop-filter: blur(8px);
@@ -1143,7 +1143,7 @@ html, body {
 
 .home-nav__brand {
   font-size: 23px;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .home-nav__links {
@@ -1151,7 +1151,7 @@ html, body {
   align-items: center;
   gap: 24px;
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .home-nav__links a {
@@ -1207,7 +1207,7 @@ html, body {
   margin-top: 30px;
   color: #7aa6d4;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .home-hero h1 {
@@ -1215,7 +1215,7 @@ html, body {
   color: #284158;
   font-size: 54px;
   line-height: 1;
-  font-weight: 900;
+  font-weight: 600;
   letter-spacing: 0;
 }
 
@@ -1272,7 +1272,7 @@ html, body {
   color: #284158;
   font-size: 22px;
   line-height: 1.2;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .home-status--white h2 { color: #5f93c4; }
@@ -1292,14 +1292,14 @@ html, body {
 .home-status dt {
   color: #7b8ea2;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .home-status dd {
   color: #435c71;
   font-size: 14px;
   line-height: 1.55;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .home-status__editable {
@@ -1321,7 +1321,7 @@ html, body {
   color: #7b8ea2;
   font-family: var(--font);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 600;
   cursor: pointer;
   opacity: 0;
   transform: translateY(1px);
@@ -1349,7 +1349,7 @@ html, body {
   color: #60758a;
   font-size: 13px;
   line-height: 1.65;
-  font-weight: 800;
+  font-weight: 650;
   cursor: pointer;
   user-select: none;
   transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
@@ -1402,7 +1402,7 @@ html, body {
   color: #5e7082;
   font-size: 17px;
   line-height: 1.9;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .home-recent-photos,
@@ -1425,7 +1425,7 @@ html, body {
   color: #263d51;
   font-size: 23px;
   line-height: 1.2;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .home-about__body {
@@ -1439,7 +1439,7 @@ html, body {
   margin-bottom: 10px;
   color: #435c71;
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .home-periods {
@@ -1457,7 +1457,7 @@ html, body {
   color: #5a6f82;
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 600;
   cursor: pointer;
   box-shadow: 0 8px 18px rgba(68, 88, 112, 0.08);
   transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), background 0.18s ease, color 0.18s ease;
@@ -1529,7 +1529,7 @@ html, body {
   color: #50677c;
   font-size: 11px;
   line-height: 1.35;
-  font-weight: 900;
+  font-weight: 600;
   opacity: 0;
   transform: translateY(8px);
   transition: opacity 0.28s ease, transform 0.28s ease;
@@ -1538,7 +1538,7 @@ html, body {
 .home-photo-card__meta small {
   color: #7e90a3;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .home-photo-stage.is-active .home-photo-card {
@@ -1578,7 +1578,7 @@ html, body {
   background: rgba(255,255,255,0.48);
   color: #60758a;
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 600;
   text-align: center;
 }
 
@@ -1603,14 +1603,14 @@ html, body {
 .home-places__kicker {
   color: #435c71;
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .home-places__count {
   margin-top: 6px;
   color: #70849a;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .home-places__toggle,
@@ -1620,7 +1620,7 @@ html, body {
   border-radius: 999px;
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -1670,7 +1670,7 @@ html, body {
 .place-form span {
   color: #627084;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 650;
 }
 
 .place-form input,
@@ -1897,7 +1897,7 @@ html, body {
 .place-card__name {
   font-size: 22px;
   line-height: 1.24;
-  font-weight: 900;
+  font-weight: 600;
   text-shadow: 0 2px 10px rgba(36, 42, 58, 0.18);
 }
 
@@ -1905,7 +1905,7 @@ html, body {
   color: rgba(255,255,255,0.86);
   font-size: 13px;
   line-height: 1.75;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .home-module-list,
@@ -1948,7 +1948,7 @@ html, body {
 
 .home-module-list span {
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .home-module-list small {
@@ -1979,13 +1979,13 @@ html, body {
 .home-post-list time {
   color: #6f8092;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .home-post-list span {
   color: #31485d;
   font-size: 16px;
-  font-weight: 850;
+  font-weight: 650;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

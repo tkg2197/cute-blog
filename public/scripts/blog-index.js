@@ -78,7 +78,7 @@
     title.textContent = post.title;
 
     var summary = document.createElement("p");
-    summary.textContent = post.summary || "一篇刚上传到小窝里的 Markdown 文章。";
+    summary.textContent = post.summary || "A Markdown post newly added to the nest.";
 
     var meta = document.createElement("div");
     meta.className = "post-item__meta";
@@ -88,7 +88,7 @@
       meta.appendChild(span);
     });
     var minutes = document.createElement("span");
-    minutes.textContent = post.readMinutes + " 分钟阅读";
+    minutes.textContent = post.readMinutes + " min read";
     meta.appendChild(minutes);
 
     var tags = document.createElement("div");
@@ -133,9 +133,9 @@
       if (show) visible += 1;
     });
     empty.classList.toggle("is-hidden", visible !== 0);
-    postCount.textContent = "第 1 页 · 显示 " + visible + " 篇文章";
+    postCount.textContent = "Page 1 · Showing " + visible + " posts";
     if (archiveCount) {
-      archiveCount.textContent = "2026 · " + posts.length + " 篇文章";
+      archiveCount.textContent = "2026 · " + posts.length + " posts";
     }
   }
 
@@ -171,7 +171,7 @@
   function setUploadOpen(open) {
     uploadPanel.classList.toggle("is-hidden", !open);
     uploadToggle.setAttribute("aria-expanded", open ? "true" : "false");
-    uploadToggle.textContent = open ? "收起上传" : "上传 Markdown";
+    uploadToggle.textContent = open ? "Close upload" : "Upload Markdown";
   }
 
   function readFileAsText(file) {
@@ -190,7 +190,7 @@
 
     uploadInput.addEventListener("change", function () {
       var file = uploadInput.files && uploadInput.files[0];
-      uploadHint.textContent = file ? "已选择：" + file.name : "支持 front matter：title、date、authors、tags、summary。";
+      uploadHint.textContent = file ? "Selected: " + file.name : "Supports front matter: title, date, authors, tags, summary.";
     });
 
     uploadPanel.addEventListener("submit", function (ev) {
@@ -200,27 +200,27 @@
         var file = uploadInput.files && uploadInput.files[0];
         if (file && !/\.(md|markdown|txt)$/i.test(file.name)) {
           ev.preventDefault();
-          uploadHint.textContent = "请选择 .md 或 .markdown 文件。";
+          uploadHint.textContent = "Please choose a .md or .markdown file.";
           return;
         }
-        uploadHint.textContent = "正在上传…";
+        uploadHint.textContent = "Uploading...";
         return;
       }
       ev.preventDefault();
       var file = uploadInput.files && uploadInput.files[0];
       if (!file) return;
       if (!/\.(md|markdown|txt)$/i.test(file.name)) {
-        uploadHint.textContent = "请选择 .md 或 .markdown 文件。";
+        uploadHint.textContent = "Please choose a .md or .markdown file.";
         return;
       }
-      uploadHint.textContent = "正在读取 Markdown…";
+      uploadHint.textContent = "Reading Markdown...";
       readFileAsText(file).then(function (text) {
         var post = window.CBBlog.save(window.CBBlog.parseMarkdown(text, file.name));
         var card = buildPost(post);
         postList.insertBefore(card, postList.firstChild);
         posts = Array.prototype.slice.call(document.querySelectorAll(".post-item"));
         uploadPanel.reset();
-        uploadHint.textContent = "已发布：" + post.title;
+        uploadHint.textContent = "Published: " + post.title;
         setUploadOpen(false);
         authorFilter = "all";
         filters.forEach(function (item) {
@@ -230,7 +230,7 @@
         tagButtons.forEach(function (item) { item.classList.remove("is-active"); });
         render();
       }).catch(function () {
-        uploadHint.textContent = "上传失败，请检查文件内容后再试。";
+        uploadHint.textContent = "Upload failed. Check the file and try again.";
       });
     });
   }

@@ -90,7 +90,7 @@ body {
   border-radius: 999px;
   color: #5b6478;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
   transition: transform 0.15s ease, background 0.2s ease;
 }
@@ -107,7 +107,7 @@ body {
   border-radius: 999px;
   color: #647084;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
   text-decoration: none;
   transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
@@ -169,7 +169,7 @@ body {
   background: rgba(255, 255, 255, 0.78);
   color: #667287;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 650;
   box-shadow: 0 3px 10px rgba(70, 80, 110, 0.12);
 }
 .blog-tag--white { color: #4f85b8; background: rgba(246, 250, 255, 0.9); }
@@ -190,7 +190,7 @@ body {
   color: #5b6478;
   font-family: inherit;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.3px;
   text-decoration: none;
   box-shadow: 0 4px 14px rgba(70, 80, 110, 0.16);
@@ -259,14 +259,14 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
   margin-bottom: 14px;
   color: #7f91a6;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
 }
 .article h1 {
   max-width: 720px;
   color: var(--heading);
   font-size: clamp(34px, 5vw, 54px);
   line-height: 1.14;
-  font-weight: 900;
+  font-weight: 600;
 }
 .article-summary {
   margin-top: 20px;
@@ -285,7 +285,7 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
   padding: 8px 15px;
   border-radius: 999px;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
 }
 .article-author--white {
   background: #f6faff;
@@ -305,7 +305,7 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
   color: var(--heading);
   font-size: 26px;
   line-height: 1.35;
-  font-weight: 900;
+  font-weight: 600;
   margin-bottom: 18px;
 }
 .article-section h3 {
@@ -313,7 +313,7 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
   color: #4c6379;
   font-size: 20px;
   line-height: 1.42;
-  font-weight: 900;
+  font-weight: 600;
 }
 .article-section p {
   color: #586273;
@@ -323,7 +323,7 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
 .article-section p + p { margin-top: 16px; }
 .article-section a {
   color: #4f85b8;
-  font-weight: 800;
+  font-weight: 650;
   text-decoration: none;
   border-bottom: 1px solid rgba(79, 133, 184, 0.35);
 }
@@ -398,7 +398,7 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
 .quote-pair__item span {
   display: block;
   margin-bottom: 8px;
-  font-weight: 900;
+  font-weight: 600;
 }
 .quote-pair__item--white { background: #f6faff; }
 .quote-pair__item--white::before { background: rgba(122, 166, 212, 0.55); }
@@ -418,7 +418,7 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
   margin-bottom: 18px;
   color: var(--heading);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 600;
   letter-spacing: 0;
 }
 .toc__body {
@@ -464,7 +464,7 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
 .toc__link.is-active {
   background: rgba(255, 255, 255, 0.62);
   color: #4f85b8;
-  font-weight: 900;
+  font-weight: 600;
   box-shadow: 0 3px 10px rgba(70, 80, 110, 0.1);
 }
 

@@ -9,7 +9,7 @@ const redirectTo = Astro.url.searchParams.get("redirect") || "/?skipCover=1#home
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>登录 · 我们的小窝</title>
+    <title>Log in · Our Nest</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
       *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -142,7 +142,7 @@ const redirectTo = Astro.url.searchParams.get("redirect") || "/?skipCover=1#home
       .sparkle-icon svg { width: 32px; height: 32px; }
 
       .form-header { text-align: center; margin-bottom: 36px; }
-      .form-header h1 { font-size: 28px; font-weight: 700; color: #1a1a2e; letter-spacing: -0.5px; margin-bottom: 6px; }
+      .form-header h1 { font-size: 28px; font-weight: 600; color: #1a1a2e; letter-spacing: -0.5px; margin-bottom: 6px; }
       .form-header p { font-size: 14px; color: #888; }
 
       .form-group { margin-bottom: 20px; }
@@ -357,7 +357,7 @@ const redirectTo = Astro.url.searchParams.get("redirect") || "/?skipCover=1#home
     </style>
   </head>
   <body>
-    <a class="back-btn" href="/?skipCover=1#home" aria-label="返回首页">← 返回</a>
+    <a class="back-btn" href="/?skipCover=1#home" aria-label="Back to home">← Back</a>
 
     <div id="login-page">
       <!-- 左侧动画角色 -->
@@ -369,7 +369,7 @@ const redirectTo = Astro.url.searchParams.get("redirect") || "/?skipCover=1#home
             <path d="M2 12L9 9V15L2 12Z" />
             <path d="M22 12L15 15V9L22 12Z" />
           </svg>
-          <span>我们的小窝</span>
+          <span>Our Nest</span>
         </div>
         <div class="characters-wrapper">
           <div class="characters-scene" id="characters-scene">
@@ -410,9 +410,9 @@ const redirectTo = Astro.url.searchParams.get("redirect") || "/?skipCover=1#home
           </div>
         </div>
         <div class="footer-links">
-          <a href="/?skipCover=1#home">回到小窝</a>
-          <a href="/blog">双人博客</a>
-          <a href="/photos">照片墙</a>
+          <a href="/?skipCover=1#home">Home</a>
+          <a href="/blog">Blog</a>
+          <a href="/photos">Photos</a>
         </div>
       </div>
 
@@ -428,29 +428,29 @@ const redirectTo = Astro.url.searchParams.get("redirect") || "/?skipCover=1#home
             </svg>
           </div>
           <div class="form-header">
-            <h1>欢迎回到小窝</h1>
-            <p>填一下凭证就可以继续了</p>
+            <h1>Welcome Back</h1>
+            <p>Enter your details to continue</p>
           </div>
 
           {registered && (
-            <div class="notice-success">注册完成！如果开启了邮箱确认，请先去邮箱点确认链接再登录。</div>
+            <div class="notice-success">Registration complete. If email confirmation is enabled, confirm your email before logging in.</div>
           )}
 
           <form id="login-form" action="/api/auth/login" method="post" novalidate>
             <input type="hidden" name="redirect" value={redirectTo} />
 
             <div class="form-group">
-              <label id="email-label" for="email">邮箱</label>
+              <label id="email-label" for="email">Email</label>
               <div class="input-wrapper">
                 <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" required />
               </div>
             </div>
 
             <div class="form-group">
-              <label id="password-label" for="password">密码</label>
+              <label id="password-label" for="password">Password</label>
               <div class="input-wrapper">
                 <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" minlength="6" required />
-                <button type="button" class="toggle-password" id="toggle-password" aria-label="切换密码可见">
+                <button type="button" class="toggle-password" id="toggle-password" aria-label="Toggle password visibility">
                   <svg id="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                     <circle cx="12" cy="12" r="3"></circle>
@@ -465,17 +465,17 @@ const redirectTo = Astro.url.searchParams.get("redirect") || "/?skipCover=1#home
 
             <div class="form-options">
               <label class="remember-me">
-                <input type="checkbox" name="remember" checked /> 记住我 30 天
+                <input type="checkbox" name="remember" checked /> Remember me for 30 days
               </label>
-              <a href="#" class="forgot-link" tabindex="-1" aria-disabled="true" title="此功能暂未开放">忘记密码？</a>
+              <a href="#" class="forgot-link" tabindex="-1" aria-disabled="true" title="This feature is not available yet">Forgot password?</a>
             </div>
 
             <div class="error-msg" id="error-msg" style={error ? "display:block" : ""}>{error || ""}</div>
 
             <button type="submit" class="btn-login" id="btn-login">
-              <span class="btn-text">登录</span>
+              <span class="btn-text">Log in</span>
               <div class="btn-hover-content">
-                <span>登录</span>
+                <span>Log in</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12" />
                   <polyline points="12 5 19 12 12 19" />
@@ -485,7 +485,7 @@ const redirectTo = Astro.url.searchParams.get("redirect") || "/?skipCover=1#home
           </form>
 
           <div class="signup-link">
-            还没有账号？<a href="/auth/register">去注册</a>
+            No account yet? <a href="/auth/register">Register</a>
           </div>
         </div>
       </div>
@@ -846,7 +846,7 @@ const redirectTo = Astro.url.searchParams.get("redirect") || "/?skipCover=1#home
           e.preventDefault();
           emailInput.classList.add("error");
           emailLabel.classList.add("error-label");
-          errEl.textContent = "请填写有效的邮箱地址。";
+          errEl.textContent = "Please enter a valid email address.";
           errEl.style.display = "block";
           triggerLoginError();
           return;
@@ -855,14 +855,14 @@ const redirectTo = Astro.url.searchParams.get("redirect") || "/?skipCover=1#home
           e.preventDefault();
           passwordInput.classList.add("error");
           pwdLabel.classList.add("error-label");
-          errEl.textContent = "密码至少要 6 个字符。";
+          errEl.textContent = "Password must be at least 6 characters.";
           errEl.style.display = "block";
           triggerLoginError();
           return;
         }
 
         // Pass client-side checks → let the form POST to /api/auth/login
-        btn.querySelector(".btn-text").textContent = "登录中…";
+        btn.querySelector(".btn-text").textContent = "Logging in...";
         btn.disabled = true;
       });
 

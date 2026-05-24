@@ -8,7 +8,7 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const form = await request.formData();
   const id = String(form.get("id") || "");
   if (!id) {
-    return redirect("/admin?error=缺少文章 ID", 303);
+    return redirect("/admin?error=Missing%20post%20ID", 303);
   }
 
   const supabase = createServiceClient();
@@ -24,7 +24,7 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   }
 
   if (!post) {
-    return redirect("/admin?error=没有找到这篇文章，或它不属于当前账号", 303);
+    return redirect("/admin?error=Post%20not%20found%2C%20or%20it%20does%20not%20belong%20to%20the%20current%20account", 303);
   }
 
   if (post.storage_path) {

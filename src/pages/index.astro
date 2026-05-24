@@ -35,11 +35,11 @@ const recentPhotos = ((photos || []) as Photo[]).map((photo) => ({
   publicUrl: supabase.storage.from("photos").getPublicUrl(photo.storage_path).data.publicUrl,
 }));
 const photoFallbacks = [
-  { publicUrl: "/assets/小白首页形象.png", title: "小白", caption: "", taken_on: "小白", profiles: { display_name: "白狗" } },
-  { publicUrl: "/assets/小棕首页形象.jpg", title: "小棕", caption: "", taken_on: "小棕", profiles: { display_name: "棕狗" } },
-  { publicUrl: "/assets/早晨-白狗.png", title: "早晨", caption: "", taken_on: "早晨", profiles: { display_name: "白狗" } },
-  { publicUrl: "/assets/中午-棕狗.png", title: "中午", caption: "", taken_on: "中午", profiles: { display_name: "棕狗" } },
-  { publicUrl: "/assets/晚上-白狗.png", title: "晚上", caption: "", taken_on: "晚上", profiles: { display_name: "白狗" } },
+  { publicUrl: "/assets/小白首页形象.png", title: "Little White", caption: "", taken_on: "White", profiles: { display_name: "White" } },
+  { publicUrl: "/assets/小棕首页形象.jpg", title: "Little Brown", caption: "", taken_on: "Brown", profiles: { display_name: "Brown" } },
+  { publicUrl: "/assets/早晨-白狗.png", title: "Morning", caption: "", taken_on: "Morning", profiles: { display_name: "White" } },
+  { publicUrl: "/assets/中午-棕狗.png", title: "Noon", caption: "", taken_on: "Noon", profiles: { display_name: "Brown" } },
+  { publicUrl: "/assets/晚上-白狗.png", title: "Evening", caption: "", taken_on: "Evening", profiles: { display_name: "White" } },
 ];
 const displayPhotos = [...recentPhotos, ...photoFallbacks].slice(0, 5);
 const { data: profileRows } = user
@@ -50,8 +50,8 @@ const { data: profileRows } = user
       .limit(2)
   : { data: [] };
 const homeProfiles = (profileRows || []) as Profile[];
-const brownDisplayName = user ? homeProfiles[0]?.display_name || "棕狗" : "棕狗";
-const whiteDisplayName = user ? homeProfiles[1]?.display_name || "白狗" : "白狗";
+const brownDisplayName = user ? homeProfiles[0]?.display_name || "Brown" : "Brown";
+const whiteDisplayName = user ? homeProfiles[1]?.display_name || "White" : "White";
 const currentWeatherWho = user
   ? homeProfiles[0]?.id === user.id
     ? "brown"
@@ -60,16 +60,16 @@ const currentWeatherWho = user
       : profile?.author_key || ""
   : "";
 const postFallbacks = [
-  { href: "/blog", date: "2026.05.22", title: "把我们的小窝变成可以一起写下去的地方" },
-  { href: "/photos", date: "2026.05.21", title: "照片墙、生活记录和时段活动的第一版" },
-  { href: "/activity", date: "Today", title: "看看今天的不同时段都做了什么" },
+  { href: "/blog", date: "2026.05.22", title: "Turning our nest into a place we can keep writing" },
+  { href: "/photos", date: "2026.05.21", title: "The first version of photos, records, and activity" },
+  { href: "/activity", date: "Today", title: "See where today went, hour by hour" },
 ];
 
 const skipCoverOnLoad = Astro.url.searchParams.get("skipCover") === "1";
 const placeFallbacks: Array<{ name: string; note: string; tone: PlaceTone }> = [
-  { name: "京都", note: "想在傍晚慢慢走过小巷，找一家安静的店吃热乎乎的晚饭。", tone: "night" },
-  { name: "大理", note: "去有风的地方，看湖面、云影和很慢很慢的下午。", tone: "desert" },
-  { name: "冰岛", note: "一起等极光出现，把冷风和星星都记进今年的愿望里。", tone: "sea" },
+  { name: "Kyoto", note: "Walk slowly through quiet alleys at dusk and find a warm little dinner spot.", tone: "night" },
+  { name: "Dali", note: "Go somewhere breezy, watch the lake and clouds, and let the afternoon move slowly.", tone: "desert" },
+  { name: "Iceland", note: "Wait for the aurora together and tuck the cold wind and stars into this year's wishes.", tone: "sea" },
 ];
 const homePlaces = dbPlaces.length
   ? dbPlaces.map((p) => ({ name: p.name, note: p.note, tone: p.tone as PlaceTone }))
@@ -78,7 +78,7 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
 ---
 
 <PrototypeLayout
-  title="我们的小窝"
+  title="Our Nest"
   current="home"
   htmlClass="home-profile-root"
   bodyClass={skipCoverOnLoad ? "home-profile-page home-revealed" : "home-profile-page home-cover-open"}
@@ -104,7 +104,7 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
     </script>
   </Fragment>
 
-  <section class="home-discovery" id="homeDiscoveryIntro" aria-label="进入小世界前的悄悄话">
+  <section class="home-discovery" id="homeDiscoveryIntro" aria-label="A quiet note before entering">
     <div class="home-discovery__mist" aria-hidden="true"></div>
     <div class="home-discovery__content" aria-live="polite">
       <p class="home-discovery__line" id="discoveryLineOne"></p>
@@ -112,12 +112,12 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
     </div>
   </section>
 
-  <section class="home-cover" id="homeCover" aria-label="首页封面">
+  <section class="home-cover" id="homeCover" aria-label="Home cover">
     <img class="home-cover__bg" src="/assets/首页封面.png" alt="" />
     <canvas class="home-cover__petals" id="coverPetals" aria-hidden="true"></canvas>
     <div class="home-cover__shade" aria-hidden="true"></div>
     <div class="home-cover__content">
-      <p class="home-cover__eyebrow">我们的小窝</p>
+      <p class="home-cover__eyebrow">Our Nest</p>
       <h1 class="home-cover__title">Welcome to our home</h1>
     </div>
     <button class="home-cover__button" id="exploreHome" type="button" aria-label="Start now">
@@ -133,23 +133,23 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
 
   <header class="site-nav home-nav" data-site-nav>
     <div class="site-nav__bar">
-      <a class="site-nav__brand home-nav__brand" href="/?skipCover=1#home">我们的小窝</a>
-      <nav class="site-nav__links home-nav__links" aria-label="主页导航">
-        <a class="is-active" href="/?skipCover=1#home" aria-current="page">首页</a>
-        <a href="/places">今年想去</a>
-        <a href="/blog">双人博客</a>
-        <a href="/records">生活记录</a>
-        <a href="/photos">照片墙</a>
-        <a href="/activity">时段活动</a>
+      <a class="site-nav__brand home-nav__brand" href="/?skipCover=1#home">Our Nest</a>
+      <nav class="site-nav__links home-nav__links" aria-label="Home navigation">
+        <a class="is-active" href="/?skipCover=1#home" aria-current="page">Home</a>
+        <a href="/places">Places</a>
+        <a href="/blog">Blog</a>
+        <a href="/records">Records</a>
+        <a href="/photos">Photos</a>
+        <a href="/activity">Activity</a>
         {!user && (
-          <a class="site-nav__auth-link" href="/auth/login">登录</a>
+          <a class="site-nav__auth-link" href="/auth/login">Log in</a>
         )}
       </nav>
       {user && (
         <div class="site-nav__auth">
           <form action="/api/auth/logout" method="post">
             <span class={`auth-pill auth-pill--${authorKey}`} title={profile?.display_name || AUTHOR_LABELS[authorKey]}>{profile?.display_name || AUTHOR_LABELS[authorKey]}</span>
-            <button class="auth-link" type="submit" aria-label="退出登录">退出</button>
+            <button class="auth-link" type="submit" aria-label="Log out">Log out</button>
           </form>
         </div>
       )}
@@ -162,34 +162,34 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
         <img class="home-avatar__img" src="/assets/首页头像.png" alt="" />
       </div>
       <p class="home-kicker">Two little dogs, one little home</p>
-      <h1 id="homeTitle">我们的小窝</h1>
+      <h1 id="homeTitle">Our Nest</h1>
 
-      <div class="home-duo-status" aria-label="两个人的今日状态">
+      <div class="home-duo-status" aria-label="Today status">
         <article class="home-status home-status--white">
-          <img class="home-status__dog" src="/assets/小白首页形象.png" alt={`${whiteDisplayName}形象`} />
+          <img class="home-status__dog" src="/assets/小白首页形象.png" alt={`${whiteDisplayName} avatar`} />
           <div class="home-status__info">
             <h2 data-status-name="white">{whiteDisplayName}</h2>
             <dl>
               <div>
-                <dt>所在地天气</dt>
-                <dd id="whiteWeather">所在地待设置 · 天气待同步</dd>
+                <dt>Local weather</dt>
+                <dd id="whiteWeather">Location pending · Weather pending</dd>
               </div>
               <div>
-                <dt>今日心情</dt>
+                <dt>Mood</dt>
                 <dd class="home-status__editable">
-                  <span id="whiteMood">软乎乎地开心</span>
-                  <button class="home-status__edit" type="button" data-who="white" data-field="mood" aria-label={`编辑${whiteDisplayName}今日心情`}>编辑</button>
+                  <span id="whiteMood">Softly happy</span>
+                  <button class="home-status__edit" type="button" data-who="white" data-field="mood" aria-label={`Edit ${whiteDisplayName}'s mood`}>Edit</button>
                 </dd>
               </div>
               <div>
-                <dt>正在干什么</dt>
+                <dt>Doing</dt>
                 <dd class="home-status__editable">
-                  <span id="whiteDoing">整理今天的小记录</span>
-                  <button class="home-status__edit" type="button" data-who="white" data-field="doing" aria-label={`编辑${whiteDisplayName}正在干什么`}>编辑</button>
+                  <span id="whiteDoing">Sorting today's small notes</span>
+                  <button class="home-status__edit" type="button" data-who="white" data-field="doing" aria-label={`Edit what ${whiteDisplayName} is doing`}>Edit</button>
                 </dd>
               </div>
             </dl>
-            <p class="home-status__quote" id="whiteQuote" data-who="white" role="button" tabindex="0" aria-label={`重新生成${whiteDisplayName}的一句话`}>今天也要把小事认真收好。</p>
+            <p class="home-status__quote" id="whiteQuote" data-who="white" role="button" tabindex="0" aria-label={`Refresh ${whiteDisplayName}'s note`}>Keep the little things carefully today.</p>
           </div>
         </article>
 
@@ -198,44 +198,44 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
             <h2 data-status-name="brown">{brownDisplayName}</h2>
             <dl>
               <div>
-                <dt>所在地天气</dt>
-                <dd id="brownWeather">所在地待设置 · 天气待同步</dd>
+                <dt>Local weather</dt>
+                <dd id="brownWeather">Location pending · Weather pending</dd>
               </div>
               <div>
-                <dt>今日心情</dt>
+                <dt>Mood</dt>
                 <dd class="home-status__editable">
-                  <span id="brownMood">精神满满</span>
-                  <button class="home-status__edit" type="button" data-who="brown" data-field="mood" aria-label={`编辑${brownDisplayName}今日心情`}>编辑</button>
+                  <span id="brownMood">Full of energy</span>
+                  <button class="home-status__edit" type="button" data-who="brown" data-field="mood" aria-label={`Edit ${brownDisplayName}'s mood`}>Edit</button>
                 </dd>
               </div>
               <div>
-                <dt>正在干什么</dt>
+                <dt>Doing</dt>
                 <dd class="home-status__editable">
-                  <span id="brownDoing">计划下一次出门</span>
-                  <button class="home-status__edit" type="button" data-who="brown" data-field="doing" aria-label={`编辑${brownDisplayName}正在干什么`}>编辑</button>
+                  <span id="brownDoing">Planning the next outing</span>
+                  <button class="home-status__edit" type="button" data-who="brown" data-field="doing" aria-label={`Edit what ${brownDisplayName} is doing`}>Edit</button>
                 </dd>
               </div>
             </dl>
-            <p class="home-status__quote" id="brownQuote" data-who="brown" role="button" tabindex="0" aria-label={`重新生成${brownDisplayName}的一句话`}>先把想去的地方写下来，路会慢慢出现。</p>
+            <p class="home-status__quote" id="brownQuote" data-who="brown" role="button" tabindex="0" aria-label={`Refresh ${brownDisplayName}'s note`}>Write down the places first; the road will appear slowly.</p>
           </div>
-          <img class="home-status__dog" src="/assets/小棕首页形象.jpg" alt={`${brownDisplayName}形象`} />
+          <img class="home-status__dog" src="/assets/小棕首页形象.jpg" alt={`${brownDisplayName} avatar`} />
         </article>
       </div>
 
       <p class="home-hero__text">
-        一起写博客、存照片、记生活，也把每天不同时段发生的小事慢慢收进来。
+        A quiet place to write, keep photos, record daily life, and collect the little things that happen across the day.
       </p>
     </section>
 
     <section class="home-recent-photos" aria-labelledby="recentPhotosTitle">
-      <h2 id="recentPhotosTitle">最近照片</h2>
+      <h2 id="recentPhotosTitle">Recent Photos</h2>
       <div class="home-photo-stage" id="homeRecentPhotos" aria-live="polite">
         {displayPhotos.map((photo, index) => (
           <a class="home-photo-card" style={`--i:${index}`} href="/photos">
-            <img src={photo.publicUrl} alt={photo.title || photo.caption || "照片"} loading="lazy" />
+            <img src={photo.publicUrl} alt={photo.title || photo.caption || "Photo"} loading="lazy" />
             <span class="home-photo-card__meta">
-              <span>{photo.title || "一张小照片"}</span>
-              <small>{photo.taken_on || photo.profiles?.display_name || "小窝"}</small>
+              <span>{photo.title || "A small photo"}</span>
+              <small>{photo.taken_on || photo.profiles?.display_name || "Nest"}</small>
             </span>
           </a>
         ))}
@@ -245,10 +245,10 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
     <section class="home-modules" aria-labelledby="modulesTitle">
       <h2 id="modulesTitle">Modules</h2>
       <div class="home-module-list">
-        <a href="/records"><span>生活记录</span><small>心情、日记和当天照片</small></a>
-        <a href="/photos"><span>照片墙</span><small>按日期整理的小相册</small></a>
-        <a href="/blog"><span>双人博客</span><small>两个人一起写长文章</small></a>
-        <a href="/activity"><span>时段活动</span><small>时间线和当日占比统计</small></a>
+        <a href="/records"><span>Records</span><small>Moods, notes, and daily photos</small></a>
+        <a href="/photos"><span>Photos</span><small>Albums arranged by date</small></a>
+        <a href="/blog"><span>Blog</span><small>Long posts written together</small></a>
+        <a href="/activity"><span>Activity</span><small>Timelines and daily breakdowns</small></a>
       </div>
     </section>
 
@@ -257,10 +257,10 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
       <div class="home-places__body">
         <div class="home-places__head">
           <div>
-            <p class="home-places__kicker">今年想去的地方</p>
-            <p class="home-places__count" id="placeCount">{homePlaces.length} 个目的地</p>
+            <p class="home-places__kicker">Places for this year</p>
+            <p class="home-places__count" id="placeCount">{homePlaces.length} destinations</p>
           </div>
-          <a class="home-places__toggle" href="/places">查看全部 →</a>
+          <a class="home-places__toggle" href="/places">View all →</a>
         </div>
 
         <div class="place-stage" id="placeList" aria-live="polite">

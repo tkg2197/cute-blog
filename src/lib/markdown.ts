@@ -163,7 +163,7 @@ export function renderArticleSections(source: string): ArticleSection[] {
     const id = slugify(title) || `section-${counter}`;
     sections.push({
       id,
-      title: title || "正文",
+      title: title || "Content",
       html: renderMarkdown(body.join("\n")),
     });
   }

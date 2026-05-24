@@ -4,6 +4,7 @@ import { createServiceClient } from "../lib/supabase";
 import { authorDisplayName, makeAuthorNames } from "../lib/author-display";
 import {
   ACTIVITY_CATEGORIES,
+  ACTIVITY_CATEGORY_LABELS,
   ACTIVITY_PERIODS,
   AUTHOR_COLORS,
   CATEGORY_COLORS,
@@ -46,10 +47,10 @@ const currentAuthorName = authorDisplayName(profile, currentAuthor, authorNames)
 
 function fmtMinutes(value: number) {
   const minutes = Number(value) || 0;
-  if (minutes < 60) return `${minutes} 分钟`;
+  if (minutes < 60) return `${minutes} min`;
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
-  return `${hours} 小时${rest ? ` ${rest} 分钟` : ""}`;
+  return `${hours} hr${hours > 1 ? "s" : ""}${rest ? ` ${rest} min` : ""}`;
 }
 
 function totalMinutes(list: ActivityEntry[]) {
@@ -83,7 +84,7 @@ function donutGradient(list: ActivityEntry[]) {
 const total = totalMinutes(entries);
 ---
 
-<PrototypeLayout title="时段活动 · 我们的小窝" current="activity" bgClass="act-bg" backHref="/?skipCover=1#home">
+<PrototypeLayout title="Activity · Our Nest" current="activity" bgClass="act-bg" backHref="/?skipCover=1#home">
   <Fragment slot="head">
     <link rel="stylesheet" href="/styles/activity.css" />
   </Fragment>
@@ -91,25 +92,25 @@ const total = totalMinutes(entries);
   <main class="act-shell" style={`--active-author:${selectedColor}`}>
     <section class="act-main" aria-labelledby="activityTitle">
       <header class="act-head">
-        <p class="act-kicker">今天每个时段，我们都把时间放在哪里了</p>
-        <h1 id="activityTitle">时段活动</h1>
-        <p class="act-summary" id="daySummary">{selectedLabel}当天共记录 {fmtMinutes(total)} · {entries.length} 条活动</p>
+        <p class="act-kicker">A gentle timeline of where the day went</p>
+        <h1 id="activityTitle">Activity</h1>
+        <p class="act-summary" id="daySummary">{selectedLabel} logged {fmtMinutes(total)} · {entries.length} activities</p>
         {noticeError && <p style="margin-top:10px;color:#9d3f3f;background:rgba(255,242,242,.8);padding:10px 14px;border-radius:12px;display:inline-block;">{noticeError}</p>}
-        {created === "activity" && <p style="margin-top:10px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">活动记录已经保存。</p>}
-        {deleted === "activity" && <p style="margin-top:10px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">活动记录已经删除。</p>}
+        {created === "activity" && <p style="margin-top:10px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">Activity saved.</p>}
+        {deleted === "activity" && <p style="margin-top:10px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">Activity deleted.</p>}
 
         <div class="act-head__tools">
-          <div class="act-view" id="actView" aria-label="查看谁的时间安排">
+          <div class="act-view" id="actView" aria-label="Choose whose timeline to view">
             <a class:list={["act-view__btn", { "is-active": selectedView === "white" }]} href={`/activity?date=${selectedDate}&view=white`} data-view="white">{authorNames.white}</a>
             <a class:list={["act-view__btn", { "is-active": selectedView === "brown" }]} href={`/activity?date=${selectedDate}&view=brown`} data-view="brown">{authorNames.brown}</a>
           </div>
           <form class="act-date-form" method="get" action="/activity" style="display:inline-flex;gap:8px;padding:6px;border-radius:999px;background:rgba(255,255,255,.48);">
             <input type="hidden" name="view" value={selectedView} />
-            <input name="date" type="date" value={selectedDate} aria-label="查看日期" style="width:142px;border:none;border-radius:999px;padding:8px 12px;background:rgba(255,255,255,.74);color:#647084;font-size:13px;font-weight:850;" />
-            <button type="submit" style="border:none;border-radius:999px;padding:10px 20px;background:rgba(255,255,255,.74);color:#4f6a82;font-weight:900;font-size:13px;cursor:pointer;">查看</button>
+            <input name="date" type="date" value={selectedDate} aria-label="View date" style="width:142px;border:none;border-radius:999px;padding:8px 12px;background:rgba(255,255,255,.74);color:#647084;font-size:13px;font-weight: 650;" />
+            <button type="submit" style="border:none;border-radius:999px;padding:10px 20px;background:rgba(255,255,255,.74);color:#4f6a82;font-weight: 600;font-size:13px;cursor:pointer;">View</button>
           </form>
           <button class="act-add-toggle" id="actFormToggle" type="button" aria-expanded="false" aria-controls="activityForm">
-            ＋ 添加时间安排
+            ＋ Add activity
           </button>
         </div>
       </header>
@@ -118,12 +119,12 @@ const total = totalMinutes(entries);
         <input type="hidden" name="return_to" value={returnTo} />
         <div class="act-form__row">
           <label class="act-field">
-            <span>日期</span>
+            <span>Date</span>
             <input name="activity_on" id="actDate" type="date" value={selectedDate} required />
           </label>
           <div class="act-field">
-            <span>作者</span>
-            <div class="act-who" id="actWho" aria-label={`当前账号：${currentAuthorName}`}>
+            <span>Author</span>
+            <div class="act-who" id="actWho" aria-label={`Current account: ${currentAuthorName}`}>
               <span class={`act-who__btn ${selectedView === "white" ? "is-active" : ""}`} data-who="white">🐶 {authorNames.white}</span>
               <span class={`act-who__btn ${selectedView === "brown" ? "is-active" : ""}`} data-who="brown">🐕 {authorNames.brown}</span>
             </div>
@@ -131,43 +132,43 @@ const total = totalMinutes(entries);
         </div>
 
         {!user ? (
-          <p style="color:#7a8aa0;font-size:13px;padding:14px 0;">登录后才能添加活动记录。<a href="/auth/login" style="color:#d49356;font-weight:800;">去登录 →</a></p>
+          <p style="color:#7a8aa0;font-size:13px;padding:14px 0;">Log in to add activity records. <a href="/auth/login" style="color:#d49356;font-weight: 650;">Log in →</a></p>
         ) : !canCreateForView ? (
-          <p style="color:#7a8aa0;font-size:13px;padding:14px 0;">当前登录账号是 {currentAuthorName}，只能给自己的时间线添加记录。</p>
+          <p style="color:#7a8aa0;font-size:13px;padding:14px 0;">Current account: {currentAuthorName}. You can only add records to your own timeline.</p>
         ) : (
           <>
             <div class="act-form__row">
               <label class="act-field">
-                <span>时段</span>
+                <span>Period</span>
                 <select name="period" id="actPeriod" required>
                   {ACTIVITY_PERIODS.map((period) => <option value={period.key}>{period.label} · {period.time}</option>)}
                 </select>
               </label>
               <label class="act-field">
-                <span>分类</span>
+                <span>Category</span>
                 <select name="category" id="actCategory" required>
-                  {ACTIVITY_CATEGORIES.map((category) => <option value={category}>{category}</option>)}
+                  {ACTIVITY_CATEGORIES.map((category) => <option value={category}>{ACTIVITY_CATEGORY_LABELS[category] || category}</option>)}
                 </select>
               </label>
               <label class="act-field act-field--small">
-                <span>分钟</span>
+                <span>Minutes</span>
                 <input name="minutes" id="actMinutes" type="number" min="1" max="720" step="1" value="30" required />
               </label>
             </div>
 
             <label class="act-field">
-              <span>做了什么</span>
-              <textarea name="body" id="actText" rows="3" maxlength="180" placeholder="例如：一起整理照片墙，顺手改了几处小细节" required></textarea>
+              <span>What happened</span>
+              <textarea name="body" id="actText" rows="3" maxlength="180" placeholder="For example: sorted the photo wall and polished a few details" required></textarea>
             </label>
 
-            <button class="act-submit" type="submit">＋ 添加记录</button>
+            <button class="act-submit" type="submit">＋ Add record</button>
           </>
         )}
       </form>
 
       <section class="act-section" aria-labelledby="timelineTitle">
         <div class="act-section__head">
-          <h2 id="timelineTitle">{selectedLabel}的时间线</h2>
+          <h2 id="timelineTitle">{selectedLabel}'s timeline</h2>
           <div class="act-legend">
             <span><i class="act-dot act-dot--white"></i>{authorNames.white}</span>
             <span><i class="act-dot act-dot--brown"></i>{authorNames.brown}</span>
@@ -189,19 +190,19 @@ const total = totalMinutes(entries);
                       const isOwner = user?.id === entry.owner_id;
                       return (
                         <article class:list={["time-block", `time-block--${selectedView}`]} style={`--w:${width.toFixed(1)}%`}>
-                          <span class="time-block__cat">{entry.category}</span>
+                          <span class="time-block__cat">{ACTIVITY_CATEGORY_LABELS[entry.category] || entry.category}</span>
                           <span class="time-block__text">{entry.body}</span>
                           <span class="time-block__mins">{fmtMinutes(entry.minutes)}</span>
                           {isOwner && (
-                            <form action="/api/activity/delete" method="post" class="time-block__delform" data-confirm="确定删除这条活动记录吗？" style="display:inline;">
+                            <form action="/api/activity/delete" method="post" class="time-block__delform" data-confirm="Delete this activity record?" style="display:inline;">
                               <input type="hidden" name="return_to" value={returnTo} />
                               <input type="hidden" name="id" value={entry.id} />
-                              <button class="time-block__del" type="submit" aria-label="删除这条活动">×</button>
+                              <button class="time-block__del" type="submit" aria-label="Delete this activity">×</button>
                             </form>
                           )}
                         </article>
                       );
-                    }) : <div class="time-empty">{selectedLabel}这个时段还没有记录</div>}
+                    }) : <div class="time-empty">{selectedLabel} has no records for this period yet</div>}
                   </div>
                 </div>
               </section>
@@ -211,29 +212,29 @@ const total = totalMinutes(entries);
       </section>
     </section>
 
-    <aside class="act-side" aria-label="当日统计">
+    <aside class="act-side" aria-label="Daily stats">
       <section class="act-stat">
-        <h2 id="categoryTitle">{selectedLabel}分类占比</h2>
-        <div class="act-donut" id="actDonut" style={`background:${donutGradient(entries)}`} aria-label="当日分类占比图">
+        <h2 id="categoryTitle">{selectedLabel}'s category split</h2>
+        <div class="act-donut" id="actDonut" style={`background:${donutGradient(entries)}`} aria-label="Daily category chart">
           <span id="actDonutText">{fmtMinutes(total)}</span>
         </div>
         <div class="act-bars" id="actBars">
           {groupByCategory(entries).length ? groupByCategory(entries).map(([category, minutes]) => (
             <div class="stat-bar">
               <div class="stat-bar__top">
-                <span>{category}</span>
+                <span>{ACTIVITY_CATEGORY_LABELS[category] || category}</span>
                 <span>{fmtMinutes(minutes)}</span>
               </div>
               <div class="stat-bar__rail">
                 <div class="stat-bar__fill" style={`--w:${((minutes / total) * 100).toFixed(1)}%;--c:${CATEGORY_COLORS[category] || CATEGORY_COLORS["其他"]}`}></div>
               </div>
             </div>
-          )) : <p class="stat-empty">添加{selectedLabel}的活动后，这里会显示当天分类占比。</p>}
+          )) : <p class="stat-empty">Add {selectedLabel}'s activities to see the category split.</p>}
         </div>
       </section>
 
       <section class="act-stat">
-        <h2 id="periodTitle">{selectedLabel}时段概览</h2>
+        <h2 id="periodTitle">{selectedLabel}'s period overview</h2>
         <div class="act-periods" id="actPeriods">
           {ACTIVITY_PERIODS.map((period) => {
             const used = groupByPeriod(entries, period.key).reduce((sum, entry) => sum + entry.minutes, 0);
@@ -265,12 +266,12 @@ const total = totalMinutes(entries);
             var open = form.classList.contains("is-hidden");
             form.classList.toggle("is-hidden", !open);
             toggle.setAttribute("aria-expanded", open ? "true" : "false");
-            toggle.textContent = open ? "收起添加面板" : "＋ 添加时间安排";
+            toggle.textContent = open ? "Close form" : "＋ Add activity";
           });
         }
         document.querySelectorAll("form[data-confirm]").forEach(function (f) {
           f.addEventListener("submit", function (ev) {
-            var message = f.getAttribute("data-confirm") || "确定删除这条记录吗？";
+            var message = f.getAttribute("data-confirm") || "Delete this record?";
             if (!window.confirm(message)) ev.preventDefault();
           });
         });

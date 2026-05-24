@@ -20,7 +20,7 @@ async function ensureBucket(
   });
 
   if (error && !/already exists/i.test(error.message)) {
-    throw new Error(`Storage bucket ${name} 创建失败：${error.message}`);
+    throw new Error(`Failed to create storage bucket ${name}: ${error.message}`);
   }
 }
 

@@ -15,43 +15,43 @@
   var STATUS_KEY = "cuteblog.home.status.v1";
   var WEATHER_CACHE_MS = 30 * 60 * 1000;
   var DEFAULT_PLACES = [
-    { name: "京都", note: "想在傍晚慢慢走过小巷，找一家安静的店吃热乎乎的晚饭。", tone: "night" },
-    { name: "大理", note: "去有风的地方，看湖面、云影和很慢很慢的下午。", tone: "desert" },
-    { name: "冰岛", note: "一起等极光出现，把冷风和星星都记进今年的愿望里。", tone: "sea" }
+    { name: "Kyoto", note: "Walk slowly through quiet alleys at dusk and find a warm little dinner spot.", tone: "night" },
+    { name: "Dali", note: "Go somewhere breezy, watch the lake and clouds, and let the afternoon move slowly.", tone: "desert" },
+    { name: "Iceland", note: "Wait for the aurora together and tuck the cold wind and stars into this year's wishes.", tone: "sea" }
   ];
   var QUOTES = {
-    white: ["今天也要把小事认真收好。", "慢慢来，小窝会一点点长大。", "如果风正好，就多晒一会儿太阳。"],
-    brown: ["先把想去的地方写下来，路会慢慢出现。", "今天适合做一点可爱的事。", "出发之前，先把期待装进口袋。"]
+    white: ["Keep the little things carefully today.", "Take it slowly; the nest will grow bit by bit.", "If the breeze is right, stay in the sun a little longer."],
+    brown: ["Write down the places first; the road will appear slowly.", "Today is good for one small cute thing.", "Before leaving, tuck the anticipation into your pocket."]
   };
   var WEATHER_LABELS = {
-    0: "晴",
-    1: "晴间多云",
-    2: "多云",
-    3: "阴",
-    45: "有雾",
-    48: "雾凇",
-    51: "小毛雨",
-    53: "毛毛雨",
-    55: "密集毛雨",
-    56: "冻毛雨",
-    57: "强冻毛雨",
-    61: "小雨",
-    63: "中雨",
-    65: "大雨",
-    66: "冻雨",
-    67: "强冻雨",
-    71: "小雪",
-    73: "中雪",
-    75: "大雪",
-    77: "雪粒",
-    80: "阵雨",
-    81: "强阵雨",
-    82: "暴阵雨",
-    85: "阵雪",
-    86: "强阵雪",
-    95: "雷雨",
-    96: "雷雨带冰雹",
-    99: "强雷雨带冰雹"
+    0: "Clear",
+    1: "Mostly clear",
+    2: "Partly cloudy",
+    3: "Overcast",
+    45: "Fog",
+    48: "Rime fog",
+    51: "Light drizzle",
+    53: "Drizzle",
+    55: "Dense drizzle",
+    56: "Freezing drizzle",
+    57: "Heavy freezing drizzle",
+    61: "Light rain",
+    63: "Rain",
+    65: "Heavy rain",
+    66: "Freezing rain",
+    67: "Heavy freezing rain",
+    71: "Light snow",
+    73: "Snow",
+    75: "Heavy snow",
+    77: "Snow grains",
+    80: "Rain showers",
+    81: "Heavy showers",
+    82: "Violent showers",
+    85: "Snow showers",
+    86: "Heavy snow showers",
+    95: "Thunderstorm",
+    96: "Thunderstorm with hail",
+    99: "Heavy thunderstorm with hail"
   };
   var quoteTimers = {};
 
@@ -126,20 +126,20 @@
   function renderStatus() {
     var saved = readJson(STATUS_KEY, {});
     [
-      { who: "white", prefix: "white", mood: "软乎乎地开心", doing: "整理今天的小记录" },
-      { who: "brown", prefix: "brown", mood: "精神满满", doing: "计划下一次出门" }
+      { who: "white", prefix: "white", mood: "Softly happy", doing: "Sorting today's small notes" },
+      { who: "brown", prefix: "brown", mood: "Full of energy", doing: "Planning the next outing" }
     ].forEach(function (item) {
       var mood = document.getElementById(item.prefix + "Mood");
       var doing = document.getElementById(item.prefix + "Doing");
       var weather = document.getElementById(item.prefix + "Weather");
       if (mood) mood.textContent = manualValue(saved, item.who, "mood") || item.mood;
       if (doing) doing.textContent = manualValue(saved, item.who, "doing") || item.doing;
-      if (weather) weather.textContent = storedWeatherText(saved[item.who] && saved[item.who].weather) || "所在地待设置 · 天气待同步";
+      if (weather) weather.textContent = storedWeatherText(saved[item.who] && saved[item.who].weather) || "Location pending · Weather pending";
     });
   }
 
   function weatherLabel(code) {
-    return WEATHER_LABELS[Number(code)] || "天气";
+    return WEATHER_LABELS[Number(code)] || "Weather";
   }
 
   function roundedTemp(value) {
@@ -148,13 +148,13 @@
   }
 
   function buildLocationLabel(location) {
-    if (!location) return "当前位置";
+    if (!location) return "Current location";
     return (
       location.city ||
       location.locality ||
       location.principalSubdivision ||
       location.countryName ||
-      "当前位置"
+      "Current location"
     );
   }
 
@@ -211,7 +211,7 @@
             return {
               latitude: coords.latitude,
               longitude: coords.longitude,
-              label: "当前位置"
+              label: "Current location"
             };
           });
       })
@@ -256,7 +256,7 @@
     if (cached && typeof cached === "object" && Date.now() - Number(cached.updatedAt || 0) < WEATHER_CACHE_MS) return;
     if (!window.fetch) return;
 
-    setWeatherText(who, cachedText || "正在同步所在地天气");
+    setWeatherText(who, cachedText || "Syncing local weather");
     detectLocation()
       .then(function (location) {
         if (!Number.isFinite(location.latitude) || !Number.isFinite(location.longitude)) {
@@ -272,7 +272,7 @@
         saveWeatherValue(who, { text: text, updatedAt: Date.now() });
       })
       .catch(function () {
-        if (!cachedText) setWeatherText(who, "所在地待设置 · 天气待同步");
+        if (!cachedText) setWeatherText(who, "Location pending · Weather pending");
       });
   }
 
@@ -307,7 +307,7 @@
   function setupStatusActions() {
     function statusName(who) {
       var title = document.querySelector('[data-status-name="' + who + '"]');
-      return title && title.textContent.trim() ? title.textContent.trim() : (who === "brown" ? "棕狗" : "白狗");
+      return title && title.textContent.trim() ? title.textContent.trim() : (who === "brown" ? "Brown" : "White");
     }
 
     Array.prototype.slice.call(document.querySelectorAll(".home-status__edit")).forEach(function (btn) {
@@ -315,9 +315,9 @@
         var who = btn.getAttribute("data-who");
         var field = btn.getAttribute("data-field");
         var prefix = who === "brown" ? "brown" : "white";
-        var label = field === "mood" ? "今日心情" : "正在干什么";
+        var label = field === "mood" ? "mood" : "current activity";
         var current = document.getElementById(prefix + (field === "mood" ? "Mood" : "Doing"));
-        var value = window.prompt("编辑" + statusName(who) + "的" + label + "，留空则恢复默认：", current ? current.textContent : "");
+        var value = window.prompt("Edit " + statusName(who) + "'s " + label + ". Leave blank to restore the default:", current ? current.textContent : "");
         if (value === null) return;
         saveManualValue(who, field, value.trim());
         renderStatus();
@@ -404,7 +404,7 @@
     places.forEach(function (place) {
       list.appendChild(createPlaceCard(place));
     });
-    if (count) count.textContent = places.length + " 个目的地";
+    if (count) count.textContent = places.length + " destinations";
   }
 
   function setupPlaces() {
@@ -418,7 +418,7 @@
       if (!form || !toggle) return;
       form.classList.toggle("is-hidden", !open);
       toggle.setAttribute("aria-expanded", open ? "true" : "false");
-      toggle.textContent = open ? "收起添加" : "添加地点";
+      toggle.textContent = open ? "Close form" : "Add place";
       if (open && name) name.focus();
     }
     if (toggle && form) toggle.addEventListener("click", function () { setOpen(form.classList.contains("is-hidden")); });

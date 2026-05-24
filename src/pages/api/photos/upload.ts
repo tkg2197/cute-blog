@@ -17,11 +17,11 @@ export const POST: APIRoute = async ({ request, cookies, locals, redirect }) => 
   const sep = safeReturn.includes("?") ? "&" : "?";
 
   if (!(file instanceof File) || file.size === 0) {
-    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("请选择要上传的照片。")}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Please choose a photo to upload.")}`, 303);
   }
 
   if (!file.type.startsWith("image/")) {
-    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("只能上传图片文件。")}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Only image files can be uploaded.")}`, 303);
   }
 
   const supabase = createServiceClient();
@@ -30,7 +30,7 @@ export const POST: APIRoute = async ({ request, cookies, locals, redirect }) => 
   try {
     await ensureStorageBuckets();
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Storage 初始化失败";
+    const message = error instanceof Error ? error.message : "Storage initialization failed";
     return redirect(`${safeReturn}${sep}error=${encodeURIComponent(message)}`, 303);
   }
 
