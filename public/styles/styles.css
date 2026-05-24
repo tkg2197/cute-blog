@@ -201,13 +201,13 @@ html, body {
   height: 100%;
   object-fit: cover;
   transform: scale(1.03);
-  filter: brightness(1.14) saturate(1.08) contrast(1.01);
+  filter: brightness(1.32) saturate(1.06) contrast(1.0);
 }
 
 .home-cover__shade {
   background:
-    radial-gradient(circle at 50% 42%, rgba(255, 247, 237, 0.18), rgba(22, 28, 42, 0.05) 28%, rgba(13, 18, 31, 0.26) 100%),
-    linear-gradient(180deg, rgba(13, 18, 31, 0.18), rgba(13, 18, 31, 0.04) 42%, rgba(13, 18, 31, 0.3));
+    radial-gradient(circle at 50% 42%, rgba(255, 247, 237, 0.22), rgba(22, 28, 42, 0.02) 38%, rgba(13, 18, 31, 0.12) 100%),
+    linear-gradient(180deg, rgba(13, 18, 31, 0.08), rgba(13, 18, 31, 0.0) 42%, rgba(13, 18, 31, 0.16));
   pointer-events: none;
 }
 
