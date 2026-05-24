@@ -1405,28 +1405,6 @@ html, body {
   font-weight: 700;
 }
 
-.home-identity {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 14px;
-  margin-top: 18px;
-}
-
-.home-identity span {
-  padding: 8px 14px;
-  border: 1px solid rgba(255,255,255,0.62);
-  border-radius: 999px;
-  background: rgba(255,255,255,0.56);
-  color: #637589;
-  font-size: 13px;
-  font-weight: 800;
-  box-shadow: 0 10px 24px rgba(68, 88, 112, 0.08);
-}
-
-.home-identity span:first-child b { color: #7aa6d4; }
-.home-identity span:last-child b { color: #d49356; }
-
 .home-recent-photos,
 .home-about,
 .home-modules,
@@ -2225,4 +2203,3 @@ html, body {
     grid-row: 1 / span 2;
   }
 }
-
