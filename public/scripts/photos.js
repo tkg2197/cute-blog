@@ -489,18 +489,24 @@
     if (sliceBusy) return;             // 翻转动画期间不处理删除
     var p = lbList[lbIndex];
     if (!p) return;
-    if (!window.confirm("确定删除这张照片吗？删除后无法恢复。")) return;
-    CBPhoto.remove(p.id).then(function () {
-      photos = photos.filter(function (x) { return x.id !== p.id; });
-      closeLightbox();
-      renderWall();
-      if (currentDate && (byDate()[currentDate] || []).length) {
-        openDetail(currentDate);
-      } else {
-        backToWall();
-      }
-    }).catch(function (e) {
-      window.alert("删除失败：" + (e && e.message || e));
+    if (!window.CBConfirmDelete) return;
+    window.CBConfirmDelete("确定删除这张照片吗？删除后无法恢复。", {
+      title: "删除照片？",
+      confirmText: "删除",
+    }).then(function (ok) {
+      if (!ok) return;
+      CBPhoto.remove(p.id).then(function () {
+        photos = photos.filter(function (x) { return x.id !== p.id; });
+        closeLightbox();
+        renderWall();
+        if (currentDate && (byDate()[currentDate] || []).length) {
+          openDetail(currentDate);
+        } else {
+          backToWall();
+        }
+      }).catch(function (e) {
+        window.alert("删除失败：" + (e && e.message || e));
+      });
     });
   }
 

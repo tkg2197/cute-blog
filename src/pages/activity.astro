@@ -194,7 +194,7 @@ const total = totalMinutes(entries);
                           <span class="time-block__text">{entry.body}</span>
                           <span class="time-block__mins">{fmtMinutes(entry.minutes)}</span>
                           {isOwner && (
-                            <form action="/api/activity/delete" method="post" class="time-block__delform" data-confirm="Delete this activity record?" style="display:inline;">
+                            <form action="/api/activity/delete" method="post" class="time-block__delform" data-confirm="Delete this activity record?" data-confirm-title="Delete activity?" style="display:inline;">
                               <input type="hidden" name="return_to" value={returnTo} />
                               <input type="hidden" name="id" value={entry.id} />
                               <button class="time-block__del" type="submit" aria-label="Delete this activity">×</button>
@@ -269,12 +269,6 @@ const total = totalMinutes(entries);
             toggle.textContent = open ? "Close form" : "＋ Add activity";
           });
         }
-        document.querySelectorAll("form[data-confirm]").forEach(function (f) {
-          f.addEventListener("submit", function (ev) {
-            var message = f.getAttribute("data-confirm") || "Delete this record?";
-            if (!window.confirm(message)) ev.preventDefault();
-          });
-        });
       })();
     </script>
   </Fragment>

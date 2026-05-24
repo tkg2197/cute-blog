@@ -198,7 +198,7 @@ const today = new Date().toISOString().slice(0, 10);
               </div>
             </div>
             <div class="manage-actions">
-              <form action="/api/records/delete" method="post" data-confirm="Delete this record?">
+              <form action="/api/records/delete" method="post" data-confirm="Delete this record?" data-confirm-title="Delete record?">
                 <input type="hidden" name="id" value={record.id} />
                 <button class="mini-button mini-button--danger" type="submit">Delete</button>
               </form>
@@ -232,7 +232,7 @@ const today = new Date().toISOString().slice(0, 10);
                 </div>
               </div>
               <div class="manage-actions">
-                <form action="/api/activity/delete" method="post" data-confirm="Delete this activity record?">
+                <form action="/api/activity/delete" method="post" data-confirm="Delete this activity record?" data-confirm-title="Delete activity?">
                   <input type="hidden" name="id" value={activity.id} />
                   <button class="mini-button mini-button--danger" type="submit">Delete</button>
                 </form>
@@ -275,7 +275,7 @@ const today = new Date().toISOString().slice(0, 10);
             </div>
             <div class="manage-actions">
               <a class="mini-button" href={`/blog/${post.slug}`}>View</a>
-              <form action="/api/blog/delete" method="post" data-confirm={`Delete "${post.title}"?`}>
+              <form action="/api/blog/delete" method="post" data-confirm={`Delete "${post.title}"?`} data-confirm-title="Delete post?">
                 <input type="hidden" name="id" value={post.id} />
                 <button class="mini-button mini-button--danger" type="submit">Delete</button>
               </form>
@@ -303,7 +303,7 @@ const today = new Date().toISOString().slice(0, 10);
                 {photo.taken_on && <span>{photo.taken_on}</span>}
                 <span>{new Date(photo.created_at).toLocaleDateString("zh-CN")}</span>
               </div>
-              <form action="/api/photos/delete" method="post" data-confirm={`Delete "${photo.title || "this photo"}"?`}>
+              <form action="/api/photos/delete" method="post" data-confirm={`Delete "${photo.title || "this photo"}"?`} data-confirm-title="Delete photo?">
                 <input type="hidden" name="id" value={photo.id} />
                 <button class="mini-button mini-button--danger" type="submit">Delete photo</button>
               </form>
@@ -314,14 +314,3 @@ const today = new Date().toISOString().slice(0, 10);
     </div>
   </section>
 </BaseLayout>
-
-<script>
-  document.querySelectorAll("form[data-confirm]").forEach((form) => {
-    form.addEventListener("submit", (event) => {
-      const message = form.getAttribute("data-confirm") || "Delete this item?";
-      if (!window.confirm(message)) {
-        event.preventDefault();
-      }
-    });
-  });
-</script>

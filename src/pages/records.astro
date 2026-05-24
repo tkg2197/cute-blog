@@ -188,7 +188,7 @@ const deleted = Astro.url.searchParams.get("deleted");
                       </div>
                       <span class="note__hint">Click to expand ▾</span>
                       {user?.id === record.owner_id && (
-                        <form class="note-delete" action="/api/records/delete" method="post" data-confirm="Delete this record? This cannot be undone.">
+                        <form class="note-delete" action="/api/records/delete" method="post" data-confirm="Delete this record? This cannot be undone." data-confirm-title="Delete record?">
                           <input type="hidden" name="id" value={record.id} />
                           <input type="hidden" name="return_to" value="/records" />
                           <button class="note-delete__btn" type="submit">Delete</button>
@@ -373,13 +373,6 @@ const deleted = Astro.url.searchParams.get("deleted");
             photoHint.textContent = count ? ("Selected " + count + " photos. They will also appear in Photos.") : "Photos will also appear in Photos.";
           });
         }
-        document.addEventListener("submit", function (ev) {
-          var form = ev.target.closest("form[data-confirm]");
-          if (!form) return;
-          if (!window.confirm(form.getAttribute("data-confirm") || "Delete this item?")) {
-            ev.preventDefault();
-          }
-        });
       })();
     </script>
   </Fragment>

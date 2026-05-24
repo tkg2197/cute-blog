@@ -195,7 +195,7 @@ const deleted = Astro.url.searchParams.get("deleted");
       <div class="pw-lb__diary is-hidden" id="pwLbDiary"></div>
     </figure>
     {user && (
-      <form class="pw-lb__delete-form is-hidden" id="pwLbDeleteForm" action="/api/photos/delete" method="post" data-confirm="Delete this photo? This cannot be undone.">
+      <form class="pw-lb__delete-form is-hidden" id="pwLbDeleteForm" action="/api/photos/delete" method="post" data-confirm="Delete this photo? This cannot be undone." data-confirm-title="Delete photo?">
         <input type="hidden" name="id" id="pwLbDeleteId" value="" />
         <input type="hidden" name="return_to" value="/photos" />
         <button class="pw-lb__delete" type="submit">Delete photo</button>
@@ -251,6 +251,7 @@ const deleted = Astro.url.searchParams.get("deleted");
               form.action = "/api/photos/delete";
               form.method = "post";
               form.setAttribute("data-confirm", "Delete this photo? This cannot be undone.");
+              form.setAttribute("data-confirm-title", "Delete photo?");
               var id = document.createElement("input");
               id.type = "hidden";
               id.name = "id";
@@ -538,13 +539,6 @@ const deleted = Astro.url.searchParams.get("deleted");
         lbNext.addEventListener("click", function () { lbStep(1); });
         lbEl.addEventListener("click", function (e) { if (e.target === lbEl) closeLb(); });
 
-        document.addEventListener("submit", function (ev) {
-          var form = ev.target.closest("form[data-confirm]");
-          if (!form) return;
-          if (!window.confirm(form.getAttribute("data-confirm") || "Delete this item?")) {
-            ev.preventDefault();
-          }
-        });
       })();
     </script>
     <style is:global>

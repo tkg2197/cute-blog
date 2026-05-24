@@ -43,6 +43,7 @@ const homeHref = current === "home" ? "#home" : "/?skipCover=1#home";
     <meta name="description" content={description} />
     <slot name="head" />
     <link rel="stylesheet" href="/styles/app.css" />
+    <link rel="stylesheet" href="/styles/confirm-delete.css" />
   </head>
   <body class:list={[bodyClass]}>
     <div class="site-bg" aria-hidden="true"></div>
@@ -79,5 +80,7 @@ const homeHref = current === "home" ? "#home" : "/?skipCover=1#home";
         <slot />
       </main>
     )}
+    <script is:inline src="/scripts/confirm-delete.js"></script>
+    <slot name="scripts" />
   </body>
 </html>

@@ -45,6 +45,7 @@ const authorKey = (profile?.author_key || "white") as AuthorKey;
     <link rel="stylesheet" href="/styles/scroll-reveal.css" />
     <link rel="stylesheet" href="/styles/page-transition.css" />
     <link rel="stylesheet" href="/styles/ghost.css" />
+    <link rel="stylesheet" href="/styles/confirm-delete.css" />
   </head>
   <body class={bodyClass}>
     {bgClass && (
@@ -92,6 +93,7 @@ const authorKey = (profile?.author_key || "white") as AuthorKey;
     <script is:inline src="/scripts/scroll-reveal.js"></script>
     <script is:inline src="/scripts/ghost.js"></script>
     <script is:inline src="/scripts/page-transition.js"></script>
+    <script is:inline src="/scripts/confirm-delete.js"></script>
     <slot name="scripts" />
   </body>
 </html>

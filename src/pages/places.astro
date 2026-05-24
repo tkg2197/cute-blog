@@ -88,7 +88,7 @@ const deleted = Astro.url.searchParams.get("deleted");
               <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:8px;">
                 <small style="color:#7a8aa0;font-size:12px;font-weight: 650;">Added by {authorDisplayName(place.profiles, author)}</small>
                 {isOwner && (
-                  <form action="/api/places/delete" method="post" data-confirm={`Delete "${place.name}"?`} style="display:inline;">
+                  <form action="/api/places/delete" method="post" data-confirm={`Delete "${place.name}"?`} data-confirm-title="Delete place?" style="display:inline;">
                     <input type="hidden" name="return_to" value="/places" />
                     <input type="hidden" name="id" value={place.id} />
                     <button type="submit" style="border:none;background:rgba(255,255,255,.6);padding:6px 11px;border-radius:999px;font-size:12px;font-weight: 650;color:#9d3f3f;cursor:pointer;">Delete</button>
@@ -126,11 +126,6 @@ const deleted = Astro.url.searchParams.get("deleted");
         }
         if (cancel) cancel.addEventListener("click", function () { setOpen(false); });
 
-        document.querySelectorAll("form[data-confirm]").forEach(function (f) {
-          f.addEventListener("submit", function (ev) {
-            if (!window.confirm(f.getAttribute("data-confirm") || "Delete this item?")) ev.preventDefault();
-          });
-        });
       })();
     </script>
   </Fragment>

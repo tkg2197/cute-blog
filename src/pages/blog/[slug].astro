@@ -43,7 +43,7 @@ const user = Astro.locals.user;
         <div class="blog-detail-actions">
           <a class="blog-detail-back" href="/blog" aria-label="Back to blog">Back</a>
           {user?.id === post.author_id && (
-            <form class="blog-detail-delete" action="/api/blog/delete" method="post" data-confirm="Delete this post? This cannot be undone.">
+            <form class="blog-detail-delete" action="/api/blog/delete" method="post" data-confirm="Delete this post? This cannot be undone." data-confirm-title="Delete post?">
               <input type="hidden" name="id" value={post.id} />
               <input type="hidden" name="return_to" value="/blog" />
               <button type="submit">Delete post</button>
@@ -83,14 +83,5 @@ const user = Astro.locals.user;
 
   <Fragment slot="scripts">
     <script is:inline src="/scripts/blog.js"></script>
-    <script is:inline>
-      document.addEventListener("submit", function (ev) {
-        var form = ev.target.closest("form[data-confirm]");
-        if (!form) return;
-        if (!window.confirm(form.getAttribute("data-confirm") || "Delete this item?")) {
-          ev.preventDefault();
-        }
-      });
-    </script>
   </Fragment>
 </PrototypeLayout>

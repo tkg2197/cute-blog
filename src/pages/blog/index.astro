@@ -9,7 +9,7 @@ const supabase = createServiceClient();
 const [{ data }, { data: authorRows }] = await Promise.all([
   supabase
     .from("blog_posts")
-    .select("id,slug,title,excerpt,tags,published_at,created_at,author_id,profiles(display_name,author_key)")
+    .select("id,slug,title,excerpt,tags,published_at,created_at,profiles(display_name,author_key)")
     .order("published_at", { ascending: false }),
   supabase.from("profiles").select("author_key,display_name"),
 ]);
@@ -134,16 +134,6 @@ const currentYear = posts.length ? postYear(posts[0]) : new Date().getFullYear()
                 </div>
                 <span class="post-item__arrow" aria-hidden="true">›</span>
               </a>
-              {user?.id === post.author_id && (
-                <form class="post-delete" action="/api/blog/delete" method="post" data-confirm="Delete this post? This cannot be undone.">
-                  <input type="hidden" name="id" value={post.id} />
-                  <input type="hidden" name="return_to" value="/blog" />
-                  <button class="post-delete__btn" type="submit" aria-label={`Delete ${displayPostTitle(post)}`}>
-                    <span aria-hidden="true">×</span>
-                    <span>Delete</span>
-                  </button>
-                </form>
-              )}
             </article>
           );
         }) : (
@@ -230,13 +220,6 @@ const currentYear = posts.length ? postYear(posts[0]) : new Date().getFullYear()
           if (!files || !files.length) return;
           input.files = files;
           reflect();
-        });
-        document.addEventListener("submit", function (e) {
-          var form = e.target.closest("form[data-confirm]");
-          if (!form) return;
-          if (!window.confirm(form.getAttribute("data-confirm") || "Delete this item?")) {
-            e.preventDefault();
-          }
         });
       })();
     </script>
