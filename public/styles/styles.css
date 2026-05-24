@@ -1407,7 +1407,6 @@ html, body {
 
 .home-recent-photos,
 .home-about,
-.home-modules,
 .home-places,
 .home-posts {
   display: grid;
@@ -1419,7 +1418,6 @@ html, body {
 
 .home-recent-photos h2,
 .home-about h2,
-.home-modules h2,
 .home-places h2,
 .home-posts h2 {
   color: #263d51;
@@ -1582,9 +1580,8 @@ html, body {
   text-align: center;
 }
 
-.home-modules,
-.home-places,
-.home-posts {
+.home-recent-photos,
+.home-places {
   margin-top: 86px;
 }
 
@@ -1908,17 +1905,11 @@ html, body {
   font-weight: 600;
 }
 
-.home-module-list,
 .home-post-list {
   display: grid;
   gap: 14px;
 }
 
-.home-module-list {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.home-module-list a,
 .home-post-list a {
   border: 1px solid rgba(255,255,255,0.56);
   background: rgba(255,255,255,0.58);
@@ -1930,31 +1921,10 @@ html, body {
   transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
-.home-module-list a:hover,
 .home-post-list a:hover {
   transform: translateY(-3px);
   background: rgba(255,255,255,0.82);
   box-shadow: 0 18px 42px rgba(68, 88, 112, 0.12);
-}
-
-.home-module-list a {
-  min-height: 112px;
-  display: grid;
-  align-content: center;
-  gap: 8px;
-  padding: 22px;
-  border-radius: 18px;
-}
-
-.home-module-list span {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.home-module-list small {
-  color: #698094;
-  font-size: 13px;
-  font-weight: 750;
 }
 
 .home-post-list a {
@@ -2109,16 +2079,14 @@ html, body {
 
   .home-recent-photos,
   .home-about,
-  .home-modules,
   .home-places,
   .home-posts {
     grid-template-columns: 1fr;
     gap: 16px;
   }
 
-  .home-modules,
-  .home-places,
-  .home-posts {
+  .home-recent-photos,
+  .home-places {
     margin-top: 58px;
   }
 
@@ -2145,10 +2113,6 @@ html, body {
 
   .home-photo-stage.is-active .home-photo-card.is-focus {
     transform: translate3d(0,-8px,42px) rotateY(0deg) rotateZ(0deg) scale(1.06);
-  }
-
-  .home-module-list {
-    grid-template-columns: 1fr;
   }
 
   .home-places__head {

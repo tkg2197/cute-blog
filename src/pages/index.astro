@@ -227,6 +227,23 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
       </p>
     </section>
 
+    <section class="home-posts" aria-labelledby="postsTitle">
+      <h2 id="postsTitle">Posts</h2>
+      <div class="home-post-list">
+        {recentPosts.length ? recentPosts.map((post) => (
+          <a href={`/blog/${post.slug}`}>
+            <time>{formatPostDate(post.published_at || post.created_at)}</time>
+            <span>{post.title}</span>
+          </a>
+        )) : postFallbacks.map((post) => (
+          <a href={post.href}>
+            <time>{post.date}</time>
+            <span>{post.title}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
     <section class="home-recent-photos" aria-labelledby="recentPhotosTitle">
       <h2 id="recentPhotosTitle">Recent Photos</h2>
       <div class="home-photo-stage" id="homeRecentPhotos" aria-live="polite">
@@ -239,16 +256,6 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
             </span>
           </a>
         ))}
-      </div>
-    </section>
-
-    <section class="home-modules" aria-labelledby="modulesTitle">
-      <h2 id="modulesTitle">Modules</h2>
-      <div class="home-module-list">
-        <a href="/records"><span>Records</span><small>Moods, notes, and daily photos</small></a>
-        <a href="/photos"><span>Photos</span><small>Albums arranged by date</small></a>
-        <a href="/blog"><span>Blog</span><small>Long posts written together</small></a>
-        <a href="/activity"><span>Activity</span><small>Timelines and daily breakdowns</small></a>
       </div>
     </section>
 
@@ -280,22 +287,6 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
       </div>
     </section>
 
-    <section class="home-posts" aria-labelledby="postsTitle">
-      <h2 id="postsTitle">Posts</h2>
-      <div class="home-post-list">
-        {recentPosts.length ? recentPosts.map((post) => (
-          <a href={`/blog/${post.slug}`}>
-            <time>{formatPostDate(post.published_at || post.created_at)}</time>
-            <span>{post.title}</span>
-          </a>
-        )) : postFallbacks.map((post) => (
-          <a href={post.href}>
-            <time>{post.date}</time>
-            <span>{post.title}</span>
-          </a>
-        ))}
-      </div>
-    </section>
   </main>
 
   <Fragment slot="scripts">

@@ -6,8 +6,8 @@
   "use strict";
 
   var SELECTORS = [
-    ".home-about", ".home-modules", ".home-posts",
-    ".home-module-list a", ".home-post-list a",
+    ".home-about", ".home-posts",
+    ".home-post-list a",
     ".rec-header", ".rec-filter", ".rec-timeline > *",
     ".pw-header", ".pw-toolbar", ".pw-stacks > *", ".pw-detail__bar", ".pw-grid > *",
     ".bi-head", ".bi-toolbar", ".post-item", ".tag-panel", ".archive-panel", ".bi-pager",
