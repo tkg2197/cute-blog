@@ -292,7 +292,7 @@
     document.documentElement.classList.add("pt-leaving");
     window.setTimeout(function () {
       location.href = href;
-    }, 500);
+    }, 220);
   }
 
   function onClick(ev) {

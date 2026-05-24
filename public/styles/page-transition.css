@@ -255,9 +255,9 @@
   transform: translateY(-58px) scale(0.94);
   filter: blur(10px);
   transition:
-    opacity 0.48s ease-out,
-    transform 0.48s ease-out,
-    filter 0.48s ease-out;
+    opacity 0.22s ease-out,
+    transform 0.22s ease-out,
+    filter 0.22s ease-out;
 }
 
 .pt-ready.pt-leaving {
