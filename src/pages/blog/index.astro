@@ -2,6 +2,7 @@
 import PrototypeLayout from "../../layouts/PrototypeLayout.astro";
 import { createServiceClient } from "../../lib/supabase";
 import { authorDisplayName, makeAuthorNames } from "../../lib/author-display";
+import { markdownToPlainText } from "../../lib/markdown";
 import type { AuthorKey, BlogPost } from "../../lib/types";
 
 const supabase = createServiceClient();
@@ -27,9 +28,17 @@ function authorEmoji(key: AuthorKey) {
 }
 
 function readMinutes(post: BlogPost) {
-  const text = (post.excerpt || "") + " " + (post.title || "");
+  const text = markdownToPlainText((post.excerpt || "") + " " + (post.title || ""));
   const minutes = Math.max(3, Math.ceil(text.length / 280));
   return minutes;
+}
+
+function displayPostTitle(post: BlogPost) {
+  return markdownToPlainText(post.title || "") || post.title;
+}
+
+function displayPostExcerpt(post: BlogPost) {
+  return markdownToPlainText(post.excerpt || "") || "Open it to read the full post.";
 }
 
 function formatDate(value: string) {
@@ -112,8 +121,8 @@ const currentYear = posts.length ? postYear(posts[0]) : new Date().getFullYear()
             <article class="post-item" data-authors={author} data-tags={(post.tags || []).join(" ")}>
               <a class="post-item__link" href={`/blog/${post.slug}`}>
                 <time class="post-item__date" datetime={dateValue}>{formatDate(dateValue)}</time>
-                <h2>{post.title}</h2>
-                <p>{post.excerpt || "Open it to read the full post."}</p>
+                <h2>{displayPostTitle(post)}</h2>
+                <p>{displayPostExcerpt(post)}</p>
                 <div class="post-item__meta">
                   <span>{authorEmoji(author)} {authorDisplayName(post.profiles, author, authorNames)}</span>
                   <span>{readMinutes(post)} min read</span>

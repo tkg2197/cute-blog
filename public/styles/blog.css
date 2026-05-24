@@ -315,6 +315,17 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
   line-height: 1.42;
   font-weight: 600;
 }
+.article-section h4,
+.article-section h5,
+.article-section h6 {
+  margin: 22px 0 10px;
+  color: #536a80;
+  line-height: 1.42;
+  font-weight: 600;
+}
+.article-section h4 { font-size: 18px; }
+.article-section h5,
+.article-section h6 { font-size: 16px; }
 .article-section p {
   color: #586273;
   font-size: 16px;
@@ -351,13 +362,29 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
   line-height: 1.75;
   white-space: pre;
 }
+.article-section ul,
+.article-section ol,
 .article-list {
   margin: 16px 0 18px 22px;
   color: #586273;
   font-size: 16px;
   line-height: 2;
 }
+.article-section li + li,
 .article-list li + li { margin-top: 5px; }
+.article-section li::marker {
+  color: #7aa6d4;
+  font-weight: 600;
+}
+.article-section .task-list-item {
+  list-style: none;
+  margin-left: -22px;
+}
+.article-section .task-list-item input {
+  margin-right: 8px;
+  vertical-align: -1px;
+}
+.article-section blockquote,
 .article-quote {
   margin: 20px 0;
   padding: 18px 20px;
@@ -368,6 +395,50 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
   font-size: 15px;
   line-height: 1.9;
   box-shadow: 0 6px 16px rgba(70, 80, 110, 0.1);
+}
+.article-section blockquote p {
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+.article-section table {
+  width: 100%;
+  margin: 22px 0;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: 0 6px 18px rgba(70, 80, 110, 0.08);
+}
+.article-section th,
+.article-section td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(110, 130, 150, 0.16);
+  color: #586273;
+  font-size: 15px;
+  line-height: 1.7;
+  text-align: left;
+  vertical-align: top;
+}
+.article-section th {
+  color: #41586d;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.42);
+}
+.article-section tr:last-child td { border-bottom: none; }
+.article-section img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 20px auto;
+  border-radius: 8px;
+  box-shadow: 0 14px 34px rgba(70, 80, 110, 0.14);
+}
+.article-section hr {
+  height: 1px;
+  margin: 30px 0;
+  border: none;
+  background: linear-gradient(90deg, transparent, rgba(110, 130, 150, 0.34), transparent);
 }
 
 .quote-pair {

@@ -1,7 +1,7 @@
 ---
 import PrototypeLayout from "../../layouts/PrototypeLayout.astro";
 import { createServiceClient } from "../../lib/supabase";
-import { renderArticleSections } from "../../lib/markdown";
+import { firstMarkdownHeading, markdownToPlainText, renderArticleSections } from "../../lib/markdown";
 import { authorDisplayName } from "../../lib/author-display";
 import type { AuthorKey, BlogPost } from "../../lib/types";
 
@@ -26,10 +26,12 @@ const formatDate = (value: string) => {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 };
 const sections = renderArticleSections(post.content_markdown || "");
+const displayTitle = markdownToPlainText(post.title || "") || firstMarkdownHeading(post.content_markdown || "") || post.title;
+const displayExcerpt = post.excerpt ? markdownToPlainText(post.excerpt) : "";
 const readMinutes = Math.max(3, Math.ceil((post.content_markdown || "").length / 280));
 ---
 
-<PrototypeLayout title={`${post.title} · Our Nest`} current="blog" bgClass="blog-bg" backHref="/blog" backLabel="Back to blog">
+<PrototypeLayout title={`${displayTitle} · Our Nest`} current="blog" bgClass="blog-bg" backHref="/blog" backLabel="Back to blog">
   <Fragment slot="head">
     <link rel="stylesheet" href="/styles/blog.css" />
   </Fragment>
@@ -45,8 +47,8 @@ const readMinutes = Math.max(3, Math.ceil((post.content_markdown || "").length /
     <article class="article">
       <header class="article-head">
         <p class="article-kicker">Blog / Markdown upload</p>
-        <h1>{post.title}</h1>
-        {post.excerpt && <p class="article-summary">{post.excerpt}</p>}
+        <h1>{displayTitle}</h1>
+        {displayExcerpt && <p class="article-summary">{displayExcerpt}</p>}
         <div class="article-authors" aria-label="Author">
           <span class={`article-author article-author--${author}`}>
             {author === "white" ? "🐶" : "🐕"} {authorName}

@@ -1,6 +1,7 @@
 ---
 import PrototypeLayout from "../layouts/PrototypeLayout.astro";
 import { createServiceClient } from "../lib/supabase";
+import { markdownToPlainText } from "../lib/markdown";
 import { AUTHOR_LABELS } from "../lib/types";
 import type { AuthorKey, BlogPost, Photo, Place, PlaceTone, Profile } from "../lib/types";
 
@@ -64,6 +65,7 @@ const postFallbacks = [
   { href: "/photos", date: "2026.05.21", title: "The first version of photos, records, and activity" },
   { href: "/activity", date: "Today", title: "See where today went, hour by hour" },
 ];
+const displayPostTitle = (post: BlogPost) => markdownToPlainText(post.title || "") || post.title;
 
 const skipCoverOnLoad = Astro.url.searchParams.get("skipCover") === "1";
 const placeFallbacks: Array<{ name: string; note: string; tone: PlaceTone }> = [
@@ -233,7 +235,7 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
         {recentPosts.length ? recentPosts.map((post) => (
           <a href={`/blog/${post.slug}`}>
             <time>{formatPostDate(post.published_at || post.created_at)}</time>
-            <span>{post.title}</span>
+            <span>{displayPostTitle(post)}</span>
           </a>
         )) : postFallbacks.map((post) => (
           <a href={post.href}>

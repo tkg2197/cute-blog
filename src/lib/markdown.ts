@@ -13,12 +13,47 @@ function escapeHtml(input: string) {
     .replace(/"/g, "&quot;");
 }
 
+function escapeAttr(input: string) {
+  return escapeHtml(input).replace(/'/g, "&#39;");
+}
+
+function isSafeUrl(input: string) {
+  return /^(https?:|mailto:|\/|#|\.\/|\.\.\/)/i.test(input);
+}
+
 function inlineMarkdown(input: string) {
-  return escapeHtml(input)
-    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*([^*]+)\*/g, "<em>$1</em>")
-    .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+  const codeSpans: string[] = [];
+  const withCodeTokens = input.replace(/`([^`]+)`/g, (_match, code) => {
+    const token = `\u0000CODE${codeSpans.length}\u0000`;
+    codeSpans.push(`<code>${escapeHtml(code)}</code>`);
+    return token;
+  });
+
+  let html = escapeHtml(withCodeTokens);
+  html = html.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]+)")?\)/g, (_match, alt, rawSrc, title) => {
+    const src = String(rawSrc || "").trim();
+    if (!isSafeUrl(src)) return escapeHtml(alt || "");
+    const titleAttr = title ? ` title="${escapeAttr(title)}"` : "";
+    return `<img src="${escapeAttr(src)}" alt="${escapeAttr(alt || "")}"${titleAttr} loading="lazy" />`;
+  });
+  html = html.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"([^"]+)")?\)/g, (_match, label, rawHref, title) => {
+    const href = String(rawHref || "").trim();
+    if (!isSafeUrl(href)) return label;
+    const external = /^https?:/i.test(href) ? ' target="_blank" rel="noreferrer"' : "";
+    const titleAttr = title ? ` title="${escapeAttr(title)}"` : "";
+    return `<a href="${escapeAttr(href)}"${external}${titleAttr}>${label}</a>`;
+  });
+  html = html
+    .replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/__([\s\S]+?)__/g, "<strong>$1</strong>")
+    .replace(/~~([\s\S]+?)~~/g, "<del>$1</del>")
+    .replace(/(^|[^\*])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>")
+    .replace(/(^|[^_])_([^_\n]+)_(?!_)/g, "$1<em>$2</em>");
+
+  codeSpans.forEach((code, index) => {
+    html = html.replaceAll(`\u0000CODE${index}\u0000`, code);
+  });
+  return html;
 }
 
 function parseFrontmatter(source: string) {
@@ -38,7 +73,7 @@ function parseFrontmatter(source: string) {
 export function slugify(value: string) {
   const base = value
     .normalize("NFKD")
-    .replace(/[^\w\s-]/g, "")
+    .replace(/[^\p{L}\p{N}\s-]/gu, "")
     .trim()
     .toLowerCase()
     .replace(/[\s_-]+/g, "-")
@@ -48,15 +83,11 @@ export function slugify(value: string) {
 
 export function parseMarkdown(source: string, fallbackTitle: string): ParsedMarkdown {
   const { attrs, body } = parseFrontmatter(source);
-  const heading = body.match(/^#\s+(.+)$/m)?.[1]?.trim();
+  const heading = firstMarkdownHeading(body);
   const title = attrs.get("title") || heading || fallbackTitle;
   const excerpt =
     attrs.get("excerpt") ||
-    body
-      .replace(/^#\s+.+$/m, "")
-      .split(/\r?\n\r?\n/)
-      .map((part) => part.trim())
-      .find(Boolean) ||
+    plainTextExcerpt(body) ||
     "";
   const tags = (attrs.get("tags") || "")
     .split(",")
@@ -66,13 +97,71 @@ export function parseMarkdown(source: string, fallbackTitle: string): ParsedMark
   return { title, excerpt, tags, body };
 }
 
+export function firstMarkdownHeading(source: string) {
+  return source.match(/^\s{0,3}#{1,6}\s+(.+)$/m)?.[1]?.trim() || "";
+}
+
+export function markdownToPlainText(source: string) {
+  const { body } = parseFrontmatter(source || "");
+  return body
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+    .replace(/^\s*[-*+]\s+/gm, "")
+    .replace(/^\s*\d+[.)]\s+/gm, "")
+    .replace(/^\s*>\s?/gm, "")
+    .replace(/^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/gm, "")
+    .replace(/[|*_~`#]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function plainTextExcerpt(source: string) {
+  return source
+    .replace(/```[\s\S]*?```/g, "")
+    .split(/\r?\n\r?\n/)
+    .map((part) =>
+      part
+        .split(/\r?\n/)
+        .filter((line) => !/^\s{0,3}#{1,6}\s+/.test(line))
+        .join(" ")
+        .trim(),
+    )
+    .map(markdownToPlainText)
+    .find(Boolean);
+}
+
+function parseTableRow(line: string) {
+  const trimmed = line.trim().replace(/^\|/, "").replace(/\|$/, "");
+  return trimmed.split("|").map((cell) => cell.trim());
+}
+
+function isTableDivider(line: string) {
+  const cells = parseTableRow(line);
+  return cells.length > 1 && cells.every((cell) => /^:?-{3,}:?$/.test(cell.replace(/\s+/g, "")));
+}
+
+function renderTable(lines: string[]) {
+  const header = parseTableRow(lines[0]);
+  const rows = lines.slice(2).map(parseTableRow);
+  return [
+    "<table>",
+    `<thead><tr>${header.map((cell) => `<th>${inlineMarkdown(cell)}</th>`).join("")}</tr></thead>`,
+    `<tbody>${rows
+      .map((row) => `<tr>${header.map((_cell, index) => `<td>${inlineMarkdown(row[index] || "")}</td>`).join("")}</tr>`)
+      .join("")}</tbody>`,
+    "</table>",
+  ].join("");
+}
+
 export function renderMarkdown(source: string) {
   const lines = source.replace(/\r\n/g, "\n").split("\n");
   const html: string[] = [];
   let paragraph: string[] = [];
-  let list: string[] = [];
   let inCode = false;
   let code: string[] = [];
+  let codeLang = "";
 
   function flushParagraph() {
     if (!paragraph.length) return;
@@ -80,67 +169,114 @@ export function renderMarkdown(source: string) {
     paragraph = [];
   }
 
-  function flushList() {
-    if (!list.length) return;
-    html.push(`<ul>${list.map((item) => `<li>${inlineMarkdown(item)}</li>`).join("")}</ul>`);
-    list = [];
+  function renderList(start: number, ordered: boolean) {
+    const items: string[] = [];
+    let index = start;
+    while (index < lines.length) {
+      const pattern = ordered ? /^\s*\d+[.)]\s+(.+)$/ : /^\s*[-*+]\s+(.+)$/;
+      const hit = lines[index].match(pattern);
+      if (!hit) break;
+      const checkbox = hit[1].match(/^\[([ xX])\]\s+(.+)$/);
+      if (checkbox) {
+        const checked = checkbox[1].toLowerCase() === "x" ? " checked" : "";
+        items.push(`<li class="task-list-item"><input type="checkbox" disabled${checked} /> ${inlineMarkdown(checkbox[2])}</li>`);
+      } else {
+        items.push(`<li>${inlineMarkdown(hit[1])}</li>`);
+      }
+      index += 1;
+    }
+    html.push(`<${ordered ? "ol" : "ul"}>${items.join("")}</${ordered ? "ol" : "ul"}>`);
+    return index - 1;
   }
 
-  lines.forEach((line) => {
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
     if (line.trim().startsWith("```")) {
       if (inCode) {
-        html.push(`<pre><code>${escapeHtml(code.join("\n"))}</code></pre>`);
+        const langClass = codeLang ? ` class="language-${escapeAttr(codeLang)}"` : "";
+        html.push(`<pre><code${langClass}>${escapeHtml(code.join("\n"))}</code></pre>`);
         code = [];
+        codeLang = "";
         inCode = false;
       } else {
         flushParagraph();
-        flushList();
+        codeLang = line.trim().slice(3).trim().split(/\s+/)[0] || "";
         inCode = true;
       }
-      return;
+      continue;
     }
 
     if (inCode) {
       code.push(line);
-      return;
+      continue;
     }
 
     if (!line.trim()) {
       flushParagraph();
-      flushList();
-      return;
+      continue;
     }
 
-    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    if (line.includes("|") && lines[i + 1] && isTableDivider(lines[i + 1])) {
+      flushParagraph();
+      const tableLines = [line, lines[i + 1]];
+      i += 2;
+      while (i < lines.length && lines[i].includes("|") && lines[i].trim()) {
+        tableLines.push(lines[i]);
+        i += 1;
+      }
+      i -= 1;
+      html.push(renderTable(tableLines));
+      continue;
+    }
+
+    const heading = line.match(/^(#{1,6})\s+(.+)$/);
     if (heading) {
       flushParagraph();
-      flushList();
       const level = heading[1].length;
       html.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`);
-      return;
+      continue;
     }
 
-    const item = line.match(/^[-*]\s+(.+)$/);
-    if (item) {
+    if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
       flushParagraph();
-      list.push(item[1]);
-      return;
+      html.push("<hr />");
+      continue;
+    }
+
+    const unordered = line.match(/^\s*[-*+]\s+(.+)$/);
+    if (unordered) {
+      flushParagraph();
+      i = renderList(i, false);
+      continue;
+    }
+
+    const ordered = line.match(/^\s*\d+[.)]\s+(.+)$/);
+    if (ordered) {
+      flushParagraph();
+      i = renderList(i, true);
+      continue;
     }
 
     const quote = line.match(/^>\s+(.+)$/);
     if (quote) {
       flushParagraph();
-      flushList();
-      html.push(`<blockquote>${inlineMarkdown(quote[1])}</blockquote>`);
-      return;
+      const quoteLines = [quote[1]];
+      while (lines[i + 1] && /^>\s?/.test(lines[i + 1])) {
+        i += 1;
+        quoteLines.push(lines[i].replace(/^>\s?/, ""));
+      }
+      html.push(`<blockquote><p>${inlineMarkdown(quoteLines.join(" "))}</p></blockquote>`);
+      continue;
     }
 
     paragraph.push(line.trim());
-  });
+  }
 
   flushParagraph();
-  flushList();
-  if (code.length) html.push(`<pre><code>${escapeHtml(code.join("\n"))}</code></pre>`);
+  if (code.length) {
+    const langClass = codeLang ? ` class="language-${escapeAttr(codeLang)}"` : "";
+    html.push(`<pre><code${langClass}>${escapeHtml(code.join("\n"))}</code></pre>`);
+  }
   return html.join("\n");
 }
 
@@ -173,7 +309,7 @@ export function renderArticleSections(source: string): ArticleSection[] {
     if (/^#\s+/.test(line)) return;
     const h2 = line.match(/^##\s+(.+)$/);
     if (h2) {
-      if (currentTitle || currentLines.length) {
+      if (currentTitle || currentLines.some((item) => item.trim())) {
         pushSection(currentTitle, currentLines);
       }
       currentTitle = h2[1].trim();
@@ -183,7 +319,7 @@ export function renderArticleSections(source: string): ArticleSection[] {
     currentLines.push(line);
   });
 
-  if (currentTitle || currentLines.length) {
+  if (currentTitle || currentLines.some((item) => item.trim())) {
     pushSection(currentTitle, currentLines);
   }
 
