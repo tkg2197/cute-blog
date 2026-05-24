@@ -99,7 +99,7 @@ const authorKey = (profile?.author_key || "white") as AuthorKey;
 <style is:global>
   /* 导航链接整体推到右侧，紧挨登录/用户胶囊 */
   .site-nav__links {
-    margin-left: auto !important;
+    margin-left: 0 !important;
   }
 
   /* 未登录：登录链接放在 nav__links 里，等同于第 7 个普通链接，
@@ -114,7 +114,7 @@ const authorKey = (profile?.author_key || "white") as AuthorKey;
     display: flex;
     gap: 14px;
     align-items: center;
-    margin-left: 28px;
+    margin-left: 0;
     font-family: "Satoshi", "PingFang SC", "Microsoft YaHei", sans-serif;
   }
   .site-nav__auth form {
@@ -157,7 +157,7 @@ const authorKey = (profile?.author_key || "white") as AuthorKey;
     box-shadow: 0 6px 14px rgba(70,80,110,.16);
   }
   @media (max-width: 760px) {
-    .site-nav__auth { margin-left: 16px; gap: 10px; }
+    .site-nav__auth { margin-left: 0; gap: 10px; }
     .site-nav__auth form { gap: 10px; }
     .auth-pill, .auth-link {
       padding: 4px 10px;

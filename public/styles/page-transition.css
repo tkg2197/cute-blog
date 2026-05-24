@@ -27,7 +27,9 @@
   pointer-events: none !important;
   opacity: 1;
   transition:
-    top 0.18s ease-in-out,
+    left 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    top 0.28s cubic-bezier(0.22, 1, 0.36, 1),
     opacity 0.42s ease-in-out,
     filter 0.42s ease-in-out;
   will-change: top, left, width, opacity, transform;
@@ -45,18 +47,28 @@
 .site-nav__bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: var(--site-nav-gap);
+  box-sizing: border-box;
   width: 100%;
-  min-height: var(--site-nav-height);
+  height: var(--site-nav-height);
   padding: 0 var(--site-nav-pad-x);
-  border: 2px solid rgba(255, 255, 255, calc(0.96 * var(--site-nav-progress)));
-  border-radius: calc(999px * var(--site-nav-progress));
-  background: rgba(244, 251, 252, calc(0.78 * var(--site-nav-progress)));
-  box-shadow: 0 calc(18px * var(--site-nav-progress)) calc(42px * var(--site-nav-progress)) rgba(50, 74, 95, calc(0.15 * var(--site-nav-progress)));
-  -webkit-backdrop-filter: blur(calc(13px * var(--site-nav-progress)));
-          backdrop-filter: blur(calc(13px * var(--site-nav-progress)));
+  border: 1px solid rgba(188, 203, 215, calc(0.88 * var(--site-nav-progress)));
+  border-radius: calc(18px * var(--site-nav-progress));
+  background: rgba(255, 255, 255, calc(0.96 * var(--site-nav-progress)));
+  box-shadow: 0 calc(6px * var(--site-nav-progress)) calc(18px * var(--site-nav-progress)) rgba(43, 62, 79, calc(0.14 * var(--site-nav-progress)));
+  -webkit-backdrop-filter: blur(calc(5px * var(--site-nav-progress)));
+          backdrop-filter: blur(calc(5px * var(--site-nav-progress)));
   pointer-events: auto;
+  transition:
+    height 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    gap 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.2s ease,
+    border-radius 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.2s ease,
+    box-shadow 0.28s ease,
+    backdrop-filter 0.28s ease;
 }
 
 .site-nav__brand,
@@ -82,8 +94,8 @@
   flex: 0 1 auto;
   display: flex !important;
   align-items: center;
-  justify-content: flex-end;
-  gap: clamp(14px, 2vw, 34px) !important;
+  justify-content: center;
+  gap: clamp(14px, 1.7vw, 28px) !important;
   min-width: 0;
   padding: 0 !important;
   border-radius: 0 !important;
@@ -232,7 +244,9 @@
 
 .pt-ready .site-nav.pt-page-piece {
   transition:
-    top 0.18s ease-in-out,
+    left 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    top 0.28s cubic-bezier(0.22, 1, 0.36, 1),
     opacity 0.42s ease-in-out,
     transform 0.72s ease-out,
     filter 0.72s ease-out;

@@ -121,7 +121,7 @@
       }
     }
 
-    var barGap = mobile ? 16 : 32;
+    var barGap = mobile ? 14 : 24;
     return Math.ceil(
       brand.getBoundingClientRect().width +
       linksWidth +
@@ -139,21 +139,23 @@
 
     var y = window.pageYOffset || document.documentElement.scrollTop || 0;
     var viewport = window.innerWidth || document.documentElement.clientWidth || 0;
-    var progress = clamp(y / 260, 0, 1);
+    var progress = y > 36 ? 1 : 0;
     var mobile = viewport < 680;
-    var sideGap = mobile ? 12 : 18;
+    var sideGap = mobile ? 10 : 14;
     var fullWidth = viewport;
-    var fullPad = mobile ? 14 : 70;
-    var pillPad = mobile ? 14 : 22;
+    var fullPad = mobile ? 14 : 46;
+    var pillPad = mobile ? 11 : 13;
     var contentWidth = navContentWidth(nav, mobile, pillPad);
     var pillWidth = Math.min(viewport - sideGap * 2, Math.max(contentWidth, mobile ? viewport - 24 : 0));
     var width = fullWidth + (pillWidth - fullWidth) * progress;
     var top = (mobile ? 8 : 14) * progress;
     var pad = fullPad + (pillPad - fullPad) * progress;
-    var fullHeight = mobile ? 64 : 76;
-    var pillHeight = mobile ? 54 : 58;
+    var fullHeight = mobile ? 64 : 74;
+    var pillHeight = mobile ? 50 : 56;
     var height = fullHeight + (pillHeight - fullHeight) * progress;
-    var gap = (mobile ? 16 : 32) * progress;
+    var fullGap = mobile ? 16 : clamp(viewport * 0.12, 76, 220);
+    var pillGap = mobile ? 14 : 24;
+    var gap = fullGap + (pillGap - fullGap) * progress;
     var movingDown = y > lastScrollY + 2;
     var movingUp = y < lastScrollY - 2;
 
