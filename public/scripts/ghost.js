@@ -21,6 +21,13 @@
   var PADDING = 14;       // 鬼魂外扩，给文字留呼吸
   var TRY_LIMIT = 80;     // 最多试多少个候选点
 
+  // 鬼魂只在视口最左边条 / 最右边条出没，不在中间内容区干扰文字。
+  // 边条宽度按视口取 22%，但夹在 [140, 280] 之间；窄屏放不下时
+  // 直接暂不出现，不退回中间。
+  var SIDE_RATIO = 0.22;
+  var SIDE_MIN = 140;
+  var SIDE_MAX = 280;
+
   // 鼠标悬停时随机说一句（≥15 句），跑掉前停留 ~1.2s 给用户读
   var BUBBLE_PHRASES = [
     "You can't catch me~",
@@ -174,14 +181,28 @@
   function findBlankSpot() {
     var vw = window.innerWidth;
     var vh = window.innerHeight;
-    var maxX = vw - W - EDGE;
     var maxY = vh - H - EDGE;
-    if (maxX < EDGE || maxY < EDGE) return null;
+    if (vw < W + EDGE * 2 || maxY < EDGE) return null;
+
+    var sideWidth = Math.round(Math.min(SIDE_MAX, Math.max(SIDE_MIN, vw * SIDE_RATIO)));
+    var leftMax = Math.min(sideWidth - W - EDGE, vw - W - EDGE);
+    var rightMin = Math.max(vw - sideWidth + EDGE, EDGE);
+    var rightMax = vw - W - EDGE;
+
+    var zones = [];
+    if (leftMax >= EDGE) {
+      zones.push({ min: EDGE, max: leftMax });
+    }
+    if (rightMax >= rightMin) {
+      zones.push({ min: rightMin, max: rightMax });
+    }
+    if (!zones.length) return null;
 
     var obstacles = gatherObstacles();
 
     for (var k = 0; k < TRY_LIMIT; k++) {
-      var x = EDGE + Math.random() * (maxX - EDGE);
+      var zone = zones[Math.floor(Math.random() * zones.length)];
+      var x = zone.min + Math.random() * (zone.max - zone.min);
       var y = EDGE + Math.random() * (maxY - EDGE);
       var rect = {
         left:   x - PADDING,
