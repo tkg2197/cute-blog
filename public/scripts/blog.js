@@ -306,35 +306,46 @@
   }
 
   function setTocState(activeId, visibleIds) {
+    var firstVisible = visibleIds[0] || "";
+    var lastVisible = visibleIds[visibleIds.length - 1] || "";
     Object.keys(tocLinks).forEach(function (key) {
       tocLinks[key].classList.toggle("is-active", key === activeId);
       tocLinks[key].classList.toggle("is-visible", visibleIds.indexOf(key) !== -1);
+      tocLinks[key].classList.toggle("is-visible-first", key === firstVisible);
+      tocLinks[key].classList.toggle("is-visible-last", key === lastVisible);
     });
     updateTocFill(visibleIds);
   }
 
-  function currentHeadingId() {
-    var probe = window.scrollY + Math.min(260, window.innerHeight * 0.36);
-    var active = tocHeadings[0] && tocHeadings[0].id;
-    tocHeadings.forEach(function (heading) {
-      if (heading.offsetTop <= probe) active = heading.id;
-    });
-    return active;
+  function headingDocumentTop(heading) {
+    return heading.getBoundingClientRect().top + (window.scrollY || document.documentElement.scrollTop || 0);
   }
 
-  function visibleHeadingIds() {
-    var topEdge = 90;
-    var bottomEdge = Math.max(220, window.innerHeight * 0.78);
-    return tocHeadings.filter(function (heading) {
-      var rect = heading.getBoundingClientRect();
-      return rect.top >= topEdge && rect.top <= bottomEdge;
-    }).map(function (heading) {
-      return heading.id;
+  function readingHeadingIds() {
+    if (!tocHeadings.length) return [];
+    var scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 720;
+    var bandTop = Math.min(150, viewportHeight * 0.22);
+    var bandBottom = Math.max(bandTop + 220, viewportHeight * 0.82);
+    var visibleIds = [];
+    tocHeadings.forEach(function (heading) {
+      var top = heading.getBoundingClientRect().top;
+      if (top >= bandTop && top <= bandBottom && visibleIds.length < 4) {
+        visibleIds.push(heading.id);
+      }
     });
+    if (visibleIds.length) return visibleIds;
+
+    var readLine = scrollY + bandTop;
+    var activeIndex = 0;
+    tocHeadings.forEach(function (heading, index) {
+      if (headingDocumentTop(heading) <= readLine) activeIndex = index;
+    });
+    return [tocHeadings[activeIndex].id];
   }
 
   function updateProgress() {
-    updateTocFill(visibleHeadingIds());
+    updateTocFill(readingHeadingIds());
   }
 
   function updateTags() {
@@ -349,8 +360,8 @@
     window.requestAnimationFrame(function () {
       updateTags();
       updateProgress();
-      var visibleIds = visibleHeadingIds();
-      setTocState(visibleIds[0] || currentHeadingId(), visibleIds);
+      var visibleIds = readingHeadingIds();
+      setTocState(visibleIds[0], visibleIds);
       ticking = false;
     });
   }
@@ -359,8 +370,9 @@
   buildToc();
   updateTags();
   updateProgress();
-  var initialVisibleIds = visibleHeadingIds();
-  setTocState(initialVisibleIds[0] || currentHeadingId(), initialVisibleIds);
+  var initialVisibleIds = readingHeadingIds();
+  setTocState(initialVisibleIds[0], initialVisibleIds);
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll);
+  window.addEventListener("load", onScroll);
 })();
