@@ -9,6 +9,7 @@
   var tocList = document.getElementById("tocList");
   var tocFill = document.getElementById("tocFill");
   var sections = [];
+  var tocHeadings = [];
   var tocLinks = {};
 
   function queryParam(name) {
@@ -262,37 +263,54 @@
 
   function buildToc() {
     sections = Array.prototype.slice.call(document.querySelectorAll(".article-section"));
+    tocHeadings = Array.prototype.slice.call(document.querySelectorAll(".article-section h2, .article-section h3, .article-section h4"));
     tocLinks = {};
     tocList.textContent = "";
     var frag = document.createDocumentFragment();
-    sections.forEach(function (section) {
+    tocHeadings.forEach(function (heading, index) {
+      if (!heading.id) {
+        heading.id = slug(heading.textContent, "heading-" + (index + 1));
+      }
       var link = document.createElement("a");
       link.className = "toc__link";
-      link.href = "#" + section.id;
-      link.textContent = section.getAttribute("data-toc-title") || section.querySelector("h2").textContent;
+      link.href = "#" + heading.id;
+      link.dataset.level = String(Math.min(Number(heading.tagName.slice(1)) || 2, 4));
+      link.textContent = heading.textContent.trim();
       link.addEventListener("click", function (ev) {
         ev.preventDefault();
-        section.scrollIntoView({ behavior: "smooth", block: "start" });
+        heading.scrollIntoView({ behavior: "smooth", block: "start" });
       });
-      tocLinks[section.id] = link;
+      tocLinks[heading.id] = link;
       frag.appendChild(link);
     });
     tocList.appendChild(frag);
   }
 
-  function setActive(id) {
+  function setTocState(activeId, visibleIds) {
     Object.keys(tocLinks).forEach(function (key) {
-      tocLinks[key].classList.toggle("is-active", key === id);
+      tocLinks[key].classList.toggle("is-active", key === activeId);
+      tocLinks[key].classList.toggle("is-visible", visibleIds.indexOf(key) !== -1);
     });
   }
 
-  function currentSectionId() {
+  function currentHeadingId() {
     var probe = window.scrollY + Math.min(260, window.innerHeight * 0.36);
-    var active = sections[0] && sections[0].id;
-    sections.forEach(function (section) {
-      if (section.offsetTop <= probe) active = section.id;
+    var active = tocHeadings[0] && tocHeadings[0].id;
+    tocHeadings.forEach(function (heading) {
+      if (heading.offsetTop <= probe) active = heading.id;
     });
     return active;
+  }
+
+  function visibleHeadingIds() {
+    var topEdge = 90;
+    var bottomEdge = Math.max(220, window.innerHeight * 0.78);
+    return tocHeadings.filter(function (heading) {
+      var rect = heading.getBoundingClientRect();
+      return rect.top >= topEdge && rect.top <= bottomEdge;
+    }).map(function (heading) {
+      return heading.id;
+    });
   }
 
   function updateProgress() {
@@ -303,10 +321,8 @@
   }
 
   function updateTags() {
-    var y = window.scrollY || document.documentElement.scrollTop || 0;
-    // 轻微下滑：收成胶囊；继续下滑：胶囊整体向上滑出消失。
-    tags.classList.toggle("is-gathered", y > 64);
-    tags.classList.toggle("is-hidden", y > 260);
+    if (!tags) return;
+    tags.classList.remove("is-gathered", "is-hidden");
   }
 
   var ticking = false;
@@ -316,7 +332,8 @@
     window.requestAnimationFrame(function () {
       updateTags();
       updateProgress();
-      setActive(currentSectionId());
+      var visibleIds = visibleHeadingIds();
+      setTocState(visibleIds[0] || currentHeadingId(), visibleIds);
       ticking = false;
     });
   }
@@ -325,7 +342,8 @@
   buildToc();
   updateTags();
   updateProgress();
-  setActive(currentSectionId());
+  var initialVisibleIds = visibleHeadingIds();
+  setTocState(initialVisibleIds[0] || currentHeadingId(), initialVisibleIds);
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll);
 })();

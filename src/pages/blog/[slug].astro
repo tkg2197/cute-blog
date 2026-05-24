@@ -31,29 +31,23 @@ const displayExcerpt = post.excerpt ? markdownToPlainText(post.excerpt) : "";
 const readMinutes = Math.max(3, Math.ceil((post.content_markdown || "").length / 280));
 ---
 
-<PrototypeLayout title={`${displayTitle} · Our Nest`} current="blog" bgClass="blog-bg" backHref="/blog" backLabel="Back to blog">
+<PrototypeLayout title={`${displayTitle} · Our Nest`} current="blog" bgClass="blog-bg">
   <Fragment slot="head">
     <link rel="stylesheet" href="/styles/blog.css" />
   </Fragment>
 
-  <div class="blog-tags" id="blogTags" aria-label="Post tags">
-    <span class={`blog-tag blog-tag--${author}`}>{authorName}</span>
-    <span class="blog-tag">{formatDate(dateValue)}</span>
-    <span class="blog-tag">{readMinutes} min read</span>
-    {(post.tags || []).map((tag) => <span class="blog-tag">{tag}</span>)}
-  </div>
-
   <main class="blog-shell">
     <article class="article">
       <header class="article-head">
-        <p class="article-kicker">Blog / Markdown upload</p>
+        <a class="blog-detail-back" href="/blog" aria-label="Back to blog">Back</a>
+        <div class="blog-tags" id="blogTags" aria-label="Post metadata">
+          <span class={`blog-tag blog-tag--${author}`}>{authorName}</span>
+          <span class="blog-tag">{formatDate(dateValue)}</span>
+          <span class="blog-tag">{readMinutes} min read</span>
+          {(post.tags || []).map((tag) => <span class="blog-tag">{tag}</span>)}
+        </div>
         <h1>{displayTitle}</h1>
         {displayExcerpt && <p class="article-summary">{displayExcerpt}</p>}
-        <div class="article-authors" aria-label="Author">
-          <span class={`article-author article-author--${author}`}>
-            {author === "white" ? "🐶" : "🐕"} {authorName}
-          </span>
-        </div>
       </header>
 
       {sections.map((section) => (
@@ -66,7 +60,7 @@ const readMinutes = Math.max(3, Math.ceil((post.content_markdown || "").length /
 
     <aside class="toc" aria-label="Table of contents">
       <div class="toc__inner">
-        <p class="toc__title">Contents</p>
+        <p class="toc__title">TABLE OF CONTENTS</p>
         <div class="toc__body">
           <span class="toc__track" aria-hidden="true">
             <span class="toc__fill" id="tocFill"></span>
