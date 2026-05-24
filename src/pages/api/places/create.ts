@@ -1,0 +1,43 @@
+import type { APIRoute } from "astro";
+import { createServiceClient } from "../../../lib/supabase";
+
+const validTones = new Set(["night", "desert", "forest", "sea"]);
+
+export const POST: APIRoute = async ({ request, locals, redirect }) => {
+  const user = locals.user;
+  if (!user) return redirect("/auth/login", 303);
+
+  const form = await request.formData();
+  const name = String(form.get("name") || "").trim();
+  const note = String(form.get("note") || "").trim();
+  const tone = String(form.get("tone") || "night").trim();
+  const rawReturn = String(form.get("return_to") || "").trim();
+  const safeReturn = rawReturn.startsWith("/") ? rawReturn : "/places";
+  const sep = safeReturn.includes("?") ? "&" : "?";
+
+  if (!name || name.length > 32) {
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("请填写 1-32 字的地点名")}`, 303);
+  }
+
+  if (!note || note.length > 140) {
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("请填写 1-140 字的想去理由")}`, 303);
+  }
+
+  if (!validTones.has(tone)) {
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("请选择有效氛围")}`, 303);
+  }
+
+  const supabase = createServiceClient();
+  const { error } = await supabase.from("places").insert({
+    owner_id: user.id,
+    name,
+    note,
+    tone,
+  });
+
+  if (error) {
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent(error.message)}`, 303);
+  }
+
+  return redirect(`${safeReturn}${sep}created=place`, 303);
+};

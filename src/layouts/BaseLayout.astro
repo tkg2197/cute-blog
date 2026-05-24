@@ -1,0 +1,83 @@
+---
+import { AUTHOR_COLORS, AUTHOR_LABELS } from "../lib/types";
+import type { AuthorKey } from "../lib/types";
+
+interface Props {
+  title: string;
+  description?: string;
+  current?: string;
+  narrow?: boolean;
+  htmlClass?: string;
+  bodyClass?: string;
+  fullBleed?: boolean;
+  hideNav?: boolean;
+  backHref?: string;
+  backLabel?: string;
+}
+
+const {
+  title,
+  description = "我们的小窝，双人生活博客。",
+  current = "",
+  narrow = false,
+  htmlClass = "",
+  bodyClass = "",
+  fullBleed = false,
+  hideNav = false,
+  backHref,
+  backLabel = "返回",
+} = Astro.props;
+const user = Astro.locals.user;
+const profile = Astro.locals.profile;
+const authorKey = (profile?.author_key || "white") as AuthorKey;
+const userColor = AUTHOR_COLORS[authorKey];
+const homeHref = current === "home" ? "#home" : "/?skipCover=1#home";
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN" class={htmlClass}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <slot name="head" />
+    <link rel="stylesheet" href="/styles/app.css" />
+  </head>
+  <body class:list={[bodyClass]}>
+    <div class="site-bg" aria-hidden="true"></div>
+    {backHref && (
+      <a class="site-back-btn" href={backHref} aria-label={backLabel}>← {backLabel}</a>
+    )}
+    {!hideNav && (
+      <header class="site-nav">
+        <a class="site-brand" href={homeHref}>我们的小窝</a>
+        <nav aria-label="主导航">
+          <a class:list={{ active: current === "home" }} href={homeHref}>首页</a>
+          <a class:list={{ active: current === "blog" }} href="/blog">双人博客</a>
+          <a class:list={{ active: current === "records" }} href="/records">生活记录</a>
+          <a class:list={{ active: current === "photos" }} href="/photos">照片墙</a>
+          <a class:list={{ active: current === "activity" }} href="/activity">时段活动</a>
+          <a class:list={{ active: current === "admin" }} href="/admin">后台</a>
+        </nav>
+        <div class="site-auth">
+          {user ? (
+            <form action="/api/auth/logout" method="post">
+              <span class="user-pill" style={`--user-color:${userColor}`} title={profile?.display_name || AUTHOR_LABELS[authorKey]}>{profile?.display_name || AUTHOR_LABELS[authorKey]}</span>
+              <button class="link-button" type="submit">退出</button>
+            </form>
+          ) : (
+            <a class="login-link" href="/auth/login">登录</a>
+          )}
+        </div>
+      </header>
+    )}
+    {fullBleed ? (
+      <slot />
+    ) : (
+      <main class:list={["page-shell", { "page-shell--narrow": narrow }]}>
+        <slot />
+      </main>
+    )}
+  </body>
+</html>

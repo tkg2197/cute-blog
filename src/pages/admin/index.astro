@@ -1,0 +1,327 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { createServiceClient } from "../../lib/supabase";
+import { ACTIVITY_CATEGORIES, ACTIVITY_PERIODS, MOOD_LABELS } from "../../lib/types";
+import type { ActivityEntry, BlogPost, LifeRecord, Photo } from "../../lib/types";
+
+const supabase = createServiceClient();
+const user = Astro.locals.user!;
+
+const [{ data: posts }, { data: photos }, { data: records }, { data: activities }] = await Promise.all([
+  supabase
+    .from("blog_posts")
+    .select("id,slug,title,excerpt,tags,published_at,created_at,storage_path,profiles(display_name,author_key)")
+    .eq("author_id", user.id)
+    .order("created_at", { ascending: false }),
+  supabase
+    .from("photos")
+    .select("id,title,caption,taken_on,storage_path,created_at,profiles(display_name,author_key)")
+    .eq("owner_id", user.id)
+    .order("created_at", { ascending: false }),
+  supabase
+    .from("life_records")
+    .select("id,record_on,mood,body,created_at,updated_at,profiles(display_name,author_key)")
+    .eq("owner_id", user.id)
+    .order("record_on", { ascending: false })
+    .order("created_at", { ascending: false }),
+  supabase
+    .from("activity_entries")
+    .select("id,activity_on,period,category,minutes,body,created_at,updated_at,profiles(display_name,author_key)")
+    .eq("owner_id", user.id)
+    .order("activity_on", { ascending: false })
+    .order("created_at", { ascending: false }),
+]);
+
+const myPosts = (posts || []) as BlogPost[];
+const myRecords = (records || []) as LifeRecord[];
+const myActivities = (activities || []) as ActivityEntry[];
+const myPhotos = ((photos || []) as Photo[]).map((photo) => ({
+  ...photo,
+  publicUrl: supabase.storage.from("photos").getPublicUrl(photo.storage_path).data.publicUrl,
+}));
+
+const errorMessage = Astro.url.searchParams.get("error");
+const uploaded = Astro.url.searchParams.get("uploaded");
+const deleted = Astro.url.searchParams.get("deleted");
+const created = Astro.url.searchParams.get("created");
+
+const today = new Date().toISOString().slice(0, 10);
+---
+
+<BaseLayout title="后台 - 我们的小窝" current="admin" backHref="/?skipCover=1#home">
+  <section class="page-title">
+    <p class="kicker">Admin</p>
+    <h1>今天要收些什么？</h1>
+    <p>这里先放后端核心能力：照片上传到 Supabase Storage，博客继续用 Markdown 文件上传。</p>
+  </section>
+
+  {errorMessage && <p class="notice error" style="margin-top:16px">{errorMessage}</p>}
+  {uploaded === "photo" && <p class="notice" style="margin-top:16px">照片已经上传成功。</p>}
+  {created === "record" && <p class="notice" style="margin-top:16px">生活记录已经保存。</p>}
+  {created === "activity" && <p class="notice" style="margin-top:16px">活动记录已经保存。</p>}
+  {deleted === "photo" && <p class="notice" style="margin-top:16px">照片已经删除。</p>}
+  {deleted === "post" && <p class="notice" style="margin-top:16px">文章已经删除。</p>}
+  {deleted === "record" && <p class="notice" style="margin-top:16px">生活记录已经删除。</p>}
+  {deleted === "activity" && <p class="notice" style="margin-top:16px">活动记录已经删除。</p>}
+
+  <section class="split split--wide-left" style="margin-top:24px">
+    <div class="panel">
+      <p class="kicker">Life Record</p>
+      <h2>写生活记录</h2>
+      <form class="form-grid" action="/api/records/create" method="post" enctype="multipart/form-data">
+        <div class="form-pair">
+          <label class="field">
+            <span>日期</span>
+            <input name="record_on" type="date" value={today} required />
+          </label>
+          <label class="field">
+            <span>心情</span>
+            <select name="mood" required>
+              <option value="happy">开心</option>
+              <option value="loved">幸福</option>
+              <option value="calm">平静</option>
+              <option value="tired">疲惫</option>
+              <option value="down">难过</option>
+              <option value="moody">烦躁</option>
+            </select>
+          </label>
+        </div>
+        <label class="field">
+          <span>今天发生了什么</span>
+          <textarea name="body" rows="6" maxlength="800" placeholder="写一点今天的小事、心情或者想记住的瞬间" required></textarea>
+        </label>
+        <label class="field">
+          <span>照片（可选，多选后会同步进入照片墙）</span>
+          <input name="photos" type="file" accept="image/*" multiple />
+        </label>
+        <button class="button" type="submit">保存生活记录</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <p class="kicker">Photo Storage</p>
+      <h2>上传照片</h2>
+      <form class="form-grid" action="/api/photos/upload" method="post" enctype="multipart/form-data">
+        <label class="field">
+          <span>照片</span>
+          <input name="photo" type="file" accept="image/*" required />
+        </label>
+        <label class="field">
+          <span>标题</span>
+          <input name="title" type="text" maxlength="80" placeholder="今天的小瞬间" />
+        </label>
+        <label class="field">
+          <span>日期</span>
+          <input name="taken_on" type="date" />
+        </label>
+        <label class="field">
+          <span>说明</span>
+          <textarea name="caption" rows="4" maxlength="240" placeholder="写一点关于这张照片的话"></textarea>
+        </label>
+        <button class="button" type="submit">上传照片</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="split" style="margin-top:24px">
+    <div class="panel">
+      <p class="kicker">Activity</p>
+      <h2>添加时段活动</h2>
+      <form class="form-grid" action="/api/activity/create" method="post">
+        <div class="form-pair">
+          <label class="field">
+            <span>日期</span>
+            <input name="activity_on" type="date" value={today} required />
+          </label>
+          <label class="field">
+            <span>时段</span>
+            <select name="period" required>
+              {ACTIVITY_PERIODS.map((period) => (
+                <option value={period.key}>{period.label} · {period.time}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div class="form-pair">
+          <label class="field">
+            <span>分类</span>
+            <select name="category" required>
+              {ACTIVITY_CATEGORIES.map((category) => <option value={category}>{category}</option>)}
+            </select>
+          </label>
+          <label class="field">
+            <span>分钟</span>
+            <input name="minutes" type="number" min="1" max="720" step="1" value="30" required />
+          </label>
+        </div>
+        <label class="field">
+          <span>做了什么</span>
+          <textarea name="body" rows="4" maxlength="180" placeholder="例如：一起整理照片墙，顺手改了几处小细节" required></textarea>
+        </label>
+        <button class="button" type="submit">保存活动记录</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <p class="kicker">Markdown Blog</p>
+      <h2>上传文章</h2>
+      <form class="form-grid" action="/api/blog/upload" method="post" enctype="multipart/form-data">
+        <label class="field">
+          <span>Markdown 文件</span>
+          <input name="markdown" type="file" accept=".md,text/markdown,text/plain" required />
+        </label>
+        <label class="field">
+          <span>自定义 slug（可选）</span>
+          <input name="slug" type="text" maxlength="90" placeholder="our-first-post" />
+        </label>
+        <button class="button" type="submit">上传文章</button>
+      </form>
+      <p class="muted">支持 frontmatter：title、excerpt、tags。tags 用英文逗号分隔。</p>
+    </div>
+
+    <div class="panel">
+      <div class="section-head">
+        <div>
+          <p class="kicker">生活记录</p>
+          <h2>管理记录</h2>
+        </div>
+        <span class="count-pill">{myRecords.length} 条</span>
+      </div>
+      <div class="manage-list">
+        {myRecords.length ? myRecords.map((record) => (
+          <article class="manage-item">
+            <div class="manage-item__main">
+              <h3>{record.record_on} · {MOOD_LABELS[record.mood] || record.mood}</h3>
+              <p class="muted">{record.body}</p>
+              <div class="meta">
+                <span>{new Date(record.created_at).toLocaleDateString("zh-CN")}</span>
+              </div>
+            </div>
+            <div class="manage-actions">
+              <form action="/api/records/delete" method="post" data-confirm="确定删除这条生活记录吗？">
+                <input type="hidden" name="id" value={record.id} />
+                <button class="mini-button mini-button--danger" type="submit">删除</button>
+              </form>
+            </div>
+          </article>
+        )) : <p class="muted">还没有生活记录。</p>}
+      </div>
+    </div>
+  </section>
+
+  <section class="split" style="margin-top:24px">
+    <div class="panel">
+      <div class="section-head">
+        <div>
+          <p class="kicker">时段活动</p>
+          <h2>管理活动</h2>
+        </div>
+        <span class="count-pill">{myActivities.length} 条</span>
+      </div>
+      <div class="manage-list">
+        {myActivities.length ? myActivities.map((activity) => {
+          const period = ACTIVITY_PERIODS.find((item) => item.key === activity.period);
+          return (
+            <article class="manage-item">
+              <div class="manage-item__main">
+                <h3>{activity.activity_on} · {period?.label || activity.period} · {activity.category}</h3>
+                <p class="muted">{activity.body}</p>
+                <div class="meta">
+                  <span>{activity.minutes} 分钟</span>
+                  <span>{new Date(activity.created_at).toLocaleDateString("zh-CN")}</span>
+                </div>
+              </div>
+              <div class="manage-actions">
+                <form action="/api/activity/delete" method="post" data-confirm="确定删除这条活动记录吗？">
+                  <input type="hidden" name="id" value={activity.id} />
+                  <button class="mini-button mini-button--danger" type="submit">删除</button>
+                </form>
+              </div>
+            </article>
+          );
+        }) : <p class="muted">还没有活动记录。</p>}
+      </div>
+    </div>
+
+    <div class="panel">
+      <p class="kicker">Quick Links</p>
+      <h2>查看统计</h2>
+      <p class="muted">保存活动记录后，可以去时段活动页查看当天时间线、分类占比和时段概览。</p>
+      <div class="action-row">
+        <a class="button-secondary" href="/activity">打开时段活动</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="split" style="margin-top:24px">
+    <div class="panel">
+      <div class="section-head">
+        <div>
+          <p class="kicker">我的文章</p>
+          <h2>管理 Markdown</h2>
+        </div>
+        <span class="count-pill">{myPosts.length} 篇</span>
+      </div>
+      <div class="manage-list">
+        {myPosts.length ? myPosts.map((post) => (
+          <article class="manage-item">
+            <div class="manage-item__main">
+              <h3>{post.title}</h3>
+              <p class="muted">{post.excerpt || "无摘要"}</p>
+              <div class="meta">
+                <span>{new Date(post.published_at || post.created_at).toLocaleDateString("zh-CN")}</span>
+                {(post.tags || []).map((tag) => <span class="tag">{tag}</span>)}
+              </div>
+            </div>
+            <div class="manage-actions">
+              <a class="mini-button" href={`/blog/${post.slug}`}>查看</a>
+              <form action="/api/blog/delete" method="post" data-confirm={`确定删除《${post.title}》吗？`}>
+                <input type="hidden" name="id" value={post.id} />
+                <button class="mini-button mini-button--danger" type="submit">删除</button>
+              </form>
+            </div>
+          </article>
+        )) : <p class="muted">还没有上传文章。</p>}
+      </div>
+    </div>
+    <div class="panel">
+      <div class="section-head">
+        <div>
+          <p class="kicker">我的照片</p>
+          <h2>管理照片</h2>
+        </div>
+        <span class="count-pill">{myPhotos.length} 张</span>
+      </div>
+      <div class="manage-photo-grid">
+        {myPhotos.length ? myPhotos.map((photo) => (
+          <article class="card photo-card">
+            <img src={photo.publicUrl} alt={photo.title || "照片"} loading="lazy" />
+            <div class="card-body">
+              <strong>{photo.title || "未命名照片"}</strong>
+              <p class="muted">{photo.caption || ""}</p>
+              <div class="meta">
+                {photo.taken_on && <span>{photo.taken_on}</span>}
+                <span>{new Date(photo.created_at).toLocaleDateString("zh-CN")}</span>
+              </div>
+              <form action="/api/photos/delete" method="post" data-confirm={`确定删除「${photo.title || "这张照片"}」吗？`}>
+                <input type="hidden" name="id" value={photo.id} />
+                <button class="mini-button mini-button--danger" type="submit">删除照片</button>
+              </form>
+            </div>
+          </article>
+        )) : <p class="muted">还没有上传照片。</p>}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  document.querySelectorAll("form[data-confirm]").forEach((form) => {
+    form.addEventListener("submit", (event) => {
+      const message = form.getAttribute("data-confirm") || "确定要删除吗？";
+      if (!window.confirm(message)) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>

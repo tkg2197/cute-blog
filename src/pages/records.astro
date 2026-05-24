@@ -1,0 +1,365 @@
+---
+import PrototypeLayout from "../layouts/PrototypeLayout.astro";
+import { createServiceClient } from "../lib/supabase";
+import { AUTHOR_LABELS, MOOD_LABELS } from "../lib/types";
+import type { AuthorKey, LifeRecord, Photo } from "../lib/types";
+
+const supabase = createServiceClient();
+const user = Astro.locals.user;
+const profile = Astro.locals.profile;
+const canCreate = !!user;
+
+const [{ data: recordsData }, { data: photosData }] = await Promise.all([
+  supabase
+    .from("life_records")
+    .select("id,owner_id,record_on,mood,body,created_at,profiles(display_name,author_key)")
+    .order("record_on", { ascending: false })
+    .order("created_at", { ascending: false }),
+  supabase
+    .from("photos")
+    .select("id,owner_id,title,caption,taken_on,storage_path,created_at,profiles(display_name,author_key)")
+    .not("taken_on", "is", null)
+    .order("taken_on", { ascending: false })
+    .order("created_at", { ascending: false }),
+]);
+
+const records = (recordsData || []) as LifeRecord[];
+const photos = ((photosData || []) as Photo[]).map((photo) => ({
+  ...photo,
+  publicUrl: supabase.storage.from("photos").getPublicUrl(photo.storage_path).data.publicUrl,
+}));
+
+const photosByKey = new Map<string, typeof photos>();
+photos.forEach((photo) => {
+  if (!photo.taken_on) return;
+  const owner = (photo.profiles?.author_key || "white") as AuthorKey;
+  const key = `${owner}|${photo.taken_on}`;
+  const list = photosByKey.get(key) || [];
+  list.push(photo);
+  photosByKey.set(key, list);
+});
+
+const grouped = new Map<string, LifeRecord[]>();
+records.forEach((record) => {
+  const list = grouped.get(record.record_on) || [];
+  list.push(record);
+  grouped.set(record.record_on, list);
+});
+const dates = Array.from(grouped.keys()).sort((a, b) => b.localeCompare(a));
+
+function prettyDate(value: string) {
+  const [, mm, dd] = value.split("-");
+  return `${Number(mm)}月${Number(dd)}日`;
+}
+
+const today = new Date().toISOString().slice(0, 10);
+const moods: Array<{ key: string; label: string }> = [
+  { key: "happy", label: "😄 开心" },
+  { key: "loved", label: "🥰 幸福" },
+  { key: "calm", label: "😌 平静" },
+  { key: "tired", label: "🥱 疲惫" },
+  { key: "down", label: "😢 难过" },
+  { key: "moody", label: "😤 烦躁" },
+];
+
+const noticeError = Astro.url.searchParams.get("error");
+const created = Astro.url.searchParams.get("created");
+---
+
+<PrototypeLayout title="生活记录 · 我们的小窝" current="records" bgClass="rec-bg" backHref="/?skipCover=1#home">
+  <Fragment slot="head">
+    <link rel="stylesheet" href="/styles/records.css" />
+  </Fragment>
+
+  <main class="rec-main">
+    <header class="rec-header">
+      <h1 class="rec-title">📖 生活记录</h1>
+      <p class="rec-subtitle">一天一页，慢慢攒起来的小日子</p>
+      {canCreate ? (
+        <button class="rec-add-toggle" id="recAddToggle" type="button" aria-expanded="false" aria-controls="recForm">
+          ＋ 添加生活记录
+        </button>
+      ) : (
+        <a class="rec-add-toggle" href="/auth/login">登录后即可添加</a>
+      )}
+      {noticeError && <p style="margin-top:14px;color:#9d3f3f;background:rgba(255,242,242,.8);padding:10px 14px;border-radius:12px;display:inline-block;">{noticeError}</p>}
+      {created === "record" && <p style="margin-top:14px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">生活记录已经保存。</p>}
+    </header>
+
+    {canCreate && (
+      <form class="rec-form is-hidden" id="recForm" action="/api/records/create" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="return_to" value="/records" />
+        <div class="rec-form__row">
+          <label class="rec-field">
+            <span>日期</span>
+            <input name="record_on" id="recDate" type="date" value={today} required />
+          </label>
+          <div class="rec-field">
+            <span>作者</span>
+            <div class="rec-who" id="recWho" aria-label={`当前账号：${AUTHOR_LABELS[(profile?.author_key || "white") as AuthorKey]}`}>
+              <span class={`rec-who__btn ${profile?.author_key === "white" ? "is-active" : ""}`} data-who="white">🐶 白狗</span>
+              <span class={`rec-who__btn ${profile?.author_key === "brown" ? "is-active" : ""}`} data-who="brown">🐕 棕狗</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rec-field">
+          <span>心情</span>
+          <div class="rec-moods" id="recMoods">
+            {moods.map((m, idx) => (
+              <button class={`rec-mood ${idx === 0 ? "is-active" : ""}`} type="button" data-mood={m.key}>{m.label}</button>
+            ))}
+          </div>
+          <input type="hidden" name="mood" id="recMoodInput" value="happy" />
+        </div>
+
+        <label class="rec-field">
+          <span>今天发生了什么</span>
+          <textarea name="body" id="recText" rows="4" maxlength="500" placeholder="写一点今天的小事、心情或者想记住的瞬间" required></textarea>
+        </label>
+
+        <div class="rec-field">
+          <span>照片</span>
+          <label class="rec-file">
+            ＋ 选择照片（可多选，保存后同步进入照片墙）
+            <input name="photos" id="recPhotos" type="file" accept="image/*" multiple hidden />
+          </label>
+          <p class="rec-file__hint" id="recPhotoHint">照片会同步进入照片墙。</p>
+        </div>
+
+        <div class="rec-form__actions">
+          <button class="rec-form__cancel" id="recCancel" type="button">取消</button>
+          <button class="rec-form__save" type="submit">保存记录</button>
+        </div>
+      </form>
+    )}
+
+    <nav class="rec-filter" id="recFilter" aria-label="筛选作者">
+      <button class="rec-filter__btn is-active" type="button" data-who="all">全部</button>
+      <button class="rec-filter__btn" type="button" data-who="white">🐶 白狗</button>
+      <button class="rec-filter__btn" type="button" data-who="brown">🐕 棕狗</button>
+    </nav>
+
+    <div class="rec-timeline" id="recTimeline">
+      {dates.length ? dates.map((date) => {
+        const dayRecords = (grouped.get(date) || []).slice().sort((a, b) => {
+          const ak = (a.profiles?.author_key || "white") as AuthorKey;
+          const bk = (b.profiles?.author_key || "white") as AuthorKey;
+          if (ak !== bk) return ak < bk ? -1 : 1;
+          return b.created_at.localeCompare(a.created_at);
+        });
+        return (
+          <section class="rec-day" data-date={date} data-whites={dayRecords.filter((r) => (r.profiles?.author_key || "white") === "white").length} data-browns={dayRecords.filter((r) => (r.profiles?.author_key || "white") === "brown").length}>
+            <div class="rec-day__label">
+              <span class="rec-day__date">{prettyDate(date)}</span>
+              <span class="rec-day__count">{dayRecords.length} 条</span>
+            </div>
+            <div class="rec-day__notes">
+              {dayRecords.map((record) => {
+                const author = (record.profiles?.author_key || "white") as AuthorKey;
+                const samePhotos = photosByKey.get(`${author}|${record.record_on}`) || [];
+                const tilt = (Math.random() * 11 - 5.5).toFixed(1);
+                return (
+                  <article class={`note note--${author}`} data-who={author} style={`--tilt:${tilt}deg`}>
+                    <div class="note__card" role="button" tabindex="0" aria-expanded="false">
+                      <span class="note__tape" aria-hidden="true"></span>
+                      <div class="note__top">
+                        <span class="note__author">{author === "white" ? "🐶 白狗" : "🐕 棕狗"}</span>
+                        <span class="note__mood">{MOOD_LABELS[record.mood] || record.mood}</span>
+                      </div>
+                      {samePhotos.length > 0 && (
+                        <div class="note__photos">
+                          {samePhotos.map((p, idx) => (
+                            <button class="note__photo" type="button" data-lb-index={idx} data-lb-group={`${author}|${record.record_on}`}>
+                              <img src={p.publicUrl} alt={p.title || "照片"} loading="lazy" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <div class="note__body">
+                        <p class="note__text">{record.body}</p>
+                      </div>
+                      <span class="note__hint">点击展开 ▾</span>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        );
+      }) : (
+        <div class="rec-empty">还没有生活记录，点上方按钮写一篇吧~</div>
+      )}
+    </div>
+  </main>
+
+  <div class="rec-lb is-hidden" id="recLb" role="dialog" aria-modal="true" aria-label="查看照片">
+    <button class="rec-lb__close" id="recLbClose" type="button" aria-label="关闭">✕</button>
+    <button class="rec-lb__nav rec-lb__nav--prev" id="recLbPrev" type="button" aria-label="上一张">‹</button>
+    <button class="rec-lb__nav rec-lb__nav--next" id="recLbNext" type="button" aria-label="下一张">›</button>
+    <img class="rec-lb__img" id="recLbImg" alt="" />
+  </div>
+
+  <script id="photoData" type="application/json" set:html={JSON.stringify(
+    Object.fromEntries(
+      Array.from(photosByKey.entries()).map(([key, list]) => [
+        key,
+        list.map((p) => ({ url: p.publicUrl, title: p.title, caption: p.caption })),
+      ])
+    )
+  )}></script>
+
+  <Fragment slot="scripts">
+    <script is:inline>
+      (function () {
+        "use strict";
+        var photoMap = {};
+        try { photoMap = JSON.parse(document.getElementById("photoData").textContent || "{}"); } catch (e) {}
+
+        // 筛选
+        var filterEl = document.getElementById("recFilter");
+        var timelineEl = document.getElementById("recTimeline");
+        var filterWho = "all";
+        function applyFilter() {
+          var days = timelineEl.querySelectorAll(".rec-day");
+          days.forEach(function (day) {
+            var notes = day.querySelectorAll(".note");
+            var visible = 0;
+            notes.forEach(function (n) {
+              var who = n.getAttribute("data-who");
+              var show = filterWho === "all" || who === filterWho;
+              n.style.display = show ? "" : "none";
+              if (show) visible += 1;
+            });
+            day.style.display = visible ? "" : "none";
+            var count = day.querySelector(".rec-day__count");
+            if (count) count.textContent = visible + " 条";
+          });
+        }
+        if (filterEl) {
+          filterEl.addEventListener("click", function (ev) {
+            var btn = ev.target.closest(".rec-filter__btn");
+            if (!btn) return;
+            filterWho = btn.getAttribute("data-who");
+            filterEl.querySelectorAll(".rec-filter__btn").forEach(function (b) {
+              b.classList.toggle("is-active", b === btn);
+            });
+            applyFilter();
+          });
+        }
+
+        // 便签展开
+        document.querySelectorAll(".note__card").forEach(function (card) {
+          var note = card.closest(".note");
+          var hint = card.querySelector(".note__hint");
+          function toggle() {
+            var open = note.classList.toggle("is-open");
+            card.setAttribute("aria-expanded", String(open));
+            if (hint) hint.textContent = open ? "点击收起 ▴" : "点击展开 ▾";
+          }
+          card.addEventListener("click", function (ev) {
+            if (ev.target.closest(".note__photo")) return;
+            toggle();
+          });
+          card.addEventListener("keydown", function (ev) {
+            if (ev.target !== card) return;
+            if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); toggle(); }
+          });
+        });
+
+        // 灯箱
+        var lbEl = document.getElementById("recLb");
+        var lbImg = document.getElementById("recLbImg");
+        var lbPrev = document.getElementById("recLbPrev");
+        var lbNext = document.getElementById("recLbNext");
+        var lbList = [];
+        var lbIndex = 0;
+
+        function showLb() {
+          var p = lbList[lbIndex];
+          if (!p) return;
+          lbImg.src = p.url;
+        }
+        function openLb(list, idx) {
+          lbList = list;
+          lbIndex = idx;
+          var many = list.length > 1;
+          lbPrev.style.display = many ? "" : "none";
+          lbNext.style.display = many ? "" : "none";
+          showLb();
+          lbEl.classList.remove("is-hidden");
+          document.addEventListener("keydown", lbKey);
+        }
+        function closeLb() {
+          lbEl.classList.add("is-hidden");
+          document.removeEventListener("keydown", lbKey);
+        }
+        function lbStep(d) {
+          if (lbList.length < 2) return;
+          lbIndex = (lbIndex + d + lbList.length) % lbList.length;
+          showLb();
+        }
+        function lbKey(e) {
+          if (e.key === "Escape") closeLb();
+          else if (e.key === "ArrowLeft") lbStep(-1);
+          else if (e.key === "ArrowRight") lbStep(1);
+        }
+        document.querySelectorAll(".note__photo").forEach(function (btn) {
+          btn.addEventListener("click", function (ev) {
+            ev.stopPropagation();
+            var key = btn.getAttribute("data-lb-group");
+            var idx = parseInt(btn.getAttribute("data-lb-index") || "0", 10);
+            var list = photoMap[key] || [];
+            if (list.length) openLb(list, idx);
+          });
+        });
+        if (document.getElementById("recLbClose")) {
+          document.getElementById("recLbClose").addEventListener("click", closeLb);
+          lbPrev.addEventListener("click", function () { lbStep(-1); });
+          lbNext.addEventListener("click", function () { lbStep(1); });
+          lbEl.addEventListener("click", function (e) { if (e.target === lbEl) closeLb(); });
+        }
+
+        // 表单交互
+        var addToggle = document.getElementById("recAddToggle");
+        var formEl = document.getElementById("recForm");
+        var moodsEl = document.getElementById("recMoods");
+        var moodInput = document.getElementById("recMoodInput");
+        var photosEl = document.getElementById("recPhotos");
+        var photoHint = document.getElementById("recPhotoHint");
+        var cancelBtn = document.getElementById("recCancel");
+
+        function setFormOpen(open) {
+          if (!formEl || !addToggle) return;
+          formEl.classList.toggle("is-hidden", !open);
+          addToggle.setAttribute("aria-expanded", open ? "true" : "false");
+          addToggle.textContent = open ? "收起添加面板" : "＋ 添加生活记录";
+        }
+        if (addToggle && formEl) {
+          addToggle.addEventListener("click", function () {
+            setFormOpen(formEl.classList.contains("is-hidden"));
+          });
+        }
+        if (cancelBtn) {
+          cancelBtn.addEventListener("click", function () { setFormOpen(false); });
+        }
+        if (moodsEl && moodInput) {
+          moodsEl.addEventListener("click", function (ev) {
+            var btn = ev.target.closest(".rec-mood");
+            if (!btn) return;
+            moodsEl.querySelectorAll(".rec-mood").forEach(function (b) {
+              b.classList.toggle("is-active", b === btn);
+            });
+            moodInput.value = btn.getAttribute("data-mood");
+          });
+        }
+        if (photosEl && photoHint) {
+          photosEl.addEventListener("change", function () {
+            var count = photosEl.files ? photosEl.files.length : 0;
+            photoHint.textContent = count ? ("已选择 " + count + " 张照片，保存后同步进入照片墙。") : "照片会同步进入照片墙。";
+          });
+        }
+      })();
+    </script>
+  </Fragment>
+</PrototypeLayout>

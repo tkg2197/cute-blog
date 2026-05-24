@@ -1,0 +1,352 @@
+---
+import PrototypeLayout from "../../layouts/PrototypeLayout.astro";
+import { createServiceClient } from "../../lib/supabase";
+import { AUTHOR_LABELS } from "../../lib/types";
+import type { AuthorKey, BlogPost } from "../../lib/types";
+
+const supabase = createServiceClient();
+const { data } = await supabase
+  .from("blog_posts")
+  .select("id,slug,title,excerpt,tags,published_at,created_at,profiles(display_name,author_key)")
+  .order("published_at", { ascending: false });
+
+const posts = (data || []) as BlogPost[];
+const user = Astro.locals.user;
+const noticeError = Astro.url.searchParams.get("error");
+
+const allTagsSet = new Set<string>();
+posts.forEach((post) => (post.tags || []).forEach((tag) => allTagsSet.add(tag)));
+const allTags = Array.from(allTagsSet);
+
+function authorEmoji(key: AuthorKey) {
+  return key === "white" ? "🐶" : "🐕";
+}
+
+function readMinutes(post: BlogPost) {
+  const text = (post.excerpt || "") + " " + (post.title || "");
+  const minutes = Math.max(3, Math.ceil(text.length / 280));
+  return minutes;
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}.${mm}.${dd}`;
+}
+
+function postYear(post: BlogPost) {
+  const value = post.published_at || post.created_at;
+  return new Date(value).getFullYear();
+}
+
+const currentYear = posts.length ? postYear(posts[0]) : new Date().getFullYear();
+---
+
+<PrototypeLayout title="双人博客 · 我们的小窝" current="blog" bgClass="bi-bg" backHref="/?skipCover=1#home">
+  <Fragment slot="head">
+    <link rel="stylesheet" href="/styles/blog-index.css" />
+  </Fragment>
+
+  <main class="bi-shell">
+    <section class="bi-main" aria-labelledby="blogTitle">
+      <header class="bi-head">
+        <p class="bi-kicker">两个人一起写的小窝手记</p>
+        <h1 id="blogTitle">双人博客</h1>
+        <p class="bi-count" id="postCount">第 1 页 · 显示 {posts.length} 篇文章</p>
+      </header>
+
+      <div class="bi-toolbar">
+        <button class="bi-filter is-active" type="button" data-filter="all">全部文章</button>
+        <button class="bi-filter bi-filter--white" type="button" data-filter="white">白狗写的</button>
+        <button class="bi-filter bi-filter--brown" type="button" data-filter="brown">棕狗写的</button>
+        {user ? (
+          <button class="bi-upload-toggle" id="blogUploadToggle" type="button" aria-expanded="false" aria-controls="blogUploadPanel">上传 Markdown</button>
+        ) : (
+          <a class="bi-upload-toggle" href="/auth/login">登录后上传</a>
+        )}
+        <a class="bi-years" href="#archive">按年份浏览 →</a>
+      </div>
+
+      {noticeError && <p style="margin:-6px 0 18px;padding:10px 14px;border-radius:12px;color:#9d3f3f;background:rgba(255,242,242,.85);font-weight:850;">{noticeError}</p>}
+
+      {user && (
+        <form class="bi-upload is-hidden" id="blogUploadPanel" action="/api/blog/upload" method="post" enctype="multipart/form-data">
+          <input type="hidden" name="return_to" value="/blog" />
+          <label class="bi-upload__file" id="blogUploadDrop">
+            <input id="blogUploadInput" name="markdown" type="file" accept=".md,.markdown,text/markdown,text/plain" required />
+            <span class="bi-upload__file-art" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v10" />
+                <path d="m7 10 5-5 5 5" />
+                <path d="M5 17v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1" />
+              </svg>
+            </span>
+            <span class="bi-upload__file-text">
+              <strong id="blogUploadFileName">选择 .md / .markdown 文件</strong>
+              <small id="blogUploadFileMeta">点击这里，或把文件拖到这里</small>
+            </span>
+            <span class="bi-upload__file-btn" id="blogUploadFakeBtn">浏览文件</span>
+          </label>
+          <label class="bi-upload__slug">
+            <span class="bi-upload__slug-label">自定义 slug（可选，留空将用标题生成）</span>
+            <input name="slug" type="text" maxlength="90" placeholder="our-first-post" class="bi-upload__slug-input" />
+          </label>
+          <div class="bi-upload__actions">
+            <p class="bi-upload__hint" id="blogUploadHint">支持 front matter：title、excerpt、tags（英文逗号分隔）。</p>
+            <button class="bi-upload__save" type="submit">发布到博客</button>
+          </div>
+        </form>
+      )}
+
+      <div class="post-list" id="postList">
+        {posts.length ? posts.map((post) => {
+          const author = (post.profiles?.author_key || "white") as AuthorKey;
+          const dateValue = post.published_at || post.created_at;
+          return (
+            <article class="post-item" data-authors={author} data-tags={(post.tags || []).join(" ")}>
+              <a class="post-item__link" href={`/blog/${post.slug}`}>
+                <time class="post-item__date" datetime={dateValue}>{formatDate(dateValue)}</time>
+                <h2>{post.title}</h2>
+                <p>{post.excerpt || "打开看看正文吧。"}</p>
+                <div class="post-item__meta">
+                  <span>{authorEmoji(author)} {AUTHOR_LABELS[author]}</span>
+                  <span>{readMinutes(post)} 分钟阅读</span>
+                </div>
+                <div class="post-item__tags">
+                  {(post.tags || []).map((tag) => <span>{tag}</span>)}
+                </div>
+                <span class="post-item__arrow" aria-hidden="true">›</span>
+              </a>
+            </article>
+          );
+        }) : (
+          <article class="post-empty">
+            还没有文章。{user ? "点上方“上传 Markdown”发布第一篇吧。" : (
+              <a href="/auth/login" style="color:#d49356;font-weight:800;">登录后即可发布 Markdown →</a>
+            )}
+          </article>
+        )}
+      </div>
+
+      <p class="post-empty is-hidden" id="postEmpty">这个标签下暂时还没有文章。</p>
+
+      <nav class="bi-pager" aria-label="博客分页">
+        <button class="bi-pager__btn is-disabled" type="button" disabled>上一页</button>
+        <span class="bi-pager__now">1 / 1</span>
+        <button class="bi-pager__btn is-disabled" type="button" disabled>下一页</button>
+      </nav>
+    </section>
+
+    <aside class="bi-side" aria-label="博客筛选">
+      <section class="tag-panel">
+        <div class="tag-panel__head">
+          <span class="tag-panel__icon" aria-hidden="true">◇</span>
+          <h2>标签</h2>
+        </div>
+        <div class="tag-grid" id="tagGrid">
+          {allTags.length ? allTags.map((tag) => (
+            <button type="button" data-tag={tag}>{tag}</button>
+          )) : <span style="color:#7a8aa0;">还没有标签</span>}
+        </div>
+        <button class="tag-panel__all" id="clearTags" type="button">查看全部 →</button>
+      </section>
+
+      <section class="archive-panel" id="archive">
+        <h2>年份归档</h2>
+        <a href="/blog" id="archiveCount">{currentYear} · {posts.length} 篇文章</a>
+      </section>
+    </aside>
+  </main>
+
+  <Fragment slot="scripts">
+    <script is:inline src="/scripts/blog-index.js"></script>
+    <script is:inline>
+      (function () {
+        var input = document.getElementById("blogUploadInput");
+        var drop = document.getElementById("blogUploadDrop");
+        var fileName = document.getElementById("blogUploadFileName");
+        var fileMeta = document.getElementById("blogUploadFileMeta");
+        if (!input || !drop || !fileName) return;
+
+        function fmtSize(bytes) {
+          if (bytes < 1024) return bytes + " B";
+          if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+          return (bytes / 1024 / 1024).toFixed(2) + " MB";
+        }
+        function reflect() {
+          var f = input.files && input.files[0];
+          if (f) {
+            drop.classList.add("has-file");
+            fileName.textContent = f.name;
+            if (fileMeta) fileMeta.textContent = fmtSize(f.size) + " · 准备好就点右下角发布";
+          } else {
+            drop.classList.remove("has-file");
+            fileName.textContent = "选择 .md / .markdown 文件";
+            if (fileMeta) fileMeta.textContent = "点击这里，或把文件拖到这里";
+          }
+        }
+        input.addEventListener("change", reflect);
+        ["dragenter", "dragover"].forEach(function (ev) {
+          drop.addEventListener(ev, function (e) {
+            e.preventDefault(); e.stopPropagation();
+            drop.classList.add("is-dragover");
+          });
+        });
+        ["dragleave", "drop"].forEach(function (ev) {
+          drop.addEventListener(ev, function (e) {
+            e.preventDefault(); e.stopPropagation();
+            drop.classList.remove("is-dragover");
+          });
+        });
+        drop.addEventListener("drop", function (e) {
+          var files = e.dataTransfer && e.dataTransfer.files;
+          if (!files || !files.length) return;
+          input.files = files;
+          reflect();
+        });
+      })();
+    </script>
+    <style is:global>
+      .bi-upload__file {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-height: 88px;
+        padding: 18px 20px;
+        border: 2px dashed rgba(122, 166, 212, 0.45);
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(241,247,253,.62));
+        color: #58728b;
+        font-weight: 700;
+        cursor: pointer;
+        transition: border-color .2s ease, background .2s ease, transform .15s ease, box-shadow .2s ease;
+      }
+      .bi-upload__file:hover {
+        border-color: rgba(122, 166, 212, 0.85);
+        background: linear-gradient(180deg, #fff, rgba(232,243,255,.82));
+        transform: translateY(-2px);
+        box-shadow: 0 14px 28px rgba(80,120,160,.14);
+      }
+      .bi-upload__file.is-dragover {
+        border-color: #7aa6d4;
+        background: linear-gradient(180deg, #fff, rgba(220,236,254,.92));
+        box-shadow: 0 0 0 4px rgba(122,166,212,.18), 0 16px 32px rgba(80,120,160,.18);
+      }
+      .bi-upload__file.has-file {
+        border-style: solid;
+        border-color: rgba(159, 220, 197, 0.82);
+        background: linear-gradient(180deg, rgba(245,255,250,.92), rgba(232,247,239,.78));
+      }
+      .bi-upload__file input[type="file"] {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+      }
+      .bi-upload__file-art {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #cfe6f7, #d9f0e4);
+        color: #4f85b8;
+        box-shadow: 0 6px 14px rgba(80,130,170,.18);
+      }
+      .bi-upload__file.has-file .bi-upload__file-art {
+        background: linear-gradient(135deg, #c2ead6, #def5e7);
+        color: #4a8c6a;
+      }
+      .bi-upload__file-text {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+      }
+      .bi-upload__file-text strong {
+        color: #3f5a72;
+        font-size: 15px;
+        font-weight: 900;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .bi-upload__file-text small {
+        color: #7a8aa0;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .bi-upload__file-btn {
+        flex: 0 0 auto;
+        padding: 9px 18px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #8fc7e8, #9fdcc5);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 900;
+        box-shadow: 0 8px 18px rgba(80,130,150,.24);
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      .bi-upload__file.has-file .bi-upload__file-btn::after {
+        content: " ✓";
+      }
+      .bi-upload__file:focus-within {
+        outline: 3px solid rgba(122,166,212,.32);
+        outline-offset: 3px;
+      }
+
+      .bi-upload__slug {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 14px;
+        padding: 14px 18px;
+        border-radius: 16px;
+        background: rgba(255,255,255,.6);
+        border: 1px solid rgba(122,166,212,.18);
+      }
+      .bi-upload__slug-label {
+        color: #58728b;
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .bi-upload__slug-input {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid rgba(122,166,212,.32);
+        border-radius: 999px;
+        background: rgba(255,255,255,.85);
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        color: #4a4f5c;
+        outline: none;
+        transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+      }
+      .bi-upload__slug-input:focus {
+        border-color: #8fc7e8;
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(143,199,232,.18);
+      }
+
+      @media (max-width: 560px) {
+        .bi-upload__file {
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+        .bi-upload__file-btn {
+          margin-left: auto;
+        }
+      }
+    </style>
+  </Fragment>
+</PrototypeLayout>

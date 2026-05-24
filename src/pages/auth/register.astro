@@ -1,0 +1,40 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const error = Astro.url.searchParams.get("error");
+---
+
+<BaseLayout title="注册 - 我们的小窝" narrow backHref="/auth/login" backLabel="返回登录">
+  <section class="page-title">
+    <p class="kicker">Only two authors</p>
+    <h1>注册小窝账号</h1>
+    <p>两个人各注册一个邮箱，并选择自己的小狗身份。数据库会限制白狗和棕狗各只能绑定一个账号。</p>
+  </section>
+
+  <section class="panel" style="margin-top:24px">
+    {error && <p class="notice error">{error}</p>}
+    <form class="form-grid" action="/api/auth/register" method="post">
+      <label class="field">
+        <span>你是谁</span>
+        <select name="author_key" required>
+          <option value="white">白狗</option>
+          <option value="brown">棕狗</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>显示名</span>
+        <input name="display_name" type="text" maxlength="24" placeholder="比如：小白" required />
+      </label>
+      <label class="field">
+        <span>邮箱</span>
+        <input name="email" type="email" autocomplete="email" required />
+      </label>
+      <label class="field">
+        <span>密码</span>
+        <input name="password" type="password" autocomplete="new-password" minlength="6" required />
+      </label>
+      <button class="button" type="submit">注册</button>
+    </form>
+    <p class="muted">已经有账号？<a href="/auth/login">去登录</a></p>
+  </section>
+</BaseLayout>

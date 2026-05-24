@@ -1,0 +1,80 @@
+---
+import PrototypeLayout from "../../layouts/PrototypeLayout.astro";
+import { createServiceClient } from "../../lib/supabase";
+import { renderArticleSections } from "../../lib/markdown";
+import { AUTHOR_LABELS } from "../../lib/types";
+import type { AuthorKey, BlogPost } from "../../lib/types";
+
+const slug = Astro.params.slug || "";
+const supabase = createServiceClient();
+const { data } = await supabase
+  .from("blog_posts")
+  .select("id,slug,title,excerpt,content_markdown,tags,published_at,created_at,profiles(display_name,author_key)")
+  .eq("slug", slug)
+  .maybeSingle();
+
+if (!data) {
+  return Astro.redirect("/blog");
+}
+
+const post = data as BlogPost;
+const author = (post.profiles?.author_key || "white") as AuthorKey;
+const dateValue = post.published_at || post.created_at;
+const formatDate = (value: string) => {
+  const d = new Date(value);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+};
+const sections = renderArticleSections(post.content_markdown || "");
+const readMinutes = Math.max(3, Math.ceil((post.content_markdown || "").length / 280));
+---
+
+<PrototypeLayout title={`${post.title} · 我们的小窝`} current="blog" bgClass="blog-bg" backHref="/blog" backLabel="返回博客">
+  <Fragment slot="head">
+    <link rel="stylesheet" href="/styles/blog.css" />
+  </Fragment>
+
+  <div class="blog-tags" id="blogTags" aria-label="文章标签">
+    <span class={`blog-tag blog-tag--${author}`}>{AUTHOR_LABELS[author]} · 作者{author === "white" ? "A" : "B"}</span>
+    <span class="blog-tag">{formatDate(dateValue)}</span>
+    <span class="blog-tag">{readMinutes} 分钟阅读</span>
+    {(post.tags || []).map((tag) => <span class="blog-tag">{tag}</span>)}
+  </div>
+
+  <main class="blog-shell">
+    <article class="article">
+      <header class="article-head">
+        <p class="article-kicker">双人博客 / Markdown 上传</p>
+        <h1>{post.title}</h1>
+        {post.excerpt && <p class="article-summary">{post.excerpt}</p>}
+        <div class="article-authors" aria-label="作者">
+          <span class={`article-author article-author--${author}`}>
+            {author === "white" ? "🐶" : "🐕"} {post.profiles?.display_name || AUTHOR_LABELS[author]}
+          </span>
+        </div>
+      </header>
+
+      {sections.map((section) => (
+        <section class="article-section" id={section.id} data-toc-title={section.title}>
+          <h2>{section.title}</h2>
+          <Fragment set:html={section.html} />
+        </section>
+      ))}
+    </article>
+
+    <aside class="toc" aria-label="文章目录">
+      <div class="toc__inner">
+        <p class="toc__title">文章目录</p>
+        <div class="toc__body">
+          <span class="toc__track" aria-hidden="true">
+            <span class="toc__fill" id="tocFill"></span>
+          </span>
+          <nav class="toc__list" id="tocList"></nav>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <Fragment slot="scripts">
+    <script is:inline src="/scripts/blog.js"></script>
+  </Fragment>
+</PrototypeLayout>

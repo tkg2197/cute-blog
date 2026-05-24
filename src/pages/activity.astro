@@ -1,0 +1,274 @@
+---
+import PrototypeLayout from "../layouts/PrototypeLayout.astro";
+import { createServiceClient } from "../lib/supabase";
+import {
+  ACTIVITY_CATEGORIES,
+  ACTIVITY_PERIODS,
+  AUTHOR_COLORS,
+  AUTHOR_LABELS,
+  CATEGORY_COLORS,
+} from "../lib/types";
+import type { ActivityEntry, AuthorKey } from "../lib/types";
+
+const supabase = createServiceClient();
+const selectedDate = Astro.url.searchParams.get("date") || new Date().toISOString().slice(0, 10);
+const selectedView = (Astro.url.searchParams.get("view") === "brown" ? "brown" : "white") as AuthorKey;
+const user = Astro.locals.user;
+const profile = Astro.locals.profile;
+const noticeError = Astro.url.searchParams.get("error");
+const created = Astro.url.searchParams.get("created");
+const deleted = Astro.url.searchParams.get("deleted");
+const returnTo = `/activity?date=${encodeURIComponent(selectedDate)}&view=${selectedView}`;
+
+const { data } = await supabase
+  .from("activity_entries")
+  .select("id,owner_id,activity_on,period,category,minutes,body,created_at,profiles(display_name,author_key)")
+  .eq("activity_on", selectedDate)
+  .order("created_at", { ascending: true });
+
+const allEntries = ((data || []) as ActivityEntry[]).sort((a, b) => {
+  const ai = ACTIVITY_PERIODS.findIndex((p) => p.key === a.period);
+  const bi = ACTIVITY_PERIODS.findIndex((p) => p.key === b.period);
+  if (ai !== bi) return ai - bi;
+  return a.created_at.localeCompare(b.created_at);
+});
+
+const entries = allEntries.filter((entry) => (entry.profiles?.author_key || "white") === selectedView);
+const selectedLabel = AUTHOR_LABELS[selectedView];
+const selectedColor = AUTHOR_COLORS[selectedView];
+const canCreateForView = user && profile?.author_key === selectedView;
+
+function fmtMinutes(value: number) {
+  const minutes = Number(value) || 0;
+  if (minutes < 60) return `${minutes} 分钟`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return `${hours} 小时${rest ? ` ${rest} 分钟` : ""}`;
+}
+
+function totalMinutes(list: ActivityEntry[]) {
+  return list.reduce((sum, entry) => sum + Number(entry.minutes || 0), 0);
+}
+
+function groupByCategory(list: ActivityEntry[]) {
+  const map = new Map<string, number>();
+  list.forEach((entry) => map.set(entry.category, (map.get(entry.category) || 0) + entry.minutes));
+  return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+}
+
+function groupByPeriod(list: ActivityEntry[], key: string) {
+  return list.filter((entry) => entry.period === key);
+}
+
+function donutGradient(list: ActivityEntry[]) {
+  const total = totalMinutes(list);
+  if (!total) return "conic-gradient(#dbe5ef 0 100%)";
+  let start = 0;
+  const stops = groupByCategory(list).map(([category, minutes]) => {
+    const pct = (minutes / total) * 100;
+    const color = CATEGORY_COLORS[category] || CATEGORY_COLORS["其他"];
+    const stop = `${color} ${start.toFixed(2)}% ${(start + pct).toFixed(2)}%`;
+    start += pct;
+    return stop;
+  });
+  return `conic-gradient(${stops.join(", ")})`;
+}
+
+const total = totalMinutes(entries);
+---
+
+<PrototypeLayout title="时段活动 · 我们的小窝" current="activity" bgClass="act-bg" backHref="/?skipCover=1#home">
+  <Fragment slot="head">
+    <link rel="stylesheet" href="/styles/activity.css" />
+  </Fragment>
+
+  <main class="act-shell" style={`--active-author:${selectedColor}`}>
+    <section class="act-main" aria-labelledby="activityTitle">
+      <header class="act-head">
+        <p class="act-kicker">今天每个时段，我们都把时间放在哪里了</p>
+        <h1 id="activityTitle">时段活动</h1>
+        <p class="act-summary" id="daySummary">{selectedLabel}当天共记录 {fmtMinutes(total)} · {entries.length} 条活动</p>
+        {noticeError && <p style="margin-top:10px;color:#9d3f3f;background:rgba(255,242,242,.8);padding:10px 14px;border-radius:12px;display:inline-block;">{noticeError}</p>}
+        {created === "activity" && <p style="margin-top:10px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">活动记录已经保存。</p>}
+        {deleted === "activity" && <p style="margin-top:10px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">活动记录已经删除。</p>}
+
+        <div class="act-head__tools">
+          <div class="act-view" id="actView" aria-label="查看谁的时间安排">
+            <a class:list={["act-view__btn", { "is-active": selectedView === "white" }]} href={`/activity?date=${selectedDate}&view=white`} data-view="white">白狗</a>
+            <a class:list={["act-view__btn", { "is-active": selectedView === "brown" }]} href={`/activity?date=${selectedDate}&view=brown`} data-view="brown">棕狗</a>
+          </div>
+          <form class="act-date-form" method="get" action="/activity" style="display:inline-flex;gap:8px;padding:6px;border-radius:999px;background:rgba(255,255,255,.48);">
+            <input type="hidden" name="view" value={selectedView} />
+            <input name="date" type="date" value={selectedDate} aria-label="查看日期" style="width:142px;border:none;border-radius:999px;padding:8px 12px;background:rgba(255,255,255,.74);color:#647084;font-size:13px;font-weight:850;" />
+            <button type="submit" style="border:none;border-radius:999px;padding:10px 20px;background:rgba(255,255,255,.74);color:#4f6a82;font-weight:900;font-size:13px;cursor:pointer;">查看</button>
+          </form>
+          <button class="act-add-toggle" id="actFormToggle" type="button" aria-expanded="false" aria-controls="activityForm">
+            ＋ 添加时间安排
+          </button>
+        </div>
+      </header>
+
+      <form class="act-form is-hidden" id="activityForm" action="/api/activity/create" method="post">
+        <input type="hidden" name="return_to" value={returnTo} />
+        <div class="act-form__row">
+          <label class="act-field">
+            <span>日期</span>
+            <input name="activity_on" id="actDate" type="date" value={selectedDate} required />
+          </label>
+          <div class="act-field">
+            <span>作者</span>
+            <div class="act-who" id="actWho" aria-label={`当前账号：${AUTHOR_LABELS[(profile?.author_key || "white") as AuthorKey]}`}>
+              <span class={`act-who__btn ${selectedView === "white" ? "is-active" : ""}`} data-who="white">🐶 白狗</span>
+              <span class={`act-who__btn ${selectedView === "brown" ? "is-active" : ""}`} data-who="brown">🐕 棕狗</span>
+            </div>
+          </div>
+        </div>
+
+        {!user ? (
+          <p style="color:#7a8aa0;font-size:13px;padding:14px 0;">登录后才能添加活动记录。<a href="/auth/login" style="color:#d49356;font-weight:800;">去登录 →</a></p>
+        ) : !canCreateForView ? (
+          <p style="color:#7a8aa0;font-size:13px;padding:14px 0;">当前登录账号是 {AUTHOR_LABELS[(profile?.author_key || "white") as AuthorKey]}，只能给自己的时间线添加记录。</p>
+        ) : (
+          <>
+            <div class="act-form__row">
+              <label class="act-field">
+                <span>时段</span>
+                <select name="period" id="actPeriod" required>
+                  {ACTIVITY_PERIODS.map((period) => <option value={period.key}>{period.label} · {period.time}</option>)}
+                </select>
+              </label>
+              <label class="act-field">
+                <span>分类</span>
+                <select name="category" id="actCategory" required>
+                  {ACTIVITY_CATEGORIES.map((category) => <option value={category}>{category}</option>)}
+                </select>
+              </label>
+              <label class="act-field act-field--small">
+                <span>分钟</span>
+                <input name="minutes" id="actMinutes" type="number" min="1" max="720" step="1" value="30" required />
+              </label>
+            </div>
+
+            <label class="act-field">
+              <span>做了什么</span>
+              <textarea name="body" id="actText" rows="3" maxlength="180" placeholder="例如：一起整理照片墙，顺手改了几处小细节" required></textarea>
+            </label>
+
+            <button class="act-submit" type="submit">＋ 添加记录</button>
+          </>
+        )}
+      </form>
+
+      <section class="act-section" aria-labelledby="timelineTitle">
+        <div class="act-section__head">
+          <h2 id="timelineTitle">{selectedLabel}的时间线</h2>
+          <div class="act-legend">
+            <span><i class="act-dot act-dot--white"></i>白狗</span>
+            <span><i class="act-dot act-dot--brown"></i>棕狗</span>
+          </div>
+        </div>
+        <div class="act-timeline" id="actTimeline">
+          {ACTIVITY_PERIODS.map((period) => {
+            const periodEntries = groupByPeriod(entries, period.key);
+            return (
+              <section class="time-row">
+                <div class="time-row__label">
+                  <strong>{period.label}</strong>
+                  <span>{period.time}</span>
+                </div>
+                <div class="time-row__track">
+                  <div class="time-row__items">
+                    {periodEntries.length ? periodEntries.map((entry) => {
+                      const width = Math.max(16, Math.min(100, (entry.minutes / period.minutes) * 100));
+                      const isOwner = user?.id === entry.owner_id;
+                      return (
+                        <article class:list={["time-block", `time-block--${selectedView}`]} style={`--w:${width.toFixed(1)}%`}>
+                          <span class="time-block__cat">{entry.category}</span>
+                          <span class="time-block__text">{entry.body}</span>
+                          <span class="time-block__mins">{fmtMinutes(entry.minutes)}</span>
+                          {isOwner && (
+                            <form action="/api/activity/delete" method="post" class="time-block__delform" data-confirm="确定删除这条活动记录吗？" style="display:inline;">
+                              <input type="hidden" name="return_to" value={returnTo} />
+                              <input type="hidden" name="id" value={entry.id} />
+                              <button class="time-block__del" type="submit" aria-label="删除这条活动">×</button>
+                            </form>
+                          )}
+                        </article>
+                      );
+                    }) : <div class="time-empty">{selectedLabel}这个时段还没有记录</div>}
+                  </div>
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      </section>
+    </section>
+
+    <aside class="act-side" aria-label="当日统计">
+      <section class="act-stat">
+        <h2 id="categoryTitle">{selectedLabel}分类占比</h2>
+        <div class="act-donut" id="actDonut" style={`background:${donutGradient(entries)}`} aria-label="当日分类占比图">
+          <span id="actDonutText">{fmtMinutes(total)}</span>
+        </div>
+        <div class="act-bars" id="actBars">
+          {groupByCategory(entries).length ? groupByCategory(entries).map(([category, minutes]) => (
+            <div class="stat-bar">
+              <div class="stat-bar__top">
+                <span>{category}</span>
+                <span>{fmtMinutes(minutes)}</span>
+              </div>
+              <div class="stat-bar__rail">
+                <div class="stat-bar__fill" style={`--w:${((minutes / total) * 100).toFixed(1)}%;--c:${CATEGORY_COLORS[category] || CATEGORY_COLORS["其他"]}`}></div>
+              </div>
+            </div>
+          )) : <p class="stat-empty">添加{selectedLabel}的活动后，这里会显示当天分类占比。</p>}
+        </div>
+      </section>
+
+      <section class="act-stat">
+        <h2 id="periodTitle">{selectedLabel}时段概览</h2>
+        <div class="act-periods" id="actPeriods">
+          {ACTIVITY_PERIODS.map((period) => {
+            const used = groupByPeriod(entries, period.key).reduce((sum, entry) => sum + entry.minutes, 0);
+            return (
+              <div class="period-pill">
+                <div class="period-pill__top">
+                  <span>{period.label}</span>
+                  <span>{fmtMinutes(used)}</span>
+                </div>
+                <div class="period-pill__rail">
+                  <div class="period-pill__fill" style={`--w:${Math.min(100, (used / period.minutes) * 100).toFixed(1)}%`}></div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <Fragment slot="scripts">
+    <script is:inline>
+      (function () {
+        "use strict";
+        var toggle = document.getElementById("actFormToggle");
+        var form = document.getElementById("activityForm");
+        if (toggle && form) {
+          toggle.addEventListener("click", function () {
+            var open = form.classList.contains("is-hidden");
+            form.classList.toggle("is-hidden", !open);
+            toggle.setAttribute("aria-expanded", open ? "true" : "false");
+            toggle.textContent = open ? "收起添加面板" : "＋ 添加时间安排";
+          });
+        }
+        document.querySelectorAll("form[data-confirm]").forEach(function (f) {
+          f.addEventListener("submit", function (ev) {
+            var message = f.getAttribute("data-confirm") || "确定删除这条记录吗？";
+            if (!window.confirm(message)) ev.preventDefault();
+          });
+        });
+      })();
+    </script>
+  </Fragment>
+</PrototypeLayout>

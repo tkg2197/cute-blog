@@ -1,0 +1,19 @@
+export function getSupabaseEnv() {
+  const url = import.meta.env.SUPABASE_URL;
+  const anonKey = import.meta.env.SUPABASE_ANON_KEY;
+  const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !anonKey) {
+    throw new Error("缺少 SUPABASE_URL 或 SUPABASE_ANON_KEY");
+  }
+
+  return { url, anonKey, serviceRoleKey };
+}
+
+export function getAllowedSignupEmails() {
+  const raw = import.meta.env.ALLOWED_SIGNUP_EMAILS || "";
+  return raw
+    .split(",")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+}
