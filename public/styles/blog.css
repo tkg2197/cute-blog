@@ -668,10 +668,14 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
   top: 8px;
   width: 3px;
   background: rgba(160, 170, 182, 0.25);
+  overflow: visible;
 }
 
 .toc__fill {
-  background: #5d90aa;
+  height: 0;
+  background: linear-gradient(180deg, var(--white-accent), #9fdcc5, var(--brown-accent));
+  transform: translateY(0);
+  transition: height 0.16s ease, transform 0.16s ease;
 }
 
 .toc__list {
@@ -682,11 +686,11 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
 .toc__link {
   position: relative;
   margin-left: -28px;
-  padding: 8px 14px 8px 28px;
+  padding: 7px 12px 7px 28px;
   border-radius: 0;
   color: rgba(42, 49, 57, 0.72);
-  font-size: 18px;
-  line-height: 1.42;
+  font-size: 14px;
+  line-height: 1.45;
   font-weight: 500;
 }
 
@@ -702,17 +706,23 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
 }
 
 .toc__link[data-level="3"] {
-  padding-left: 50px;
+  padding-left: 46px;
 }
 
 .toc__link[data-level="4"] {
-  padding-left: 72px;
-  font-size: 16px;
+  padding-left: 64px;
+  font-size: 13px;
 }
 
 .toc__link:hover,
 .toc__link.is-visible {
   color: #4e83a2;
+}
+
+.toc__link.is-visible {
+  color: #4e83a2;
+  font-weight: 600;
+  box-shadow: none;
 }
 
 .toc__link.is-visible::before {
@@ -723,8 +733,7 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.44);
   color: #4e83a2;
-  font-weight: 600;
-  box-shadow: none;
+  font-weight: 650;
 }
 
 @media (max-width: 940px) {

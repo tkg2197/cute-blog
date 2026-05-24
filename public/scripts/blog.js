@@ -286,11 +286,31 @@
     tocList.appendChild(frag);
   }
 
+  function updateTocFill(visibleIds) {
+    if (!tocFill) return;
+    var visibleLinks = visibleIds.map(function (id) {
+      return tocLinks[id];
+    }).filter(Boolean);
+    if (!visibleLinks.length) {
+      tocFill.style.transform = "translateY(0px)";
+      tocFill.style.height = "0px";
+      return;
+    }
+    var bodyRect = tocList.getBoundingClientRect();
+    var firstRect = visibleLinks[0].getBoundingClientRect();
+    var lastRect = visibleLinks[visibleLinks.length - 1].getBoundingClientRect();
+    var top = firstRect.top - bodyRect.top + 8;
+    var height = Math.max(24, lastRect.bottom - firstRect.top - 16);
+    tocFill.style.transform = "translateY(" + top.toFixed(1) + "px)";
+    tocFill.style.height = height.toFixed(1) + "px";
+  }
+
   function setTocState(activeId, visibleIds) {
     Object.keys(tocLinks).forEach(function (key) {
       tocLinks[key].classList.toggle("is-active", key === activeId);
       tocLinks[key].classList.toggle("is-visible", visibleIds.indexOf(key) !== -1);
     });
+    updateTocFill(visibleIds);
   }
 
   function currentHeadingId() {
@@ -314,10 +334,7 @@
   }
 
   function updateProgress() {
-    var doc = document.documentElement;
-    var max = Math.max(1, doc.scrollHeight - window.innerHeight);
-    var pct = Math.max(0, Math.min(1, window.scrollY / max));
-    tocFill.style.height = (pct * 100).toFixed(2) + "%";
+    updateTocFill(visibleHeadingIds());
   }
 
   function updateTags() {
