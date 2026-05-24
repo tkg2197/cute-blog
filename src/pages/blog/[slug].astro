@@ -9,7 +9,7 @@ const slug = Astro.params.slug || "";
 const supabase = createServiceClient();
 const { data } = await supabase
   .from("blog_posts")
-  .select("id,slug,title,excerpt,content_markdown,tags,published_at,created_at,profiles(display_name,author_key)")
+  .select("id,slug,title,excerpt,content_markdown,tags,published_at,created_at,author_id,profiles(display_name,author_key)")
   .eq("slug", slug)
   .maybeSingle();
 
@@ -29,6 +29,7 @@ const sections = renderArticleSections(post.content_markdown || "");
 const displayTitle = markdownToPlainText(post.title || "") || firstMarkdownHeading(post.content_markdown || "") || post.title;
 const displayExcerpt = post.excerpt ? markdownToPlainText(post.excerpt) : "";
 const readMinutes = Math.max(3, Math.ceil((post.content_markdown || "").length / 280));
+const user = Astro.locals.user;
 ---
 
 <PrototypeLayout title={`${displayTitle} · Our Nest`} current="blog" bgClass="blog-bg">
@@ -39,7 +40,16 @@ const readMinutes = Math.max(3, Math.ceil((post.content_markdown || "").length /
   <main class="blog-shell">
     <article class="article">
       <header class="article-head">
-        <a class="blog-detail-back" href="/blog" aria-label="Back to blog">Back</a>
+        <div class="blog-detail-actions">
+          <a class="blog-detail-back" href="/blog" aria-label="Back to blog">Back</a>
+          {user?.id === post.author_id && (
+            <form class="blog-detail-delete" action="/api/blog/delete" method="post" data-confirm="Delete this post? This cannot be undone.">
+              <input type="hidden" name="id" value={post.id} />
+              <input type="hidden" name="return_to" value="/blog" />
+              <button type="submit">Delete post</button>
+            </form>
+          )}
+        </div>
         <div class="blog-tags" id="blogTags" aria-label="Post metadata">
           <span class={`blog-tag blog-tag--${author}`}>{authorName}</span>
           <span class="blog-tag">{formatDate(dateValue)}</span>
@@ -73,5 +83,14 @@ const readMinutes = Math.max(3, Math.ceil((post.content_markdown || "").length /
 
   <Fragment slot="scripts">
     <script is:inline src="/scripts/blog.js"></script>
+    <script is:inline>
+      document.addEventListener("submit", function (ev) {
+        var form = ev.target.closest("form[data-confirm]");
+        if (!form) return;
+        if (!window.confirm(form.getAttribute("data-confirm") || "Delete this item?")) {
+          ev.preventDefault();
+        }
+      });
+    </script>
   </Fragment>
 </PrototypeLayout>

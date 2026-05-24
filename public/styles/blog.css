@@ -555,12 +555,19 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
   margin-bottom: 76px;
 }
 
+.blog-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 34px;
+  flex-wrap: wrap;
+}
+
 .blog-detail-back {
   display: inline-flex;
   align-items: center;
   gap: 7px;
   width: max-content;
-  margin-bottom: 34px;
   padding: 9px 15px;
   border: 1px solid rgba(150, 163, 176, 0.22);
   border-radius: 8px;
@@ -585,6 +592,31 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
   transform: translateY(-1px);
   background: rgba(236, 241, 245, 0.82);
   color: rgba(32, 42, 54, 0.9);
+}
+
+.blog-detail-delete button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 9px 15px;
+  border: 1px solid rgba(185, 105, 105, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 247, 247, 0.7);
+  color: rgba(150, 70, 70, 0.86);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(105, 70, 74, 0.08);
+  -webkit-backdrop-filter: blur(10px) saturate(1.08);
+          backdrop-filter: blur(10px) saturate(1.08);
+  transition: transform 0.16s ease, background 0.16s ease, color 0.16s ease;
+}
+
+.blog-detail-delete button:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 236, 236, 0.9);
+  color: rgba(120, 52, 52, 0.96);
 }
 
 .blog-tags {

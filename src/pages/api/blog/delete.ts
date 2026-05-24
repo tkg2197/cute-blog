@@ -7,8 +7,12 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
 
   const form = await request.formData();
   const id = String(form.get("id") || "");
+  const rawReturn = String(form.get("return_to") || "").trim();
+  const safeReturn = rawReturn.startsWith("/") && !rawReturn.startsWith("//") ? rawReturn : "/blog";
+  const sep = safeReturn.includes("?") ? "&" : "?";
+
   if (!id) {
-    return redirect("/admin?error=Missing%20post%20ID", 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Missing post ID")}`, 303);
   }
 
   const supabase = createServiceClient();
@@ -20,17 +24,17 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     .maybeSingle();
 
   if (readError) {
-    return redirect(`/admin?error=${encodeURIComponent(readError.message)}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent(readError.message)}`, 303);
   }
 
   if (!post) {
-    return redirect("/admin?error=Post%20not%20found%2C%20or%20it%20does%20not%20belong%20to%20the%20current%20account", 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Post not found, or it does not belong to the current account")}`, 303);
   }
 
   if (post.storage_path) {
     const { error: storageError } = await supabase.storage.from("blog-markdown").remove([post.storage_path]);
     if (storageError && !/not found/i.test(storageError.message)) {
-      return redirect(`/admin?error=${encodeURIComponent(storageError.message)}`, 303);
+      return redirect(`${safeReturn}${sep}error=${encodeURIComponent(storageError.message)}`, 303);
     }
   }
 
@@ -41,8 +45,8 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     .eq("author_id", user.id);
 
   if (deleteError) {
-    return redirect(`/admin?error=${encodeURIComponent(deleteError.message)}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent(deleteError.message)}`, 303);
   }
 
-  return redirect("/admin?deleted=post", 303);
+  return redirect(`${safeReturn}${sep}deleted=post`, 303);
 };

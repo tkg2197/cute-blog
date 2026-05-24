@@ -69,6 +69,7 @@ const moods: Array<{ key: string; label: string }> = [
 
 const noticeError = Astro.url.searchParams.get("error");
 const created = Astro.url.searchParams.get("created");
+const deleted = Astro.url.searchParams.get("deleted");
 ---
 
 <PrototypeLayout title="Records · Our Nest" current="records" bgClass="rec-bg" backHref="/?skipCover=1#home">
@@ -89,6 +90,7 @@ const created = Astro.url.searchParams.get("created");
       )}
       {noticeError && <p style="margin-top:14px;color:#9d3f3f;background:rgba(255,242,242,.8);padding:10px 14px;border-radius:12px;display:inline-block;">{noticeError}</p>}
       {created === "record" && <p style="margin-top:14px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">Record saved.</p>}
+      {deleted === "record" && <p style="margin-top:14px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">Record deleted.</p>}
     </header>
 
     {canCreate && (
@@ -185,6 +187,13 @@ const created = Astro.url.searchParams.get("created");
                         <p class="note__text">{record.body}</p>
                       </div>
                       <span class="note__hint">Click to expand ▾</span>
+                      {user?.id === record.owner_id && (
+                        <form class="note-delete" action="/api/records/delete" method="post" data-confirm="Delete this record? This cannot be undone.">
+                          <input type="hidden" name="id" value={record.id} />
+                          <input type="hidden" name="return_to" value="/records" />
+                          <button class="note-delete__btn" type="submit">Delete</button>
+                        </form>
+                      )}
                     </div>
                   </article>
                 );
@@ -263,7 +272,7 @@ const created = Astro.url.searchParams.get("created");
             if (hint) hint.textContent = open ? "Click to collapse ▴" : "Click to expand ▾";
           }
           card.addEventListener("click", function (ev) {
-            if (ev.target.closest(".note__photo")) return;
+            if (ev.target.closest(".note__photo") || ev.target.closest(".note-delete")) return;
             toggle();
           });
           card.addEventListener("keydown", function (ev) {
@@ -364,6 +373,13 @@ const created = Astro.url.searchParams.get("created");
             photoHint.textContent = count ? ("Selected " + count + " photos. They will also appear in Photos.") : "Photos will also appear in Photos.";
           });
         }
+        document.addEventListener("submit", function (ev) {
+          var form = ev.target.closest("form[data-confirm]");
+          if (!form) return;
+          if (!window.confirm(form.getAttribute("data-confirm") || "Delete this item?")) {
+            ev.preventDefault();
+          }
+        });
       })();
     </script>
   </Fragment>

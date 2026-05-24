@@ -7,8 +7,12 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
 
   const form = await request.formData();
   const id = String(form.get("id") || "");
+  const rawReturn = String(form.get("return_to") || "").trim();
+  const safeReturn = rawReturn.startsWith("/") && !rawReturn.startsWith("//") ? rawReturn : "/records";
+  const sep = safeReturn.includes("?") ? "&" : "?";
+
   if (!id) {
-    return redirect("/admin?error=Missing%20life%20record%20ID", 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Missing life record ID")}`, 303);
   }
 
   const supabase = createServiceClient();
@@ -19,8 +23,8 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     .eq("owner_id", user.id);
 
   if (error) {
-    return redirect(`/admin?error=${encodeURIComponent(error.message)}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent(error.message)}`, 303);
   }
 
-  return redirect("/admin?deleted=record", 303);
+  return redirect(`${safeReturn}${sep}deleted=record`, 303);
 };

@@ -7,8 +7,12 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
 
   const form = await request.formData();
   const id = String(form.get("id") || "");
+  const rawReturn = String(form.get("return_to") || "").trim();
+  const safeReturn = rawReturn.startsWith("/") && !rawReturn.startsWith("//") ? rawReturn : "/photos";
+  const sep = safeReturn.includes("?") ? "&" : "?";
+
   if (!id) {
-    return redirect("/admin?error=Missing%20photo%20ID", 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Missing photo ID")}`, 303);
   }
 
   const supabase = createServiceClient();
@@ -20,16 +24,16 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     .maybeSingle();
 
   if (readError) {
-    return redirect(`/admin?error=${encodeURIComponent(readError.message)}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent(readError.message)}`, 303);
   }
 
   if (!photo) {
-    return redirect("/admin?error=Photo%20not%20found%2C%20or%20it%20does%20not%20belong%20to%20the%20current%20account", 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Photo not found, or it does not belong to the current account")}`, 303);
   }
 
   const { error: storageError } = await supabase.storage.from("photos").remove([photo.storage_path]);
   if (storageError && !/not found/i.test(storageError.message)) {
-    return redirect(`/admin?error=${encodeURIComponent(storageError.message)}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent(storageError.message)}`, 303);
   }
 
   const { error: deleteError } = await supabase
@@ -39,8 +43,8 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     .eq("owner_id", user.id);
 
   if (deleteError) {
-    return redirect(`/admin?error=${encodeURIComponent(deleteError.message)}`, 303);
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent(deleteError.message)}`, 303);
   }
 
-  return redirect("/admin?deleted=photo", 303);
+  return redirect(`${safeReturn}${sep}deleted=photo`, 303);
 };

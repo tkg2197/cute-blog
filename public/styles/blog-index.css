@@ -262,6 +262,7 @@ body {
   gap: 18px;
 }
 .post-item {
+  position: relative;
   list-style: none;
 }
 .post-item__link {
@@ -342,6 +343,57 @@ body {
   background: #ffffff;
   color: #e8895b;
   transform: translateX(4px);
+}
+
+.post-delete {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 3;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.post-item:hover .post-delete,
+.post-delete:focus-within {
+  opacity: 1;
+  transform: translateY(0);
+}
+.post-delete__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.76);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #a55252;
+  box-shadow: 0 8px 18px rgba(70, 80, 110, 0.14);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  transition: background 0.16s ease, color 0.16s ease, transform 0.16s var(--spring), box-shadow 0.16s ease;
+}
+.post-delete__btn span:first-child {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(165, 82, 82, 0.1);
+  font-size: 16px;
+  line-height: 1;
+}
+.post-delete__btn:hover {
+  background: #fff2f2;
+  color: #8f3f3f;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(120, 70, 80, 0.16);
 }
 
 .post-empty {
@@ -540,6 +592,24 @@ body {
     min-height: 0;
     padding: 19px 46px 19px 17px;
   }
+  .post-delete {
+    top: 12px;
+    right: 12px;
+    opacity: 1;
+    transform: none;
+  }
+  .post-delete__btn {
+    width: 34px;
+    padding: 0;
+    justify-content: center;
+  }
+  .post-delete__btn span:last-child {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
   .post-item h2 { font-size: 18px; }
   .post-item p { font-size: 13px; }
   .post-item__arrow { right: 12px; }
@@ -566,6 +636,8 @@ body {
     .bi-upload-toggle,
     .bi-upload__save,
     .post-item__link,
+    .post-delete,
+    .post-delete__btn,
   .post-item__arrow,
   .tag-grid button,
   .tag-panel__all { transition: none; }

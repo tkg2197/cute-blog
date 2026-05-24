@@ -418,6 +418,31 @@ body {
   color: #abb3c2;
 }
 
+.note-delete {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+.note-delete__btn {
+  min-height: 30px;
+  padding: 6px 12px;
+  border: 1px solid rgba(180, 90, 90, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.52);
+  color: #a55b5b;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(90, 70, 80, 0.08);
+  transition: background 0.16s ease, color 0.16s ease, transform 0.16s var(--spring);
+}
+.note-delete__btn:hover {
+  background: #fff0f0;
+  color: #8f3f3f;
+  transform: translateY(-2px);
+}
+
 /* 便签上的照片条 */
 .note__photos {
   display: flex;
@@ -533,5 +558,6 @@ body {
   .rec-cloud { animation: none; }
   .rec-add-toggle,
   .rec-who__btn,
-  .rec-mood { transition: none; }
+  .rec-mood,
+  .note-delete__btn { transition: none; }
 }

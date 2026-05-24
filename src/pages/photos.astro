@@ -59,6 +59,7 @@ const photoBundles: Record<string, Array<{
   title: string | null;
   caption: string | null;
   who: AuthorKey;
+  canDelete: boolean;
   diary?: { mood: string; body: string; author: string } | null;
 }>> = {};
 dates.forEach((date) => {
@@ -71,6 +72,7 @@ dates.forEach((date) => {
       title: p.title,
       caption: p.caption,
       who,
+      canDelete: !!user && p.owner_id === user.id,
       diary: diary ? {
         mood: MOOD_LABELS[diary.mood] || diary.mood,
         body: diary.body,
@@ -192,6 +194,13 @@ const deleted = Astro.url.searchParams.get("deleted");
       <figcaption class="pw-lb__cap" id="pwLbCap"></figcaption>
       <div class="pw-lb__diary is-hidden" id="pwLbDiary"></div>
     </figure>
+    {user && (
+      <form class="pw-lb__delete-form is-hidden" id="pwLbDeleteForm" action="/api/photos/delete" method="post" data-confirm="Delete this photo? This cannot be undone.">
+        <input type="hidden" name="id" id="pwLbDeleteId" value="" />
+        <input type="hidden" name="return_to" value="/photos" />
+        <button class="pw-lb__delete" type="submit">Delete photo</button>
+      </form>
+    )}
   </div>
 
   <script id="photoBundles" type="application/json" set:html={JSON.stringify(photoBundles)}></script>
@@ -222,6 +231,8 @@ const deleted = Astro.url.searchParams.get("deleted");
           detailCount.textContent = list.length + " photos";
           gridEl.textContent = "";
           list.forEach(function (item, idx) {
+            var wrap = document.createElement("div");
+            wrap.className = "pw-photo-wrap";
             var card = document.createElement("button");
             card.type = "button";
             card.className = "pw-photo-card";
@@ -233,7 +244,32 @@ const deleted = Astro.url.searchParams.get("deleted");
             img.loading = "lazy";
             card.appendChild(img);
             card.addEventListener("click", function () { openLb(date, idx); });
-            gridEl.appendChild(card);
+            wrap.appendChild(card);
+            if (item.canDelete) {
+              var form = document.createElement("form");
+              form.className = "pw-photo-delete";
+              form.action = "/api/photos/delete";
+              form.method = "post";
+              form.setAttribute("data-confirm", "Delete this photo? This cannot be undone.");
+              var id = document.createElement("input");
+              id.type = "hidden";
+              id.name = "id";
+              id.value = item.id;
+              var ret = document.createElement("input");
+              ret.type = "hidden";
+              ret.name = "return_to";
+              ret.value = "/photos";
+              var del = document.createElement("button");
+              del.type = "submit";
+              del.className = "pw-photo-delete__btn";
+              del.setAttribute("aria-label", "Delete photo");
+              del.textContent = "×";
+              form.appendChild(id);
+              form.appendChild(ret);
+              form.appendChild(del);
+              wrap.appendChild(form);
+            }
+            gridEl.appendChild(wrap);
           });
           wallEl.classList.add("is-hidden");
           detailEl.classList.remove("is-hidden");
@@ -270,6 +306,8 @@ const deleted = Astro.url.searchParams.get("deleted");
         var lbDiary = document.getElementById("pwLbDiary");
         var lbPrev = document.getElementById("pwLbPrev");
         var lbNext = document.getElementById("pwLbNext");
+        var lbDeleteForm = document.getElementById("pwLbDeleteForm");
+        var lbDeleteId = document.getElementById("pwLbDeleteId");
         var lbList = [], lbIndex = 0;
 
         var SLICE_EASE = "cubic-bezier(0.66, 0.02, 0.34, 1)";
@@ -285,6 +323,10 @@ const deleted = Astro.url.searchParams.get("deleted");
 
         function renderLbMeta(item) {
           lbCap.textContent = item.title || item.caption || "";
+          if (lbDeleteForm && lbDeleteId) {
+            lbDeleteForm.classList.toggle("is-hidden", !item.canDelete);
+            lbDeleteId.value = item.canDelete ? item.id : "";
+          }
           if (item.diary) {
             lbDiary.classList.remove("is-hidden");
             lbDiary.innerHTML = '<div class="pw-lb__diary-head">' + escapeHtml(item.diary.author) + ' · ' + escapeHtml(item.diary.mood) + '</div><div class="pw-lb__diary-text">' + escapeHtml(item.diary.body) + '</div>';
@@ -319,6 +361,10 @@ const deleted = Astro.url.searchParams.get("deleted");
           lbGen++;
           sliceBusy = false;
           lbEl.classList.add("is-hidden");
+          if (lbDeleteForm && lbDeleteId) {
+            lbDeleteForm.classList.add("is-hidden");
+            lbDeleteId.value = "";
+          }
           document.removeEventListener("keydown", lbKey);
         }
         function prefersReducedMotion() {
@@ -491,10 +537,23 @@ const deleted = Astro.url.searchParams.get("deleted");
         lbPrev.addEventListener("click", function () { lbStep(-1); });
         lbNext.addEventListener("click", function () { lbStep(1); });
         lbEl.addEventListener("click", function (e) { if (e.target === lbEl) closeLb(); });
+
+        document.addEventListener("submit", function (ev) {
+          var form = ev.target.closest("form[data-confirm]");
+          if (!form) return;
+          if (!window.confirm(form.getAttribute("data-confirm") || "Delete this item?")) {
+            ev.preventDefault();
+          }
+        });
       })();
     </script>
     <style is:global>
+      .pw-photo-wrap {
+        position: relative;
+        width: 100%;
+      }
       .pw-photo-card {
+        width: 100%;
         border: none;
         padding: 0;
         background: #fff;
@@ -510,6 +569,47 @@ const deleted = Astro.url.searchParams.get("deleted");
         width: 100%;
         aspect-ratio: 4/3;
         object-fit: cover;
+      }
+      .pw-photo-delete {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 2;
+      }
+      .pw-photo-delete__btn {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border: 1px solid rgba(255,255,255,.76);
+        border-radius: 50%;
+        background: rgba(255,255,255,.86);
+        color: #b45656;
+        font-family: var(--font);
+        font-size: 20px;
+        font-weight: 650;
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: 0 8px 18px rgba(60,70,90,.2);
+        -webkit-backdrop-filter: blur(6px);
+        backdrop-filter: blur(6px);
+        transition: background .16s ease, color .16s ease, transform .16s ease;
+      }
+      .pw-photo-delete__btn:hover {
+        background: #fff2f2;
+        color: #963f3f;
+        transform: translateY(-2px) scale(1.04);
+      }
+      .pw-lb__delete-form {
+        position: absolute;
+        bottom: 24px;
+        left: 50%;
+        z-index: 120;
+        transform: translateX(-50%);
+      }
+      .pw-lb__delete-form .pw-lb__delete {
+        position: static;
+        transform: none;
       }
     </style>
   </Fragment>
