@@ -12,7 +12,16 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const email = String(form.get("email") || "").trim().toLowerCase();
   const password = String(form.get("password") || "");
   const displayName = String(form.get("display_name") || "").trim();
-  const authorKey = String(form.get("author_key") || "") === "brown" ? "brown" : "white";
+
+  // 邮箱 → 身份固定映射（双人博客只有两个作者）
+  const EMAIL_TO_AUTHOR: Record<string, "white" | "brown"> = {
+    "wjydyx0224@qq.com": "white",
+    "2197322347@qq.com": "brown",
+  };
+  const authorKey = EMAIL_TO_AUTHOR[email];
+  if (!authorKey) {
+    return redirect(registerUrl("This email is not authorized to register."), 303);
+  }
 
   if (!email || !password || !displayName) {
     return redirect(registerUrl("Please complete the registration form."), 303);

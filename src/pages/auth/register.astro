@@ -188,43 +188,6 @@ const error = Astro.url.searchParams.get("error");
       }
       .toggle-password:hover { color: #333; }
 
-      /* Identity picker —— 两个色块选小狗身份 */
-      .identity-picker {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-      }
-      .identity-option {
-        position: relative;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 14px;
-        border: 1.5px solid #e6e6ee;
-        border-radius: 14px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        background: #fafafc;
-      }
-      .identity-option:hover { border-color: #c7c0d8; background: #f5f3fa; }
-      .identity-option input { position: absolute; opacity: 0; pointer-events: none; }
-      .identity-swatch {
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
-        flex-shrink: 0;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      }
-      .identity-swatch.white { background: #7aa6d4; }
-      .identity-swatch.brown { background: #d49356; }
-      .identity-label { font-size: 14px; font-weight: 500; color: #333; }
-      .identity-sub { display: block; font-size: 11px; color: #999; margin-top: 1px; }
-      .identity-option:has(input:checked) {
-        border-color: #1a1a2e;
-        background: #fff;
-        box-shadow: 0 4px 12px rgba(30, 30, 60, 0.1);
-      }
-
       .btn-register {
         position: relative;
         width: 100%;
@@ -431,28 +394,6 @@ const error = Astro.url.searchParams.get("error");
           </div>
 
           <form id="register-form" action="/api/auth/register" method="post" novalidate>
-            <div class="form-group">
-              <label id="identity-label">Identity</label>
-              <div class="identity-picker">
-                <label class="identity-option">
-                  <input type="radio" name="author_key" value="white" checked />
-                  <span class="identity-swatch white"></span>
-                  <span>
-                    <span class="identity-label">White</span>
-                    <span class="identity-sub">白狗 🐶</span>
-                  </span>
-                </label>
-                <label class="identity-option">
-                  <input type="radio" name="author_key" value="brown" />
-                  <span class="identity-swatch brown"></span>
-                  <span>
-                    <span class="identity-label">Brown</span>
-                    <span class="identity-sub">棕狗 🐕</span>
-                  </span>
-                </label>
-              </div>
-            </div>
-
             <div class="form-group">
               <label id="name-label" for="display_name">Display name</label>
               <div class="input-wrapper">
