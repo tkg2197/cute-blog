@@ -35,14 +35,7 @@ const recentPhotos = ((photos || []) as Photo[]).map((photo) => ({
   ...photo,
   publicUrl: supabase.storage.from("photos").getPublicUrl(photo.storage_path).data.publicUrl,
 }));
-const photoFallbacks = [
-  { publicUrl: "/assets/小白首页形象.png", title: "Little White", caption: "", taken_on: "White", profiles: { display_name: "White" } },
-  { publicUrl: "/assets/小棕首页形象.jpg", title: "Little Brown", caption: "", taken_on: "Brown", profiles: { display_name: "Brown" } },
-  { publicUrl: "/assets/早晨-白狗.png", title: "Morning", caption: "", taken_on: "Morning", profiles: { display_name: "White" } },
-  { publicUrl: "/assets/中午-棕狗.png", title: "Noon", caption: "", taken_on: "Noon", profiles: { display_name: "Brown" } },
-  { publicUrl: "/assets/晚上-白狗.png", title: "Evening", caption: "", taken_on: "Evening", profiles: { display_name: "White" } },
-];
-const displayPhotos = [...recentPhotos, ...photoFallbacks].slice(0, 5);
+const displayPhotos = recentPhotos.slice(0, 5);
 // 不论是否登录都拉两个作者的资料 + 已同步的状态，让访客也能看到双方的状态
 const { data: profileRows } = await supabase
   .from("profiles")
@@ -89,14 +82,7 @@ const postFallbacks = [
 const displayPostTitle = (post: BlogPost) => markdownToPlainText(post.title || "") || post.title;
 
 const skipCoverOnLoad = Astro.url.searchParams.get("skipCover") === "1";
-const placeFallbacks: Array<{ name: string; note: string; tone: PlaceTone }> = [
-  { name: "Kyoto", note: "Walk slowly through quiet alleys at dusk and find a warm little dinner spot.", tone: "night" },
-  { name: "Dali", note: "Go somewhere breezy, watch the lake and clouds, and let the afternoon move slowly.", tone: "desert" },
-  { name: "Iceland", note: "Wait for the aurora together and tuck the cold wind and stars into this year's wishes.", tone: "sea" },
-];
-const homePlaces = dbPlaces.length
-  ? dbPlaces.map((p) => ({ name: p.name, note: p.note, tone: p.tone as PlaceTone }))
-  : placeFallbacks;
+const homePlaces = dbPlaces.map((p) => ({ name: p.name, note: p.note, tone: p.tone as PlaceTone }));
 const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-CN").replaceAll("/", ".");
 ---
 
