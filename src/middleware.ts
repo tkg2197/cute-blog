@@ -5,7 +5,7 @@ import type { Profile } from "./lib/types";
 
 const protectedPrefixes = ["/api/blog", "/api/photos", "/api/records", "/api/activity", "/api/comments"];
 const authPages = ["/auth/login", "/auth/register"];
-const cacheablePublicPaths = new Set(["/", "/blog", "/records", "/photos", "/places", "/activity"]);
+const cacheablePublicPaths = new Set(["/", "/blog", "/records", "/photos", "/places", "/activity", "/todo"]);
 
 function isCacheablePublicPath(pathname: string) {
   return cacheablePublicPaths.has(pathname) || /^\/blog\/[^/]+$/.test(pathname);

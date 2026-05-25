@@ -12,7 +12,8 @@
     ".places-main",
     ".bi-top", ".bi-shell",
     ".blog-top", ".blog-tags", ".blog-shell",
-    ".act-top", ".act-shell"
+    ".act-top", ".act-shell",
+    ".todo-shell"
   ].join(",");
 
   var leaving = false;
@@ -204,13 +205,15 @@
     "records.html":  "#f5c1b6",   // 生活记录 - 粉
     "photos.html":   "#ffd186",   // 照片墙   - 黄
     "activity.html": "#b4a3da",   // 时段活动 - 紫
+    "todo.html":     "#8fb47f",
     // Astro 干净路由
     "":          "#7aa6d4",
     "places":    "#83d0bc",
     "blog":      "#d49356",
     "records":   "#f5c1b6",
     "photos":    "#ffd186",
-    "activity":  "#b4a3da"
+    "activity":  "#b4a3da",
+    "todo":      "#8fb47f"
   };
   var navIndicator = null;
   var navIndicatorPet = null;

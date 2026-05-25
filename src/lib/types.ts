@@ -103,6 +103,21 @@ export interface ActivityEntry {
   profiles?: Pick<Profile, "display_name" | "author_key"> | null;
 }
 
+export interface TodoItem {
+  id: string;
+  owner_id: string;
+  title: string;
+  completed: boolean;
+  completed_on: string | null;
+  completed_start_time: string | null;
+  completed_end_time: string | null;
+  completed_minutes: number;
+  activity_entry_id: string | null;
+  created_at: string;
+  updated_at: string;
+  profiles?: Pick<Profile, "display_name" | "author_key"> | null;
+}
+
 export const AUTHOR_LABELS: Record<AuthorKey, string> = {
   white: "White",
   brown: "Brown",
