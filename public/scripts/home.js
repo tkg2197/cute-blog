@@ -168,7 +168,7 @@
     } catch (e) {}
   }
 
-  function storedLocationFor(who) {
+  function serverLocationFor(who) {
     var prefix = who === "brown" ? "brown" : "white";
     var el = document.getElementById(prefix + "Weather");
     if (!el) return null;
@@ -177,6 +177,26 @@
     var label = el.getAttribute("data-label") || "";
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
     return { latitude: lat, longitude: lng, label: label || "Current location" };
+  }
+
+  function serverWeatherLabelFor(who) {
+    var prefix = who === "brown" ? "brown" : "white";
+    var el = document.getElementById(prefix + "Weather");
+    if (!el) return "";
+    var explicit = (el.getAttribute("data-label") || "").trim();
+    if (explicit) return explicit;
+    var raw = (el.getAttribute("data-server-weather") || el.textContent || "").trim();
+    if (!raw || /pending/i.test(raw)) return "";
+    return raw.split("·")[0].split("路")[0].trim();
+  }
+
+  function updateServerLocationAttrs(who, location) {
+    var prefix = who === "brown" ? "brown" : "white";
+    var el = document.getElementById(prefix + "Weather");
+    if (!el || !location) return;
+    if (Number.isFinite(location.latitude)) el.setAttribute("data-lat", String(location.latitude));
+    if (Number.isFinite(location.longitude)) el.setAttribute("data-lng", String(location.longitude));
+    if (location.label) el.setAttribute("data-label", location.label);
   }
 
   function renderStatus() {
@@ -257,6 +277,38 @@
     return url;
   }
 
+  function geocodeLabel(label) {
+    if (!label || !window.fetch) return Promise.resolve(null);
+    var names = [label];
+    var simplified = label.replace(/[市区县]$/g, "").trim();
+    if (simplified && simplified !== label) names.push(simplified);
+
+    function tryName(index) {
+      if (index >= names.length) return Promise.resolve(null);
+      var url = "https://geocoding-api.open-meteo.com/v1/search?count=1&language=zh&format=json&name=" + encodeURIComponent(names[index]);
+      return fetchJson(url)
+        .then(function (data) {
+          var item = data && data.results && data.results[0];
+          if (!item) return tryName(index + 1);
+          return {
+            latitude: Number(item.latitude),
+            longitude: Number(item.longitude),
+            label: item.name || label
+          };
+        })
+        .catch(function () {
+          return tryName(index + 1);
+        });
+    }
+
+    return tryName(0)
+      .then(function (location) {
+        if (!location || !Number.isFinite(location.latitude) || !Number.isFinite(location.longitude)) return null;
+        return location;
+      })
+      .catch(function () { return null; });
+  }
+
   function browserPosition() {
     return new Promise(function (resolve, reject) {
       if (!navigator.geolocation) {
@@ -328,43 +380,66 @@
     return location.label + " · " + weatherLabel(current.weather_code) + " " + temp + "°C";
   }
 
-  function refreshOtherSideWeather(meWho) {
-    // 用对方上一次存下来的坐标，从 Open-Meteo 拉一份实时天气覆盖到 ta 那行
-    ["white", "brown"].forEach(function (who) {
-      if (who === meWho) return;
-      var loc = storedLocationFor(who);
-      if (!loc) return;
-      if (!window.fetch) return;
-      fetchWeather(loc.latitude, loc.longitude)
-        .then(function (weather) {
-          var text = weatherText(loc, weather);
-          if (text) setWeatherText(who, text);
-        })
-        .catch(function () {});
-    });
+  function refreshWeatherFromSavedLocation(who, shouldPersist) {
+    // 只要服务端 profile 里存过坐标，就可以实时拉天气；不要求这个用户当前在线。
+    var loc = serverLocationFor(who);
+    var locationPromise = loc ? Promise.resolve(loc) : geocodeLabel(serverWeatherLabelFor(who));
+    if (!window.fetch) return Promise.resolve("");
+    return locationPromise
+      .then(function (location) {
+        if (!location) return "";
+        return fetchWeather(location.latitude, location.longitude).then(function (weather) {
+          return { location: location, weather: weather };
+        });
+      })
+      .then(function (result) {
+        if (!result) return "";
+        var location = result.location;
+        var weather = result.weather;
+        updateServerLocationAttrs(who, location);
+        return { location: location, text: weatherText(location, weather) };
+      })
+      .then(function (weather) {
+        var text = weather && weather.text;
+        if (text) {
+          setWeatherText(who, text);
+          if (shouldPersist) postWeatherToServer(text, weather.location);
+        }
+        return text;
+      })
+      .catch(function () {
+        return "";
+      });
   }
 
   function setupWeather() {
     var home = document.getElementById("home");
     var who = home && home.getAttribute("data-current-weather-who");
+    var loggedInWho = who === "white" || who === "brown" ? who : "";
 
-    // 不论自己是哪边（甚至未登录），都尝试用对方存的坐标拉一份对方的实时天气
-    refreshOtherSideWeather(who);
+    // 不论是否登录，双方都优先用 profile 里上次保存的位置实时刷新一遍天气。
+    ["white", "brown"].forEach(function (item) {
+      refreshWeatherFromSavedLocation(item, item === loggedInWho);
+    });
 
-    if (who !== "white" && who !== "brown") return;
+    if (!loggedInWho) return;
 
     var saved = readJson(STATUS_KEY, {});
-    var cached = saved[who] && saved[who].weather;
+    var cached = saved[loggedInWho] && saved[loggedInWho].weather;
     var cachedText = storedWeatherText(cached);
     var cachedLocation = cached && typeof cached === "object" ? cached.location : null;
-    if (cachedText) setWeatherText(who, cachedText);
-    // 服务器若还没拿到我的天气（比如刚部署、对方第一次看），用本地缓存先 sync 一份
-    var serverText = serverWeatherFor(who);
-    if (cachedText && cachedText !== serverText) postWeatherToServer(cachedText, cachedLocation);
-    if (cached && typeof cached === "object" && Date.now() - Number(cached.updatedAt || 0) < WEATHER_CACHE_MS) return;
+    if (cachedText) setWeatherText(loggedInWho, cachedText);
+    // 服务器若还没拿到我的天气或坐标，用本地缓存先 sync 一份。
+    var serverText = serverWeatherFor(loggedInWho);
+    var serverLocation = serverLocationFor(loggedInWho);
+    if (cachedText && cachedLocation && (cachedText !== serverText || !serverLocation)) {
+      postWeatherToServer(cachedText, cachedLocation);
+      updateServerLocationAttrs(loggedInWho, cachedLocation);
+    }
+    if (cached && typeof cached === "object" && Date.now() - Number(cached.updatedAt || 0) < WEATHER_CACHE_MS && serverLocation) return;
     if (!window.fetch) return;
 
-    setWeatherText(who, cachedText || "Syncing local weather");
+    setWeatherText(loggedInWho, cachedText || "Syncing local weather");
     detectLocation()
       .then(function (location) {
         if (!Number.isFinite(location.latitude) || !Number.isFinite(location.longitude)) {
@@ -376,14 +451,15 @@
       })
       .then(function (result) {
         if (!result.text) throw new Error("empty weather");
-        setWeatherText(who, result.text);
+        setWeatherText(loggedInWho, result.text);
         // 把坐标也存进本地缓存，下次进首页时一并同步给服务器
-        saveWeatherValue(who, { text: result.text, updatedAt: Date.now(), location: result.location });
+        saveWeatherValue(loggedInWho, { text: result.text, updatedAt: Date.now(), location: result.location });
+        updateServerLocationAttrs(loggedInWho, result.location);
         // 同步到服务器（含坐标），让对方设备能用这些坐标拉实时天气
         postWeatherToServer(result.text, result.location);
       })
       .catch(function () {
-        if (!cachedText) setWeatherText(who, "Location pending · Weather pending");
+        if (!cachedText) setWeatherText(loggedInWho, "Location pending · Weather pending");
       });
   }
 
