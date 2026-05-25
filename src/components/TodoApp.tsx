@@ -261,8 +261,8 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
             </div>
             <div className="todo-progress">
               <span>Progress</span>
-              <strong>{fmtMinutes(todayMinutes)}</strong>
-              <small>/ {fmtMinutes(Math.max(todayMinutes, todayMinutes + activeTodos.length * 30))}</small>
+              <strong>{doneToday.length}</strong>
+              <small>/ {todayTotalCount} {todayTotalCount === 1 ? "task" : "tasks"}</small>
             </div>
           </div>
 
