@@ -13,12 +13,13 @@ const requestedMonth = Astro.url.searchParams.get("month") || selectedDate.slice
 const monthHit = requestedMonth.match(/^(\d{4})-(\d{2})$/);
 const selectedMonth = monthHit && Number(monthHit[2]) >= 1 && Number(monthHit[2]) <= 12 ? requestedMonth : selectedDate.slice(0, 7);
 const selectedView = (Astro.url.searchParams.get("view") === "brown" ? "brown" : "white") as AuthorKey;
+const selectedMode = Astro.url.searchParams.get("mode") === "month" ? "month" : "day";
 const user = Astro.locals.user;
 const profile = Astro.locals.profile;
 const noticeError = Astro.url.searchParams.get("error");
 const created = Astro.url.searchParams.get("created");
 const deleted = Astro.url.searchParams.get("deleted");
-const returnTo = `/activity?date=${encodeURIComponent(selectedDate)}&view=${selectedView}&month=${encodeURIComponent(selectedMonth)}`;
+const returnTo = `/activity?date=${encodeURIComponent(selectedDate)}&view=${selectedView}&month=${encodeURIComponent(selectedMonth)}&mode=day`;
 
 function nextMonthKey(month: string) {
   const [year, monthNum] = month.split("-").map(Number);
@@ -202,39 +203,55 @@ const timeTicks = Array.from({ length: 9 }, (_item, index) => index * 180);
     <link rel="stylesheet" href="/styles/activity.css" />
   </Fragment>
 
-  <main class="act-shell" style={`--active-author:${selectedColor}`}>
+  <main class:list={["act-shell", { "act-shell--month": selectedMode === "month" }]} style={`--active-author:${selectedColor}`}>
     <section class="act-main" aria-labelledby="activityTitle">
       <header class="act-head">
         <p class="act-kicker">A gentle timeline of where the day went</p>
         <h1 id="activityTitle">Activity</h1>
-        <p class="act-summary" id="daySummary">{selectedLabel} logged {fmtMinutes(total)} across {entries.length} tasks</p>
+        <p class="act-summary" id="daySummary">
+          {selectedMode === "month"
+            ? `${selectedLabel} logged ${fmtMinutes(monthTotal)} in ${selectedMonth}`
+            : `${selectedLabel} logged ${fmtMinutes(total)} across ${entries.length} tasks`}
+        </p>
         {noticeError && <p style="margin-top:10px;color:#9d3f3f;background:rgba(255,242,242,.8);padding:10px 14px;border-radius:12px;display:inline-block;">{noticeError}</p>}
         {created === "activity" && <p style="margin-top:10px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">Activity saved.</p>}
         {deleted === "activity" && <p style="margin-top:10px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">Activity deleted.</p>}
 
         <div class="act-head__tools">
-          <div class="act-view" id="actView" aria-label="Choose whose timeline to view">
-            <a class:list={["act-view__btn", { "is-active": selectedView === "white" }]} href={`/activity?date=${selectedDate}&view=white&month=${selectedMonth}`} data-view="white">{authorNames.white}</a>
-            <a class:list={["act-view__btn", { "is-active": selectedView === "brown" }]} href={`/activity?date=${selectedDate}&view=brown&month=${selectedMonth}`} data-view="brown">{authorNames.brown}</a>
+          <div class="act-view act-mode" aria-label="Choose activity view">
+            <a class:list={["act-view__btn", { "is-active": selectedMode === "day" }]} href={`/activity?date=${selectedDate}&view=${selectedView}&month=${selectedMonth}&mode=day`}>Daily</a>
+            <a class:list={["act-view__btn", { "is-active": selectedMode === "month" }]} href={`/activity?date=${selectedDate}&view=${selectedView}&month=${selectedMonth}&mode=month`}>Monthly</a>
           </div>
-          <form class="act-date-form" method="get" action="/activity" style="display:inline-flex;gap:8px;padding:6px;border-radius:999px;background:rgba(255,255,255,.48);">
-            <input type="hidden" name="view" value={selectedView} />
-            <input id="actViewDate" name="date" type="date" value={selectedDate} aria-label="View date" style="width:142px;border:none;border-radius:999px;padding:8px 12px;background:rgba(255,255,255,.74);color:#647084;font-size:13px;font-weight: 650;" />
-            <button type="submit" style="border:none;border-radius:999px;padding:10px 20px;background:rgba(255,255,255,.74);color:#4f6a82;font-weight: 600;font-size:13px;cursor:pointer;">View</button>
-          </form>
-          <form class="act-month-form" method="get" action="/activity" aria-label="Choose month">
-            <input type="hidden" name="view" value={selectedView} />
-            <input type="hidden" name="date" value={selectedDate} />
-            <input id="actViewMonth" name="month" type="month" value={selectedMonth} aria-label="View month" />
-            <button type="submit">Month</button>
-          </form>
-          <button class="act-add-toggle" id="actFormToggle" type="button" aria-expanded="false" aria-controls="activityForm">
-            Add activity
-          </button>
+          <div class="act-view" id="actView" aria-label="Choose whose timeline to view">
+            <a class:list={["act-view__btn", { "is-active": selectedView === "white" }]} href={`/activity?date=${selectedDate}&view=white&month=${selectedMonth}&mode=${selectedMode}`} data-view="white">{authorNames.white}</a>
+            <a class:list={["act-view__btn", { "is-active": selectedView === "brown" }]} href={`/activity?date=${selectedDate}&view=brown&month=${selectedMonth}&mode=${selectedMode}`} data-view="brown">{authorNames.brown}</a>
+          </div>
+          {selectedMode === "day" ? (
+            <>
+              <form class="act-date-form" method="get" action="/activity" style="display:inline-flex;gap:8px;padding:6px;border-radius:999px;background:rgba(255,255,255,.48);">
+                <input type="hidden" name="view" value={selectedView} />
+                <input type="hidden" name="month" value={selectedMonth} />
+                <input type="hidden" name="mode" value="day" />
+                <input id="actViewDate" name="date" type="date" value={selectedDate} aria-label="View date" style="width:142px;border:none;border-radius:999px;padding:8px 12px;background:rgba(255,255,255,.74);color:#647084;font-size:13px;font-weight: 650;" />
+                <button type="submit" style="border:none;border-radius:999px;padding:10px 20px;background:rgba(255,255,255,.74);color:#4f6a82;font-weight: 600;font-size:13px;cursor:pointer;">View</button>
+              </form>
+              <button class="act-add-toggle" id="actFormToggle" type="button" aria-expanded="false" aria-controls="activityForm">
+                Add activity
+              </button>
+            </>
+          ) : (
+            <form class="act-month-form" method="get" action="/activity" aria-label="Choose month">
+              <input type="hidden" name="view" value={selectedView} />
+              <input type="hidden" name="date" value={selectedDate} />
+              <input type="hidden" name="mode" value="month" />
+              <input id="actViewMonth" name="month" type="month" value={selectedMonth} aria-label="View month" />
+              <button type="submit">Month</button>
+            </form>
+          )}
         </div>
       </header>
 
-      <form class="act-form is-hidden" id="activityForm" action="/api/activity/create" method="post">
+      {selectedMode === "day" && <form class="act-form is-hidden" id="activityForm" action="/api/activity/create" method="post">
         <input type="hidden" name="return_to" value={returnTo} />
         <input type="hidden" name="activity_on" value={selectedDate} />
         <div class="act-form__row">
@@ -275,9 +292,9 @@ const timeTicks = Array.from({ length: 9 }, (_item, index) => index * 180);
             <button class="act-submit" type="submit">Add record</button>
           </>
         )}
-      </form>
+      </form>}
 
-      <section class="act-section" aria-labelledby="timelineTitle">
+      {selectedMode === "day" && <section class="act-section" aria-labelledby="timelineTitle">
         <div class="act-section__head">
           <div>
             <h2 id="timelineTitle">{selectedLabel}'s timeline</h2>
@@ -334,9 +351,9 @@ const timeTicks = Array.from({ length: 9 }, (_item, index) => index * 180);
             )}
           </div>
         </div>
-      </section>
+      </section>}
 
-      <section class="act-section act-month-section" aria-labelledby="monthTitle">
+      {selectedMode === "month" && <section class="act-section act-month-section" aria-labelledby="monthTitle">
         <div class="act-section__head">
           <div>
             <h2 id="monthTitle">{selectedLabel}'s month view</h2>
@@ -385,10 +402,10 @@ const timeTicks = Array.from({ length: 9 }, (_item, index) => index * 180);
             )}
           </article>
         </div>
-      </section>
+      </section>}
     </section>
 
-    <aside class="act-side" aria-label="Daily stats">
+    {selectedMode === "day" && <aside class="act-side" aria-label="Daily stats">
       <section class="act-stat">
         <h2 id="categoryTitle">{selectedLabel}'s task split</h2>
         <div class="act-donut" id="actDonut" style={`background:${donutGradient(entries)}`} aria-label="Daily task chart">
@@ -428,7 +445,7 @@ const timeTicks = Array.from({ length: 9 }, (_item, index) => index * 180);
           })}
         </div>
       </section>
-    </aside>
+    </aside>}
   </main>
 
   <Fragment slot="scripts">

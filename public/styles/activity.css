@@ -124,6 +124,10 @@ body {
   margin: 0 auto;
   padding: 116px 24px 86px;
 }
+.act-shell--month {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 1040px;
+}
 
 .act-head { margin-bottom: 24px; }
 .act-kicker {
