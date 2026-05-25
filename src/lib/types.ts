@@ -8,6 +8,9 @@ export interface Profile {
   created_at: string;
   weather_text?: string | null;
   weather_updated_at?: string | null;
+  weather_lat?: number | null;
+  weather_lng?: number | null;
+  weather_label?: string | null;
   mood_text?: string | null;
   mood_date?: string | null;
   doing_text?: string | null;

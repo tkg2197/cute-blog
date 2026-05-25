@@ -153,15 +153,32 @@
     return who === "white" || who === "brown" ? who : "";
   }
 
-  function postWeatherToServer(text) {
+  function postWeatherToServer(text, location) {
     if (!window.fetch || !text) return;
+    var payload = { text: text };
+    if (location && Number.isFinite(location.latitude) && Number.isFinite(location.longitude)) {
+      payload.lat = location.latitude;
+      payload.lng = location.longitude;
+      if (location.label) payload.label = location.label;
+    }
     try {
       fetch("/api/status/weather", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ text: text })
+        body: JSON.stringify(payload)
       }).catch(function () {});
     } catch (e) {}
+  }
+
+  function storedLocationFor(who) {
+    var prefix = who === "brown" ? "brown" : "white";
+    var el = document.getElementById(prefix + "Weather");
+    if (!el) return null;
+    var lat = parseFloat(el.getAttribute("data-lat") || "");
+    var lng = parseFloat(el.getAttribute("data-lng") || "");
+    var label = el.getAttribute("data-label") || "";
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    return { latitude: lat, longitude: lng, label: label || "Current location" };
   }
 
   function renderStatus() {
@@ -313,18 +330,39 @@
     return location.label + " · " + weatherLabel(current.weather_code) + " " + temp + "°C";
   }
 
+  function refreshOtherSideWeather(meWho) {
+    // 用对方上一次存下来的坐标，从 Open-Meteo 拉一份实时天气覆盖到 ta 那行
+    ["white", "brown"].forEach(function (who) {
+      if (who === meWho) return;
+      var loc = storedLocationFor(who);
+      if (!loc) return;
+      if (!window.fetch) return;
+      fetchWeather(loc.latitude, loc.longitude)
+        .then(function (weather) {
+          var text = weatherText(loc, weather);
+          if (text) setWeatherText(who, text);
+        })
+        .catch(function () {});
+    });
+  }
+
   function setupWeather() {
     var home = document.getElementById("home");
     var who = home && home.getAttribute("data-current-weather-who");
+
+    // 不论自己是哪边（甚至未登录），都尝试用对方存的坐标拉一份对方的实时天气
+    refreshOtherSideWeather(who);
+
     if (who !== "white" && who !== "brown") return;
 
     var saved = readJson(STATUS_KEY, {});
     var cached = saved[who] && saved[who].weather;
     var cachedText = storedWeatherText(cached);
+    var cachedLocation = cached && typeof cached === "object" ? cached.location : null;
     if (cachedText) setWeatherText(who, cachedText);
     // 服务器若还没拿到我的天气（比如刚部署、对方第一次看），用本地缓存先 sync 一份
     var serverText = serverWeatherFor(who);
-    if (cachedText && cachedText !== serverText) postWeatherToServer(cachedText);
+    if (cachedText && cachedText !== serverText) postWeatherToServer(cachedText, cachedLocation);
     if (cached && typeof cached === "object" && Date.now() - Number(cached.updatedAt || 0) < WEATHER_CACHE_MS) return;
     if (!window.fetch) return;
 
@@ -335,15 +373,16 @@
           throw new Error("missing coordinates");
         }
         return fetchWeather(location.latitude, location.longitude).then(function (weather) {
-          return weatherText(location, weather);
+          return { text: weatherText(location, weather), location: location };
         });
       })
-      .then(function (text) {
-        if (!text) throw new Error("empty weather");
-        setWeatherText(who, text);
-        saveWeatherValue(who, { text: text, updatedAt: Date.now() });
-        // 同步到服务器，让对方在 ta 的设备上也能看到
-        postWeatherToServer(text);
+      .then(function (result) {
+        if (!result.text) throw new Error("empty weather");
+        setWeatherText(who, result.text);
+        // 把坐标也存进本地缓存，下次进首页时一并同步给服务器
+        saveWeatherValue(who, { text: result.text, updatedAt: Date.now(), location: result.location });
+        // 同步到服务器（含坐标），让对方设备能用这些坐标拉实时天气
+        postWeatherToServer(result.text, result.location);
       })
       .catch(function () {
         if (!cachedText) setWeatherText(who, "Location pending · Weather pending");
