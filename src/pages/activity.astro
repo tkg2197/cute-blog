@@ -2,13 +2,7 @@
 import PrototypeLayout from "../layouts/PrototypeLayout.astro";
 import { createServiceClient } from "../lib/supabase";
 import { authorDisplayName, makeAuthorNames } from "../lib/author-display";
-import {
-  ACTIVITY_CATEGORIES,
-  ACTIVITY_CATEGORY_LABELS,
-  ACTIVITY_PERIODS,
-  AUTHOR_COLORS,
-  CATEGORY_COLORS,
-} from "../lib/types";
+import { ACTIVITY_PERIODS, AUTHOR_COLORS } from "../lib/types";
 import type { ActivityEntry, AuthorKey } from "../lib/types";
 
 const supabase = createServiceClient();
@@ -24,16 +18,98 @@ const returnTo = `/activity?date=${encodeURIComponent(selectedDate)}&view=${sele
 const [{ data }, { data: authorRows }] = await Promise.all([
   supabase
     .from("activity_entries")
-    .select("id,owner_id,activity_on,period,category,minutes,body,created_at,profiles(display_name,author_key)")
+    .select("id,owner_id,activity_on,period,category,minutes,body,start_time,end_time,created_at,profiles(display_name,author_key)")
     .eq("activity_on", selectedDate)
     .order("created_at", { ascending: true }),
   supabase.from("profiles").select("author_key,display_name"),
 ]);
 
+const periodStarts: Record<string, number> = {
+  morning: 5 * 60,
+  forenoon: 8 * 60,
+  noon: 11 * 60,
+  afternoon: 14 * 60,
+  dusk: 17 * 60,
+  evening: 19 * 60,
+  midnight: 23 * 60,
+};
+
+const taskColors = [
+  "#7aa6d4",
+  "#d49356",
+  "#91c6b6",
+  "#e6a6bd",
+  "#a7c978",
+  "#b9aedb",
+  "#efb36f",
+  "#8cb7a3",
+  "#d8877e",
+  "#8fa7cf",
+];
+
+function parseClock(value: string | null | undefined) {
+  const hit = String(value || "").match(/^(\d{1,2}):(\d{2})/);
+  if (!hit) return null;
+  const hours = Number(hit[1]);
+  const minutes = Number(hit[2]);
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+  return hours * 60 + minutes;
+}
+
+function fmtClockFromMinutes(value: number) {
+  const wrapped = ((value % 1440) + 1440) % 1440;
+  const hours = Math.floor(wrapped / 60);
+  const minutes = wrapped % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function fmtEntryTime(entry: ActivityEntry) {
+  const start = entryStartMinute(entry);
+  const end = start + entryDuration(entry);
+  return `${fmtClockFromMinutes(start)}-${fmtClockFromMinutes(end)}`;
+}
+
+function fmtMinutes(value: number) {
+  const minutes = Number(value) || 0;
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return `${hours} hr${hours > 1 ? "s" : ""}${rest ? ` ${rest} min` : ""}`;
+}
+
+function taskName(entry: ActivityEntry) {
+  return entry.body.trim() || "Untitled task";
+}
+
+function hashString(value: string) {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash * 31 + value.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+
+function colorForTask(name: string) {
+  return taskColors[hashString(name) % taskColors.length];
+}
+
+function entryStartMinute(entry: ActivityEntry) {
+  return parseClock(entry.start_time) ?? periodStarts[entry.period] ?? 0;
+}
+
+function entryDuration(entry: ActivityEntry) {
+  const start = parseClock(entry.start_time);
+  const end = parseClock(entry.end_time);
+  if (start !== null && end !== null) {
+    const duration = end > start ? end - start : end + 1440 - start;
+    return Math.max(1, Math.min(1440, duration));
+  }
+  return Math.max(1, Math.min(1440, Number(entry.minutes || 1)));
+}
+
 const allEntries = ((data || []) as ActivityEntry[]).sort((a, b) => {
-  const ai = ACTIVITY_PERIODS.findIndex((p) => p.key === a.period);
-  const bi = ACTIVITY_PERIODS.findIndex((p) => p.key === b.period);
-  if (ai !== bi) return ai - bi;
+  const startDiff = entryStartMinute(a) - entryStartMinute(b);
+  if (startDiff !== 0) return startDiff;
   return a.created_at.localeCompare(b.created_at);
 });
 
@@ -45,35 +121,38 @@ const canCreateForView = user && profile?.author_key === selectedView;
 const currentAuthor = (profile?.author_key || "white") as AuthorKey;
 const currentAuthorName = authorDisplayName(profile, currentAuthor, authorNames);
 
-function fmtMinutes(value: number) {
-  const minutes = Number(value) || 0;
-  if (minutes < 60) return `${minutes} min`;
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-  return `${hours} hr${hours > 1 ? "s" : ""}${rest ? ` ${rest} min` : ""}`;
-}
-
 function totalMinutes(list: ActivityEntry[]) {
-  return list.reduce((sum, entry) => sum + Number(entry.minutes || 0), 0);
+  return list.reduce((sum, entry) => sum + entryDuration(entry), 0);
 }
 
-function groupByCategory(list: ActivityEntry[]) {
-  const map = new Map<string, number>();
-  list.forEach((entry) => map.set(entry.category, (map.get(entry.category) || 0) + entry.minutes));
-  return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+function groupByTask(list: ActivityEntry[]) {
+  const map = new Map<string, { minutes: number; entries: ActivityEntry[] }>();
+  list.forEach((entry) => {
+    const name = taskName(entry);
+    const current = map.get(name) || { minutes: 0, entries: [] };
+    current.minutes += entryDuration(entry);
+    current.entries.push(entry);
+    map.set(name, current);
+  });
+  return Array.from(map.entries())
+    .map(([name, value]) => ({ name, ...value }))
+    .sort((a, b) => {
+      const startDiff = entryStartMinute(a.entries[0]) - entryStartMinute(b.entries[0]);
+      return startDiff !== 0 ? startDiff : b.minutes - a.minutes;
+    });
 }
 
-function groupByPeriod(list: ActivityEntry[], key: string) {
-  return list.filter((entry) => entry.period === key);
+function taskStats(list: ActivityEntry[]) {
+  return groupByTask(list).sort((a, b) => b.minutes - a.minutes);
 }
 
 function donutGradient(list: ActivityEntry[]) {
   const total = totalMinutes(list);
   if (!total) return "conic-gradient(#dbe5ef 0 100%)";
   let start = 0;
-  const stops = groupByCategory(list).map(([category, minutes]) => {
-    const pct = (minutes / total) * 100;
-    const color = CATEGORY_COLORS[category] || CATEGORY_COLORS["其他"];
+  const stops = taskStats(list).map((task) => {
+    const pct = (task.minutes / total) * 100;
+    const color = colorForTask(task.name);
     const stop = `${color} ${start.toFixed(2)}% ${(start + pct).toFixed(2)}%`;
     start += pct;
     return stop;
@@ -81,10 +160,19 @@ function donutGradient(list: ActivityEntry[]) {
   return `conic-gradient(${stops.join(", ")})`;
 }
 
+function periodUsedMinutes(list: ActivityEntry[], key: string) {
+  return list
+    .filter((entry) => entry.period === key)
+    .reduce((sum, entry) => sum + entryDuration(entry), 0);
+}
+
+const timelineRows = groupByTask(entries);
+const stats = taskStats(entries);
 const total = totalMinutes(entries);
+const timeTicks = Array.from({ length: 9 }, (_item, index) => index * 180);
 ---
 
-<PrototypeLayout title="Activity · Our Nest" current="activity" bgClass="act-bg" backHref="/?skipCover=1#home">
+<PrototypeLayout title="Activity - Our Nest" current="activity" bgClass="act-bg" backHref="/?skipCover=1#home">
   <Fragment slot="head">
     <link rel="stylesheet" href="/styles/activity.css" />
   </Fragment>
@@ -94,7 +182,7 @@ const total = totalMinutes(entries);
       <header class="act-head">
         <p class="act-kicker">A gentle timeline of where the day went</p>
         <h1 id="activityTitle">Activity</h1>
-        <p class="act-summary" id="daySummary">{selectedLabel} logged {fmtMinutes(total)} · {entries.length} activities</p>
+        <p class="act-summary" id="daySummary">{selectedLabel} logged {fmtMinutes(total)} across {entries.length} tasks</p>
         {noticeError && <p style="margin-top:10px;color:#9d3f3f;background:rgba(255,242,242,.8);padding:10px 14px;border-radius:12px;display:inline-block;">{noticeError}</p>}
         {created === "activity" && <p style="margin-top:10px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">Activity saved.</p>}
         {deleted === "activity" && <p style="margin-top:10px;color:#3f6a4f;background:rgba(232,247,236,.85);padding:10px 14px;border-radius:12px;display:inline-block;">Activity deleted.</p>}
@@ -110,7 +198,7 @@ const total = totalMinutes(entries);
             <button type="submit" style="border:none;border-radius:999px;padding:10px 20px;background:rgba(255,255,255,.74);color:#4f6a82;font-weight: 600;font-size:13px;cursor:pointer;">View</button>
           </form>
           <button class="act-add-toggle" id="actFormToggle" type="button" aria-expanded="false" aria-controls="activityForm">
-            ＋ Add activity
+            Add activity
           </button>
         </div>
       </header>
@@ -125,119 +213,124 @@ const total = totalMinutes(entries);
           <div class="act-field">
             <span>Author</span>
             <div class="act-who" id="actWho" aria-label={`Current account: ${currentAuthorName}`}>
-              <span class={`act-who__btn ${selectedView === "white" ? "is-active" : ""}`} data-who="white">🐶 {authorNames.white}</span>
-              <span class={`act-who__btn ${selectedView === "brown" ? "is-active" : ""}`} data-who="brown">🐕 {authorNames.brown}</span>
+              <span class={`act-who__btn ${selectedView === "white" ? "is-active" : ""}`} data-who="white">{authorNames.white}</span>
+              <span class={`act-who__btn ${selectedView === "brown" ? "is-active" : ""}`} data-who="brown">{authorNames.brown}</span>
             </div>
           </div>
         </div>
 
         {!user ? (
-          <p style="color:#7a8aa0;font-size:13px;padding:14px 0;">Log in to add activity records. <a href="/auth/login" style="color:#d49356;font-weight: 650;">Log in →</a></p>
+          <p style="color:#7a8aa0;font-size:13px;padding:14px 0;">Log in to add activity records. <a href="/auth/login" style="color:#d49356;font-weight: 650;">Log in</a></p>
         ) : !canCreateForView ? (
           <p style="color:#7a8aa0;font-size:13px;padding:14px 0;">Current account: {currentAuthorName}. You can only add records to your own timeline.</p>
         ) : (
           <>
-            <div class="act-form__row">
+            <div class="act-form__row act-form__row--time">
               <label class="act-field">
-                <span>Period</span>
-                <select name="period" id="actPeriod" required>
-                  {ACTIVITY_PERIODS.map((period) => <option value={period.key}>{period.label} · {period.time}</option>)}
-                </select>
+                <span>Task name</span>
+                <input name="body" id="actText" maxlength="80" placeholder="For example: polish the photo wall" required />
               </label>
               <label class="act-field">
-                <span>Category</span>
-                <select name="category" id="actCategory" required>
-                  {ACTIVITY_CATEGORIES.map((category) => <option value={category}>{ACTIVITY_CATEGORY_LABELS[category] || category}</option>)}
-                </select>
+                <span>Start</span>
+                <input name="start_time" id="actStartTime" type="time" value="09:00" required />
               </label>
-              <label class="act-field act-field--small">
-                <span>Minutes</span>
-                <input name="minutes" id="actMinutes" type="number" min="1" max="720" step="1" value="30" required />
+              <label class="act-field">
+                <span>End</span>
+                <input name="end_time" id="actEndTime" type="time" value="10:00" required />
               </label>
             </div>
 
-            <label class="act-field">
-              <span>What happened</span>
-              <textarea name="body" id="actText" rows="3" maxlength="180" placeholder="For example: sorted the photo wall and polished a few details" required></textarea>
-            </label>
-
-            <button class="act-submit" type="submit">＋ Add record</button>
+            <button class="act-submit" type="submit">Add record</button>
           </>
         )}
       </form>
 
       <section class="act-section" aria-labelledby="timelineTitle">
         <div class="act-section__head">
-          <h2 id="timelineTitle">{selectedLabel}'s timeline</h2>
+          <div>
+            <h2 id="timelineTitle">{selectedLabel}'s timeline</h2>
+            <p class="act-section__hint">Scroll sideways to inspect the 24-hour line.</p>
+          </div>
           <div class="act-legend">
             <span><i class="act-dot act-dot--white"></i>{authorNames.white}</span>
             <span><i class="act-dot act-dot--brown"></i>{authorNames.brown}</span>
           </div>
         </div>
         <div class="act-timeline" id="actTimeline">
-          {ACTIVITY_PERIODS.map((period) => {
-            const periodEntries = groupByPeriod(entries, period.key);
-            return (
-              <section class="time-row">
-                <div class="time-row__label">
-                  <strong>{period.label}</strong>
-                  <span>{period.time}</span>
+          <div class="timeline-grid">
+            <div class="timeline-grid__corner">Task</div>
+            <div class="timeline-grid__scale" aria-hidden="true">
+              {timeTicks.map((tick) => (
+                <span style={`left:${(tick / 1440) * 100}%`}>{fmtClockFromMinutes(tick)}</span>
+              ))}
+            </div>
+
+            {timelineRows.length ? timelineRows.map((row) => (
+              <section class="timeline-row">
+                <div class="timeline-row__label" title={row.name}>
+                  <strong>{row.name}</strong>
+                  <span>{fmtMinutes(row.minutes)}</span>
                 </div>
-                <div class="time-row__track">
-                  <div class="time-row__items">
-                    {periodEntries.length ? periodEntries.map((entry) => {
-                      const width = Math.max(16, Math.min(100, (entry.minutes / period.minutes) * 100));
-                      const isOwner = user?.id === entry.owner_id;
-                      return (
-                        <article class:list={["time-block", `time-block--${selectedView}`]} style={`--w:${width.toFixed(1)}%`}>
-                          <span class="time-block__cat">{ACTIVITY_CATEGORY_LABELS[entry.category] || entry.category}</span>
-                          <span class="time-block__text">{entry.body}</span>
-                          <span class="time-block__mins">{fmtMinutes(entry.minutes)}</span>
-                          {isOwner && (
-                            <form action="/api/activity/delete" method="post" class="time-block__delform" data-confirm="Delete this activity record?" data-confirm-title="Delete activity?" style="display:inline;">
-                              <input type="hidden" name="return_to" value={returnTo} />
-                              <input type="hidden" name="id" value={entry.id} />
-                              <button class="time-block__del" type="submit" aria-label="Delete this activity">×</button>
-                            </form>
-                          )}
-                        </article>
-                      );
-                    }) : <div class="time-empty">{selectedLabel} has no records for this period yet</div>}
-                  </div>
+                <div class="timeline-row__track">
+                  {row.entries.map((entry) => {
+                    const start = entryStartMinute(entry);
+                    const duration = entryDuration(entry);
+                    const isOwner = user?.id === entry.owner_id;
+                    const name = taskName(entry);
+                    return (
+                      <article
+                        class:list={["timeline-block", `timeline-block--${selectedView}`]}
+                        style={`--x:${((start / 1440) * 100).toFixed(3)}%;--w:${((duration / 1440) * 100).toFixed(3)}%;--bar:${colorForTask(name)}`}
+                        title={`${name} ${fmtEntryTime(entry)} (${fmtMinutes(duration)})`}
+                      >
+                        <span class="timeline-block__name">{name}</span>
+                        <span class="timeline-block__time">{fmtEntryTime(entry)}</span>
+                        {isOwner && (
+                          <form action="/api/activity/delete" method="post" class="time-block__delform" data-confirm="Delete this activity record?" data-confirm-title="Delete activity?" style="display:inline;">
+                            <input type="hidden" name="return_to" value={returnTo} />
+                            <input type="hidden" name="id" value={entry.id} />
+                            <button class="time-block__del" type="submit" aria-label="Delete this activity">x</button>
+                          </form>
+                        )}
+                      </article>
+                    );
+                  })}
                 </div>
               </section>
-            );
-          })}
+            )) : (
+              <div class="timeline-empty">{selectedLabel} has no activity records for this day yet.</div>
+            )}
+          </div>
         </div>
       </section>
     </section>
 
     <aside class="act-side" aria-label="Daily stats">
       <section class="act-stat">
-        <h2 id="categoryTitle">{selectedLabel}'s category split</h2>
-        <div class="act-donut" id="actDonut" style={`background:${donutGradient(entries)}`} aria-label="Daily category chart">
+        <h2 id="categoryTitle">{selectedLabel}'s task split</h2>
+        <div class="act-donut" id="actDonut" style={`background:${donutGradient(entries)}`} aria-label="Daily task chart">
           <span id="actDonutText">{fmtMinutes(total)}</span>
         </div>
         <div class="act-bars" id="actBars">
-          {groupByCategory(entries).length ? groupByCategory(entries).map(([category, minutes]) => (
+          {stats.length ? stats.map((task) => (
             <div class="stat-bar">
               <div class="stat-bar__top">
-                <span>{ACTIVITY_CATEGORY_LABELS[category] || category}</span>
-                <span>{fmtMinutes(minutes)}</span>
+                <span title={task.name}>{task.name}</span>
+                <span>{fmtMinutes(task.minutes)}</span>
               </div>
               <div class="stat-bar__rail">
-                <div class="stat-bar__fill" style={`--w:${((minutes / total) * 100).toFixed(1)}%;--c:${CATEGORY_COLORS[category] || CATEGORY_COLORS["其他"]}`}></div>
+                <div class="stat-bar__fill" style={`--w:${((task.minutes / total) * 100).toFixed(1)}%;--c:${colorForTask(task.name)}`}></div>
               </div>
             </div>
-          )) : <p class="stat-empty">Add {selectedLabel}'s activities to see the category split.</p>}
+          )) : <p class="stat-empty">Add {selectedLabel}'s tasks to see the task split.</p>}
         </div>
       </section>
 
       <section class="act-stat">
-        <h2 id="periodTitle">{selectedLabel}'s period overview</h2>
+        <h2 id="periodTitle">{selectedLabel}'s start-time overview</h2>
         <div class="act-periods" id="actPeriods">
           {ACTIVITY_PERIODS.map((period) => {
-            const used = groupByPeriod(entries, period.key).reduce((sum, entry) => sum + entry.minutes, 0);
+            const used = periodUsedMinutes(entries, period.key);
             return (
               <div class="period-pill">
                 <div class="period-pill__top">
@@ -266,7 +359,7 @@ const total = totalMinutes(entries);
             var open = form.classList.contains("is-hidden");
             form.classList.toggle("is-hidden", !open);
             toggle.setAttribute("aria-expanded", open ? "true" : "false");
-            toggle.textContent = open ? "Close form" : "＋ Add activity";
+            toggle.textContent = open ? "Close form" : "Add activity";
           });
         }
       })();

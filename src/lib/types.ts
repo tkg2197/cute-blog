@@ -96,6 +96,8 @@ export interface ActivityEntry {
   category: string;
   minutes: number;
   body: string;
+  start_time?: string | null;
+  end_time?: string | null;
   created_at: string;
   updated_at: string;
   profiles?: Pick<Profile, "display_name" | "author_key"> | null;
