@@ -322,6 +322,9 @@
     var cached = saved[who] && saved[who].weather;
     var cachedText = storedWeatherText(cached);
     if (cachedText) setWeatherText(who, cachedText);
+    // 服务器若还没拿到我的天气（比如刚部署、对方第一次看），用本地缓存先 sync 一份
+    var serverText = serverWeatherFor(who);
+    if (cachedText && cachedText !== serverText) postWeatherToServer(cachedText);
     if (cached && typeof cached === "object" && Date.now() - Number(cached.updatedAt || 0) < WEATHER_CACHE_MS) return;
     if (!window.fetch) return;
 
