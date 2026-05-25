@@ -4,6 +4,7 @@ import { createServiceClient } from "../../lib/supabase";
 import { firstMarkdownHeading, markdownToPlainText, renderArticleSections } from "../../lib/markdown";
 import { authorDisplayName } from "../../lib/author-display";
 import { formatCommentTime } from "../../lib/comments-display";
+import { shanghaiParts } from "../../lib/datetime";
 import type { AuthorKey, BlogPost, Comment } from "../../lib/types";
 
 const slug = Astro.params.slug || "";
@@ -23,9 +24,9 @@ const author = (post.profiles?.author_key || "white") as AuthorKey;
 const authorName = authorDisplayName(post.profiles, author);
 const dateValue = post.published_at || post.created_at;
 const formatDate = (value: string) => {
-  const d = new Date(value);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const p = shanghaiParts(value);
+  if (!p) return "";
+  return `${p.year}.${p.month}.${p.day} ${p.hour}:${p.minute}`;
 };
 const sections = renderArticleSections(post.content_markdown || "");
 const displayTitle = markdownToPlainText(post.title || "") || firstMarkdownHeading(post.content_markdown || "") || post.title;

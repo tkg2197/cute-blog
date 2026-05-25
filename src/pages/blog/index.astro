@@ -3,6 +3,7 @@ import PrototypeLayout from "../../layouts/PrototypeLayout.astro";
 import { createServiceClient } from "../../lib/supabase";
 import { authorDisplayName, makeAuthorNames } from "../../lib/author-display";
 import { markdownToPlainText } from "../../lib/markdown";
+import { shanghaiParts } from "../../lib/datetime";
 import type { AuthorKey, BlogPost } from "../../lib/types";
 
 const supabase = createServiceClient();
@@ -43,14 +44,15 @@ function displayPostExcerpt(post: BlogPost) {
 }
 
 function formatDate(value: string) {
-  const date = new Date(value);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  const p = shanghaiParts(value);
+  if (!p) return "";
+  return `${p.year}.${p.month}.${p.day} ${p.hour}:${p.minute}`;
 }
 
 function postYear(post: BlogPost) {
   const value = post.published_at || post.created_at;
-  return new Date(value).getFullYear();
+  const p = shanghaiParts(value);
+  return p ? Number(p.year) : new Date().getFullYear();
 }
 
 const currentYear = posts.length ? postYear(posts[0]) : new Date().getFullYear();

@@ -3,6 +3,7 @@ import PrototypeLayout from "../layouts/PrototypeLayout.astro";
 import { createServiceClient } from "../lib/supabase";
 import { authorDisplayName, makeAuthorNames } from "../lib/author-display";
 import { formatCommentTime } from "../lib/comments-display";
+import { shanghaiParts } from "../lib/datetime";
 import { MOOD_LABELS } from "../lib/types";
 import type { AuthorKey, Comment, LifeRecord, Photo } from "../lib/types";
 
@@ -76,10 +77,8 @@ function prettyDate(value: string) {
 }
 
 function recordTime(value: string) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const p = shanghaiParts(value);
+  return p ? `${p.hour}:${p.minute}` : "";
 }
 
 const today = new Date().toISOString().slice(0, 10);
