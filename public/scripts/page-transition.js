@@ -292,9 +292,7 @@
       href = homeHrefWithSkipFlag(href);
     }
     document.documentElement.classList.add("pt-leaving");
-    window.setTimeout(function () {
-      location.href = href;
-    }, 220);
+    location.href = href;
   }
 
   function onClick(ev) {

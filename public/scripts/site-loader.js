@@ -2,7 +2,6 @@
   "use strict";
 
   var root = document.documentElement;
-  var startedAt = Date.now();
   var done = false;
 
   function sameSite(url) {
@@ -30,11 +29,8 @@
   function hideLoader() {
     if (done) return;
     done = true;
-    var wait = Math.max(160, 620 - (Date.now() - startedAt));
-    window.setTimeout(function () {
-      root.classList.add("site-loaded");
-      root.classList.remove("site-loading", "site-leaving");
-    }, wait);
+    root.classList.add("site-loaded");
+    root.classList.remove("site-loading", "site-leaving");
   }
 
   document.addEventListener("click", function (event) {
@@ -56,6 +52,5 @@
     hideLoader();
   } else {
     window.addEventListener("load", hideLoader, { once: true });
-    window.setTimeout(hideLoader, 2600);
   }
 })();
