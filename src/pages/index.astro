@@ -74,11 +74,6 @@ const brownDoing = todayField(brownProfile, "doing") || brownDoingDefault;
 // 只能编辑自己那一侧；未登录则双方都不可编辑
 const canEditWhite = currentWeatherWho === "white";
 const canEditBrown = currentWeatherWho === "brown";
-const postFallbacks = [
-  { href: "/blog", date: "2026.05.22", title: "Turning our nest into a place we can keep writing" },
-  { href: "/photos", date: "2026.05.21", title: "The first version of photos, records, and activity" },
-  { href: "/activity", date: "Today", title: "See where today went, hour by hour" },
-];
 const displayPostTitle = (post: BlogPost) => markdownToPlainText(post.title || "") || post.title;
 
 const skipCoverOnLoad = Astro.url.searchParams.get("skipCover") === "1";
@@ -261,15 +256,10 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
     <section class="home-posts" aria-labelledby="postsTitle">
       <h2 id="postsTitle">Posts</h2>
       <div class="home-post-list">
-        {recentPosts.length ? recentPosts.map((post) => (
+        {recentPosts.map((post) => (
           <a href={`/blog/${post.slug}`}>
             <time>{formatPostDate(post.published_at || post.created_at)}</time>
             <span>{displayPostTitle(post)}</span>
-          </a>
-        )) : postFallbacks.map((post) => (
-          <a href={post.href}>
-            <time>{post.date}</time>
-            <span>{post.title}</span>
           </a>
         ))}
       </div>
