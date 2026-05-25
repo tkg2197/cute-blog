@@ -396,7 +396,7 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
       <aside className="todo-side" aria-label="Task time stats">
         <section className="todo-side-card">
           <p>{selectedName}'s day at a glance</p>
-          <h2>{todayPercent}% of today, done.</h2>
+          <h2><span className="todo-stat-number">{todayPercent}%</span> of today, done.</h2>
           <div className="todo-ring-row">
             <div className="todo-ring" style={{ "--p": `${todayPercent}%` } as CSSProperties}>
               <span>{fmtMinutes(todayMinutes)}</span>

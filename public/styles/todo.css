@@ -196,6 +196,14 @@ body {
 .todo-heat-card h2 {
   font-variant-numeric: lining-nums;
 }
+.todo-stat-number {
+  font-family: "Satoshi", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-feature-settings: "lnum" 1;
+  font-variant-numeric: lining-nums;
+  font-size: 1em;
+  font-weight: 850;
+  line-height: 1;
+}
 .todo-card h2::first-letter,
 .todo-heat-card h2::first-letter {
   font-family: "Satoshi", "PingFang SC", "Microsoft YaHei", sans-serif;
