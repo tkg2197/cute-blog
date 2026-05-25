@@ -9,6 +9,8 @@ const error = Astro.url.searchParams.get("error");
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Register · Our Nest</title>
     <link rel="icon" type="image/png" href="/浏览器图标.png" />
+    <script is:inline>document.documentElement.classList.add("site-loading");</script>
+    <link rel="stylesheet" href="/styles/site-loader.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
       *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -319,6 +321,13 @@ const error = Astro.url.searchParams.get("error");
     </style>
   </head>
   <body>
+    <div class="site-loader" aria-hidden="true">
+      <div class="site-loader__card">
+        <div class="site-loader__moonstep"></div>
+        <p class="site-loader__brand">Our Nest</p>
+      </div>
+    </div>
+
     <a class="back-btn" href="/auth/login" aria-label="Back to login">← Back</a>
 
     <div id="register-page">
@@ -447,6 +456,7 @@ const error = Astro.url.searchParams.get("error");
       </div>
     </div>
 
+    <script is:inline src="/scripts/site-loader.js"></script>
     <script is:inline define:vars={{ initialError: error }}>
       // ============ PASSWORD TOGGLE ============
       const passwordInput = document.getElementById("password");

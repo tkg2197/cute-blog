@@ -39,16 +39,24 @@ const authorKey = (profile?.author_key || "white") as AuthorKey;
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" type="image/png" href="/浏览器图标.png" />
-    <script is:inline>document.documentElement.classList.add("pt-loading");</script>
+    <script is:inline>document.documentElement.classList.add("pt-loading", "site-loading");</script>
     <slot name="head" />
     <link rel="stylesheet" href="/styles/corner-dogs.css" />
     <link rel="stylesheet" href="/styles/site-font.css" />
+    <link rel="stylesheet" href="/styles/site-loader.css" />
     <link rel="stylesheet" href="/styles/scroll-reveal.css" />
     <link rel="stylesheet" href="/styles/page-transition.css" />
     <link rel="stylesheet" href="/styles/ghost.css" />
     <link rel="stylesheet" href="/styles/confirm-delete.css" />
   </head>
   <body class={bodyClass}>
+    <div class="site-loader" aria-hidden="true">
+      <div class="site-loader__card">
+        <div class="site-loader__moonstep"></div>
+        <p class="site-loader__brand">Our Nest</p>
+      </div>
+    </div>
+
     {bgClass && (
       <div class={bgClass} aria-hidden="true">
         <span class={`${bgClass.replace("-bg", "-cloud")} ${bgClass.replace("-bg", "-cloud")}--1`}></span>
@@ -95,6 +103,7 @@ const authorKey = (profile?.author_key || "white") as AuthorKey;
     <script is:inline src="/scripts/ghost.js"></script>
     <script is:inline src="/scripts/page-transition.js"></script>
     <script is:inline src="/scripts/confirm-delete.js"></script>
+    <script is:inline src="/scripts/site-loader.js"></script>
     <slot name="scripts" />
   </body>
 </html>
