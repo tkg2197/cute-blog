@@ -280,12 +280,12 @@ const timeTicks = Array.from({ length: 9 }, (_item, index) => index * 180);
                 <input name="body" id="actText" maxlength="80" placeholder="For example: polish the photo wall" required />
               </label>
               <label class="act-field">
-                <span>Start</span>
-                <input name="start_time" id="actStartTime" type="time" value="09:00" required />
+                <span>Start (24-hour)</span>
+                <input name="start_time" id="actStartTime" type="time" step="60" inputmode="numeric" lang="en-GB" value="09:00" required />
               </label>
               <label class="act-field">
-                <span>End</span>
-                <input name="end_time" id="actEndTime" type="time" value="10:00" required />
+                <span>End (24-hour)</span>
+                <input name="end_time" id="actEndTime" type="time" step="60" inputmode="numeric" lang="en-GB" value="10:00" required />
               </label>
             </div>
 

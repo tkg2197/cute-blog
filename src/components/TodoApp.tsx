@@ -343,10 +343,16 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
                     {todo.completed && todo.completed_on && (
                       <>
                         <i>·</i>
-                        <span>{todo.completed_on}</span>
-                        <i>·</i>
-                        <span>{fmtMinutes(todo.completed_minutes)}</span>
-                      </>
+                <span>{todo.completed_on}</span>
+                {todo.completed_start_time && todo.completed_end_time && (
+                  <>
+                    <i>·</i>
+                    <span>{todo.completed_start_time.slice(0, 5)}-{todo.completed_end_time.slice(0, 5)}</span>
+                  </>
+                )}
+                <i>·</i>
+                <span>{fmtMinutes(todo.completed_minutes)}</span>
+              </>
                     )}
                   </p>
                 </div>
@@ -423,12 +429,12 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
             </label>
             <div className="todo-modal__row">
               <label>
-                <span>Start</span>
-                <input type="time" value={completionStart} onChange={(event) => setCompletionStart(event.target.value)} />
+                <span>Start (24-hour)</span>
+                <input type="time" step="60" inputMode="numeric" lang="en-GB" value={completionStart} onChange={(event) => setCompletionStart(event.target.value)} />
               </label>
               <label>
-                <span>End</span>
-                <input type="time" value={completionEnd} onChange={(event) => setCompletionEnd(event.target.value)} />
+                <span>End (24-hour)</span>
+                <input type="time" step="60" inputMode="numeric" lang="en-GB" value={completionEnd} onChange={(event) => setCompletionEnd(event.target.value)} />
               </label>
             </div>
             <div className="todo-modal__actions">

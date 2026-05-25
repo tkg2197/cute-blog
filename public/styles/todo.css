@@ -87,13 +87,14 @@ body {
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
-  margin-top: 28px;
+  margin-top: 20px;
+  margin-bottom: 22px;
 }
 .todo-switch,
 .todo-date-pill,
 .todo-add-hero {
   border: 0;
-  border-radius: 999px;
+  border-radius: 18px;
   background: rgba(255,255,255,.72);
   box-shadow: 0 8px 20px rgba(75,92,110,.12);
 }
@@ -101,6 +102,7 @@ body {
   display: inline-flex;
   gap: 6px;
   padding: 6px;
+  border-radius: 18px;
 }
 .todo-switch button {
   display: inline-flex;
@@ -109,7 +111,7 @@ body {
   min-width: 64px;
   justify-content: center;
   border: 0;
-  border-radius: 999px;
+  border-radius: 14px;
   background: transparent;
   color: #66778c;
   font: inherit;
@@ -190,6 +192,16 @@ body {
   line-height: 1.22;
   letter-spacing: 0;
 }
+.todo-card h2,
+.todo-heat-card h2 {
+  font-variant-numeric: lining-nums;
+}
+.todo-card h2::first-letter,
+.todo-heat-card h2::first-letter {
+  font-family: "Satoshi", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: .9em;
+  font-weight: 850;
+}
 .todo-progress {
   text-align: right;
 }
@@ -204,8 +216,10 @@ body {
 }
 .todo-progress strong {
   color: var(--todo-ink);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: "Satoshi", "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 25px;
+  line-height: 1.05;
+  font-weight: 850;
 }
 .todo-message {
   margin-top: 14px;
@@ -396,8 +410,10 @@ body {
 .todo-heat-card__head strong {
   display: block;
   color: var(--todo-ink);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 22px;
+  font-family: "Satoshi", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 20px;
+  line-height: 1.15;
+  font-weight: 850;
 }
 .todo-heat-card__head span {
   color: #8794a6;
@@ -461,8 +477,6 @@ body {
 }
 .todo-ring {
   position: relative;
-  display: grid;
-  place-items: center;
   width: 108px;
   height: 108px;
   border-radius: 50%;
@@ -476,12 +490,17 @@ body {
   background: var(--todo-panel);
 }
 .todo-ring span {
-  position: relative;
+  position: absolute;
+  inset: 13px;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--todo-ink);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 20px;
-  font-weight: 700;
+  font-family: "Satoshi", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 18px;
+  font-weight: 850;
+  line-height: 1.05;
   text-align: center;
 }
 .todo-ring-row dl {
@@ -502,9 +521,10 @@ body {
 }
 .todo-ring-row dd {
   color: var(--todo-ink);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 18px;
-  font-weight: 700;
+  font-family: "Satoshi", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 850;
 }
 .todo-side-card blockquote {
   margin-top: 22px;
