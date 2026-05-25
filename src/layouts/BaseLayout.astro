@@ -69,7 +69,6 @@ const homeHref = current === "home" ? "#home" : "/?skipCover=1#home";
           <a class:list={{ active: current === "records" }} href="/records">Records</a>
           <a class:list={{ active: current === "photos" }} href="/photos">Photos</a>
           <a class:list={{ active: current === "activity" }} href="/activity">Activity</a>
-          <a class:list={{ active: current === "admin" }} href="/admin">Admin</a>
         </nav>
         <div class="site-auth">
           {user ? (
@@ -91,6 +90,7 @@ const homeHref = current === "home" ? "#home" : "/?skipCover=1#home";
       </main>
     )}
     <script is:inline src="/scripts/confirm-delete.js"></script>
+    <script is:inline src="/scripts/site-prefetch.js"></script>
     <script is:inline src="/scripts/site-loader.js"></script>
     <slot name="scripts" />
   </body>

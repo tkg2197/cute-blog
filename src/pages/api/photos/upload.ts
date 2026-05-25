@@ -13,7 +13,7 @@ export const POST: APIRoute = async ({ request, cookies, locals, redirect }) => 
   const caption = String(form.get("caption") || "").trim();
   const takenOn = String(form.get("taken_on") || "").trim() || null;
   const rawReturn = String(form.get("return_to") || "").trim();
-  const safeReturn = rawReturn.startsWith("/") ? rawReturn : "/admin";
+  const safeReturn = rawReturn.startsWith("/") ? rawReturn : "/photos";
   const sep = safeReturn.includes("?") ? "&" : "?";
 
   if (!(file instanceof File) || file.size === 0) {

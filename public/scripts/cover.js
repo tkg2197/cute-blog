@@ -39,7 +39,7 @@
       var from = new URL(document.referrer);
       var fromPath = from.pathname.replace(/\\/g, "/");
       var sameHost = from.protocol === location.protocol && from.host === location.host;
-      var fromProjectPage = /^\/(blog|records|photos|activity|admin)(\/|$)/.test(fromPath);
+      var fromProjectPage = /^\/(blog|records|photos|activity)(\/|$)/.test(fromPath);
       return sameHost && fromProjectPage;
     } catch (e) {
       return false;

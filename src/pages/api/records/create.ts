@@ -14,7 +14,7 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const mood = String(form.get("mood") || "happy").trim();
   const body = String(form.get("body") || "").trim();
   const rawReturn = String(form.get("return_to") || "").trim();
-  const safeReturn = rawReturn.startsWith("/") ? rawReturn : "/admin";
+  const safeReturn = rawReturn.startsWith("/") ? rawReturn : "/records";
   const sep = safeReturn.includes("?") ? "&" : "?";
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(recordOn)) {

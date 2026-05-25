@@ -3,13 +3,13 @@
   "use strict";
 
   var BG = {
-    morning: "/assets/早晨草地.png",
-    forenoon: "/assets/上午草地.png",
-    noon: "/assets/中午草地.png",
-    afternoon: "/assets/下午草地.jpg",
-    dusk: "/assets/傍晚草地.png",
-    evening: "/assets/晚上草地.png",
-    midnight: "/assets/半夜草地.png"
+    morning: "/assets/早晨草地.webp",
+    forenoon: "/assets/上午草地.webp",
+    noon: "/assets/中午草地.webp",
+    afternoon: "/assets/下午草地.webp",
+    dusk: "/assets/傍晚草地.webp",
+    evening: "/assets/晚上草地.webp",
+    midnight: "/assets/半夜草地.webp"
   };
   var STATUS_KEY = "cuteblog.home.status.v1";
   var WEATHER_CACHE_MS = 30 * 60 * 1000;

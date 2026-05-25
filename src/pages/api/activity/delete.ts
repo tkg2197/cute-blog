@@ -7,8 +7,8 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
 
   const form = await request.formData();
   const id = String(form.get("id") || "");
-  const returnTo = String(form.get("return_to") || "/admin");
-  const failTo = returnTo.startsWith("/") ? returnTo : "/admin";
+  const returnTo = String(form.get("return_to") || "/activity");
+  const failTo = returnTo.startsWith("/") ? returnTo : "/activity";
   if (!id) {
     return redirect(`${failTo}${failTo.includes("?") ? "&" : "?"}error=${encodeURIComponent("Missing activity record ID.")}`, 303);
   }

@@ -758,7 +758,7 @@ html, body {
   aspect-ratio: 251 / 182;
 }
 .dogs--morning .dog--white .dog__img {
-  background-image: url("/assets/早晨-白狗.png");
+  background-image: url("/assets/早晨-白狗.webp");
 }
 .dogs--morning .dog--brown {
   right: 21%; bottom: 13%;
@@ -766,7 +766,7 @@ html, body {
   aspect-ratio: 246 / 267;
 }
 .dogs--morning .dog--brown .dog__img {
-  background-image: url("/assets/早晨-棕狗.png");
+  background-image: url("/assets/早晨-棕狗.webp");
 }
 
 /* ---- 上午：白狗追、棕狗叼球跑 ---- */
@@ -776,7 +776,7 @@ html, body {
   aspect-ratio: 189 / 125;
 }
 .dogs--forenoon .dog--white .dog__img {
-  background-image: url("/assets/上午-白狗.png");
+  background-image: url("/assets/上午-白狗.webp");
 }
 .dogs--forenoon .dog--brown {
   right: 23%; bottom: 26%;
@@ -784,7 +784,7 @@ html, body {
   aspect-ratio: 160 / 110;
 }
 .dogs--forenoon .dog--brown .dog__img {
-  background-image: url("/assets/上午-棕狗.png");
+  background-image: url("/assets/上午-棕狗.webp");
 }
 
 /* ---- 中午：两只狗在野餐垫旁吃三明治 ---- */
@@ -794,7 +794,7 @@ html, body {
   aspect-ratio: 169 / 183;
 }
 .dogs--noon .dog--white .dog__img {
-  background-image: url("/assets/中午-白狗.png");
+  background-image: url("/assets/中午-白狗.webp");
 }
 .dogs--noon .dog--brown {
   right: 32%; bottom: 17%;
@@ -802,7 +802,7 @@ html, body {
   aspect-ratio: 132 / 146;
 }
 .dogs--noon .dog--brown .dog__img {
-  background-image: url("/assets/中午-棕狗.png");
+  background-image: url("/assets/中午-棕狗.webp");
 }
 
 /* ---- 下午：两只狗在草地上慵懒躺着 ---- */
@@ -812,7 +812,7 @@ html, body {
   aspect-ratio: 184 / 164;
 }
 .dogs--afternoon .dog--white .dog__img {
-  background-image: url("/assets/下午-白狗.png");
+  background-image: url("/assets/下午-白狗.webp");
 }
 .dogs--afternoon .dog--brown {
   right: 21%; bottom: 14%;
@@ -820,7 +820,7 @@ html, body {
   aspect-ratio: 193 / 146;
 }
 .dogs--afternoon .dog--brown .dog__img {
-  background-image: url("/assets/下午-棕狗.png");
+  background-image: url("/assets/下午-棕狗.webp");
 }
 
 /* ---- 傍晚：两只狗背对镜头依偎着看夕阳 ---- */
@@ -830,7 +830,7 @@ html, body {
   aspect-ratio: 136 / 144;
 }
 .dogs--dusk .dog--white .dog__img {
-  background-image: url("/assets/傍晚-白狗.png");
+  background-image: url("/assets/傍晚-白狗.webp");
 }
 .dogs--dusk .dog--brown {
   left: 51%; bottom: 12.5%;
@@ -838,7 +838,7 @@ html, body {
   aspect-ratio: 86 / 102;
 }
 .dogs--dusk .dog--brown .dog__img {
-  background-image: url("/assets/傍晚-棕狗.png");
+  background-image: url("/assets/傍晚-棕狗.webp");
 }
 
 /* ---- 晚上：白狗、棕狗围着背景里的篝火（篝火已画在背景图里）---- */
@@ -848,7 +848,7 @@ html, body {
   aspect-ratio: 102 / 114;
 }
 .dogs--evening .dog--white .dog__img {
-  background-image: url("/assets/晚上-白狗.png");
+  background-image: url("/assets/晚上-白狗.webp");
 }
 .dogs--evening .dog--brown {
   left: 49%; bottom: 15.5%;
@@ -856,7 +856,7 @@ html, body {
   aspect-ratio: 1 / 1;
 }
 .dogs--evening .dog--brown .dog__img {
-  background-image: url("/assets/晚上-棕狗.png");
+  background-image: url("/assets/晚上-棕狗.webp");
 }
 
 /* ============================================================
@@ -1094,7 +1094,7 @@ html, body {
 .home-bg__layer {
   position: absolute;
   inset: -34px;
-  background-image: var(--home-bg-url, url("/assets/下午草地.jpg"));
+  background-image: var(--home-bg-url, url("/assets/下午草地.webp"));
   background-size: cover;
   background-position: center;
   filter: blur(18px) saturate(1.08);

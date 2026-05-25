@@ -3,11 +3,17 @@ import { getAccessToken, readSession } from "./lib/auth";
 import { createServiceClient, createUserClient } from "./lib/supabase";
 import type { Profile } from "./lib/types";
 
-const protectedPrefixes = ["/admin", "/api/blog", "/api/photos", "/api/records", "/api/activity", "/api/comments"];
+const protectedPrefixes = ["/api/blog", "/api/photos", "/api/records", "/api/activity", "/api/comments"];
 const authPages = ["/auth/login", "/auth/register"];
+const cacheablePublicPaths = new Set(["/", "/blog", "/records", "/photos", "/places", "/activity"]);
+
+function isCacheablePublicPath(pathname: string) {
+  return cacheablePublicPaths.has(pathname) || /^\/blog\/[^/]+$/.test(pathname);
+}
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  const { cookies, url } = context;
+  const { cookies, request, url } = context;
+  const hasSessionCookie = Boolean(cookies.get("cb-access-token") || cookies.get("cb-refresh-token"));
   const sessionState = await readSession(cookies);
   const accessToken = sessionState.accessToken || getAccessToken(cookies);
 
@@ -59,5 +65,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return context.redirect("/?skipCover=1#home");
   }
 
-  return next();
+  const response = await next();
+
+  if (request.method === "GET" && response.status === 200 && !hasSessionCookie && isCacheablePublicPath(pathname)) {
+    response.headers.set("Cache-Control", "public, max-age=30, s-maxage=120, stale-while-revalidate=300");
+    response.headers.append("Vary", "Cookie");
+  }
+
+  return response;
 });

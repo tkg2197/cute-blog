@@ -501,6 +501,7 @@ const redirectTo = Astro.url.searchParams.get("redirect") || "/?skipCover=1#home
       </div>
     </div>
 
+    <script is:inline src="/scripts/site-prefetch.js"></script>
     <script is:inline src="/scripts/site-loader.js"></script>
     <script is:inline define:vars={{ initialError: error }}>
       // ============ PASSWORD TOGGLE ============

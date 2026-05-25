@@ -62,7 +62,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   if (data.session) {
     setSessionCookies(cookies, data.session);
-    return redirect("/admin", 303);
+    return redirect("/?skipCover=1#home", 303);
   }
 
   return redirect("/auth/login?registered=1", 303);

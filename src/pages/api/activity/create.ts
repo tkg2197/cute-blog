@@ -15,8 +15,8 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const category = String(form.get("category") || "").trim();
   const minutes = Number(form.get("minutes") || 0);
   const body = String(form.get("body") || "").trim();
-  const returnTo = String(form.get("return_to") || "/admin");
-  const failTo = returnTo.startsWith("/") ? returnTo : "/admin";
+  const returnTo = String(form.get("return_to") || "/activity");
+  const failTo = returnTo.startsWith("/") ? returnTo : "/activity";
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(activityOn)) {
     return redirect(`${failTo}${failTo.includes("?") ? "&" : "?"}error=${encodeURIComponent("Please choose an activity date.")}`, 303);

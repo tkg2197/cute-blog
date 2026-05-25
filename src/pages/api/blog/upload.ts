@@ -11,7 +11,7 @@ export const POST: APIRoute = async ({ request, cookies, locals, redirect }) => 
   const file = form.get("markdown");
   const manualSlug = String(form.get("slug") || "").trim();
   const rawReturn = String(form.get("return_to") || "").trim();
-  const safeReturn = rawReturn.startsWith("/") ? rawReturn : "/admin";
+  const safeReturn = rawReturn.startsWith("/") ? rawReturn : "/blog";
   const sep = safeReturn.includes("?") ? "&" : "?";
 
   if (!(file instanceof File) || file.size === 0) {
