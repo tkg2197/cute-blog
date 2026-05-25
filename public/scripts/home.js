@@ -17,6 +17,10 @@
     white: ["Keep the little things carefully today.", "Take it slowly; the nest will grow bit by bit.", "If the breeze is right, stay in the sun a little longer."],
     brown: ["Write down the places first; the road will appear slowly.", "Today is good for one small cute thing.", "Before leaving, tuck the anticipation into your pocket."]
   };
+  var STATUS_IDEAS = {
+    mood: ["Softly happy", "A little tired", "Full of energy", "Calm and cozy", "Missing you", "Ready for small joys"],
+    doing: ["Writing today's note", "Sorting small things", "Planning dinner", "On the way home", "Taking a soft break", "Waiting for you"]
+  };
   var WEATHER_LABELS = {
     0: "Clear",
     1: "Mostly clear",
@@ -412,27 +416,146 @@
   }
 
   function setupStatusActions() {
+    var modal = document.getElementById("statusEditor");
+    var modalCard = modal && modal.querySelector(".status-editor__card");
+    var kicker = document.getElementById("statusEditorKicker");
+    var title = document.getElementById("statusEditorTitle");
+    var hint = document.getElementById("statusEditorHint");
+    var labelEl = document.getElementById("statusEditorLabel");
+    var input = document.getElementById("statusEditorInput");
+    var count = document.getElementById("statusEditorCount");
+    var sync = document.getElementById("statusEditorSync");
+    var chips = document.getElementById("statusEditorChips");
+    var clearBtn = document.getElementById("statusEditorClear");
+    var saveBtn = document.getElementById("statusEditorSave");
+    var activeEdit = null;
+
     function statusName(who) {
       var title = document.querySelector('[data-status-name="' + who + '"]');
       return title && title.textContent.trim() ? title.textContent.trim() : (who === "brown" ? "Brown" : "White");
     }
 
+    function fieldTarget(who, field) {
+      var prefix = who === "brown" ? "brown" : "white";
+      return document.getElementById(prefix + (field === "mood" ? "Mood" : "Doing"));
+    }
+
+    function updateCount() {
+      if (!input || !count) return;
+      count.textContent = input.value.length + " / 80";
+    }
+
+    function setSync(text, mode) {
+      if (!sync) return;
+      sync.textContent = text;
+      sync.setAttribute("data-state", mode || "idle");
+    }
+
+    function renderChips(field) {
+      if (!chips) return;
+      chips.textContent = "";
+      (STATUS_IDEAS[field] || []).forEach(function (idea) {
+        var chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "status-editor__chip";
+        chip.textContent = idea;
+        chip.addEventListener("click", function () {
+          input.value = idea;
+          updateCount();
+          setSync("Ready to save", "idle");
+          input.focus();
+        });
+        chips.appendChild(chip);
+      });
+    }
+
+    function openEditor(who, field) {
+      if (!modal || !input || !saveBtn) return;
+      var target = fieldTarget(who, field);
+      var name = statusName(who);
+      activeEdit = { who: who, field: field };
+      modal.classList.remove("is-hidden", "status-editor--white", "status-editor--brown");
+      modal.classList.add(who === "brown" ? "status-editor--brown" : "status-editor--white");
+      if (kicker) kicker.textContent = name + "'s today";
+      if (title) title.textContent = field === "mood" ? "Edit mood" : "Edit what you are doing";
+      if (hint) hint.textContent = field === "mood"
+        ? "Keep it short, sweet, and visible on the home page."
+        : "A tiny current-status note for the two-person home.";
+      if (labelEl) labelEl.textContent = field === "mood" ? "Mood" : "Doing";
+      input.value = target ? target.textContent.trim() : "";
+      renderChips(field);
+      updateCount();
+      setSync("Saved for today", "idle");
+      window.setTimeout(function () {
+        input.focus();
+        input.select();
+      }, 40);
+    }
+
+    function closeEditor() {
+      if (!modal) return;
+      modal.classList.add("is-hidden");
+      activeEdit = null;
+    }
+
+    function saveEditor(value) {
+      if (!activeEdit) return;
+      var trimmed = String(value || "").trim();
+      saveManualValue(activeEdit.who, activeEdit.field, trimmed);
+      if (currentWeatherWho() === activeEdit.who) {
+        postFieldToServer(activeEdit.field, trimmed);
+      }
+      renderStatus();
+      setSync(trimmed ? "Saved" : "Default restored", "saved");
+      closeEditor();
+    }
+
+    if (input) {
+      input.addEventListener("input", function () {
+        updateCount();
+        setSync("Ready to save", "idle");
+      });
+      input.addEventListener("keydown", function (ev) {
+        if ((ev.ctrlKey || ev.metaKey) && ev.key === "Enter") {
+          ev.preventDefault();
+          saveEditor(input.value);
+        }
+      });
+    }
+
+    Array.prototype.slice.call(document.querySelectorAll("[data-status-close]")).forEach(function (btn) {
+      btn.addEventListener("click", closeEditor);
+    });
+
+    if (modalCard) {
+      modalCard.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+      });
+    }
+
+    if (clearBtn) {
+      clearBtn.addEventListener("click", function () {
+        saveEditor("");
+      });
+    }
+
+    if (saveBtn) {
+      saveBtn.addEventListener("click", function () {
+        saveEditor(input ? input.value : "");
+      });
+    }
+
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape" && modal && !modal.classList.contains("is-hidden")) {
+        closeEditor();
+      }
+    });
+
     Array.prototype.slice.call(document.querySelectorAll(".home-status__edit")).forEach(function (btn) {
       btn.addEventListener("click", function () {
         var who = btn.getAttribute("data-who");
         var field = btn.getAttribute("data-field");
-        var prefix = who === "brown" ? "brown" : "white";
-        var label = field === "mood" ? "mood" : "current activity";
-        var current = document.getElementById(prefix + (field === "mood" ? "Mood" : "Doing"));
-        var value = window.prompt("Edit " + statusName(who) + "'s " + label + ". Leave blank to restore the default:", current ? current.textContent : "");
-        if (value === null) return;
-        var trimmed = value.trim();
-        saveManualValue(who, field, trimmed);
-        // 只有自己那侧才同步到服务器（SSR 已经保证按钮只在自己那侧出现，这里再防一手）
-        if (currentWeatherWho() === who) {
-          postFieldToServer(field, trimmed);
-        }
-        renderStatus();
+        openEditor(who === "brown" ? "brown" : "white", field === "doing" ? "doing" : "mood");
       });
     });
 

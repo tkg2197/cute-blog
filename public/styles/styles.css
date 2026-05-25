@@ -1396,6 +1396,256 @@ html, body {
   49%, 100% { opacity: 0; }
 }
 
+.status-editor {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.status-editor.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.status-editor__mask {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 34% 28%, rgba(255,255,255,.4), transparent 30%),
+    rgba(222, 236, 243, 0.58);
+  -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
+}
+
+.status-editor__card {
+  position: relative;
+  z-index: 1;
+  width: min(460px, 100%);
+  padding: 28px;
+  border: 1px solid rgba(255,255,255,.76);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.9), rgba(246,251,253,.78));
+  box-shadow: 0 28px 80px rgba(63, 88, 112, 0.22);
+  -webkit-backdrop-filter: blur(18px);
+          backdrop-filter: blur(18px);
+  transform: translateY(0) scale(1);
+  transition: transform 0.24s cubic-bezier(.34,1.56,.64,1);
+}
+
+.status-editor.is-hidden .status-editor__card {
+  transform: translateY(14px) scale(.98);
+}
+
+.status-editor__card::before {
+  content: "";
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--status-editor-color, #7aa6d4), transparent 64%);
+  opacity: .18;
+  pointer-events: none;
+}
+
+.status-editor--white {
+  --status-editor-color: #7aa6d4;
+  --status-editor-color-strong: #5f93c4;
+  --status-editor-color-soft: rgba(122, 166, 212, 0.15);
+}
+
+.status-editor--brown {
+  --status-editor-color: #d49356;
+  --status-editor-color-strong: #b6783c;
+  --status-editor-color-soft: rgba(212, 147, 86, 0.16);
+}
+
+.status-editor__x {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(115, 139, 160, .16);
+  border-radius: 50%;
+  background: rgba(255,255,255,.74);
+  color: #6c7d8f;
+  font-size: 21px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform .16s ease, background .16s ease, color .16s ease;
+}
+
+.status-editor__x:hover {
+  transform: translateY(-1px);
+  background: #fff;
+  color: #324a60;
+}
+
+.status-editor__kicker {
+  margin: 0 0 8px;
+  color: var(--status-editor-color-strong, #5f93c4);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.status-editor h2 {
+  margin: 0;
+  color: #2f465a;
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.status-editor__hint {
+  width: min(330px, 100%);
+  margin: 9px 0 22px;
+  color: #6d7e8f;
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+.status-editor__field {
+  display: grid;
+  gap: 9px;
+}
+
+.status-editor__field span {
+  color: #526b82;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.status-editor__field textarea {
+  width: 100%;
+  min-height: 104px;
+  resize: none;
+  padding: 15px 16px;
+  border: 1px solid rgba(122, 145, 164, .18);
+  border-radius: 14px;
+  outline: none;
+  background: rgba(255,255,255,.82);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+  color: #334a60;
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.65;
+  font-weight: 650;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.status-editor__field textarea:focus {
+  border-color: var(--status-editor-color, #7aa6d4);
+  background: #fff;
+  box-shadow: 0 0 0 5px var(--status-editor-color-soft, rgba(122,166,212,.15));
+}
+
+.status-editor__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 9px;
+  color: #8291a0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#statusEditorSync[data-state="saved"] {
+  color: #5f9b78;
+}
+
+.status-editor__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.status-editor__chip {
+  padding: 8px 11px;
+  border: 1px solid rgba(255,255,255,.72);
+  border-radius: 999px;
+  background: var(--status-editor-color-soft, rgba(122,166,212,.15));
+  color: #52677b;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: transform .16s ease, background .16s ease, color .16s ease;
+}
+
+.status-editor__chip:hover {
+  transform: translateY(-1px);
+  background: rgba(255,255,255,.9);
+  color: var(--status-editor-color-strong, #5f93c4);
+}
+
+.status-editor__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.status-editor__spacer {
+  flex: 1 1 auto;
+}
+
+.status-editor__clear,
+.status-editor__cancel,
+.status-editor__save {
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: transform .16s ease, box-shadow .16s ease, background .16s ease, color .16s ease;
+}
+
+.status-editor__clear,
+.status-editor__cancel {
+  border: 1px solid rgba(122, 145, 164, .16);
+  background: rgba(255,255,255,.68);
+  color: #64778a;
+}
+
+.status-editor__save {
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, var(--status-editor-color, #7aa6d4), #91c6b6);
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(80, 120, 145, .2);
+}
+
+.status-editor__clear:hover,
+.status-editor__cancel:hover,
+.status-editor__save:hover {
+  transform: translateY(-1px);
+}
+
+.status-editor__clear:hover,
+.status-editor__cancel:hover {
+  background: #fff;
+  color: #344e64;
+}
+
+.status-editor__save:hover {
+  box-shadow: 0 16px 30px rgba(80, 120, 145, .24);
+}
+
 .home-hero__text {
   width: min(660px, 100%);
   margin-top: 22px;
@@ -2080,6 +2330,33 @@ html, body {
     margin-top: 9px;
     padding: 8px 10px;
     font-size: 12px;
+  }
+
+  .status-editor {
+    padding: 14px;
+  }
+
+  .status-editor__card {
+    padding: 24px 18px 18px;
+    border-radius: 14px;
+  }
+
+  .status-editor h2 {
+    font-size: 24px;
+  }
+
+  .status-editor__actions {
+    flex-wrap: wrap;
+  }
+
+  .status-editor__spacer {
+    display: none;
+  }
+
+  .status-editor__clear,
+  .status-editor__cancel,
+  .status-editor__save {
+    flex: 1 1 auto;
   }
 
   .home-hero__text {

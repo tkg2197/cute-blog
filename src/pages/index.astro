@@ -310,6 +310,31 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
 
   </main>
 
+  <div class="status-editor is-hidden" id="statusEditor" role="dialog" aria-modal="true" aria-labelledby="statusEditorTitle">
+    <div class="status-editor__mask" data-status-close></div>
+    <section class="status-editor__card">
+      <button class="status-editor__x" type="button" data-status-close aria-label="Close editor">×</button>
+      <p class="status-editor__kicker" id="statusEditorKicker">Today status</p>
+      <h2 id="statusEditorTitle">Edit status</h2>
+      <p class="status-editor__hint" id="statusEditorHint">Write a short note for today.</p>
+      <label class="status-editor__field">
+        <span id="statusEditorLabel">Status</span>
+        <textarea id="statusEditorInput" maxlength="80" rows="3" placeholder="Type something soft and true."></textarea>
+      </label>
+      <div class="status-editor__meta">
+        <span id="statusEditorCount">0 / 80</span>
+        <span id="statusEditorSync">Saved for today</span>
+      </div>
+      <div class="status-editor__chips" id="statusEditorChips" aria-label="Quick status ideas"></div>
+      <div class="status-editor__actions">
+        <button class="status-editor__clear" id="statusEditorClear" type="button">Use default</button>
+        <span class="status-editor__spacer"></span>
+        <button class="status-editor__cancel" type="button" data-status-close>Cancel</button>
+        <button class="status-editor__save" id="statusEditorSave" type="button">Save</button>
+      </div>
+    </section>
+  </div>
+
   <Fragment slot="scripts">
     <script is:inline src="/scripts/cover.js"></script>
     <script is:inline src="/scripts/home.js"></script>
