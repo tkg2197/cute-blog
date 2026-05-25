@@ -11,14 +11,8 @@
     evening: "/assets/晚上草地.png",
     midnight: "/assets/半夜草地.png"
   };
-  var PLACES_KEY = "cuteblog.places.v1";
   var STATUS_KEY = "cuteblog.home.status.v1";
   var WEATHER_CACHE_MS = 30 * 60 * 1000;
-  var DEFAULT_PLACES = [
-    { name: "Kyoto", note: "Walk slowly through quiet alleys at dusk and find a warm little dinner spot.", tone: "night" },
-    { name: "Dali", note: "Go somewhere breezy, watch the lake and clouds, and let the afternoon move slowly.", tone: "desert" },
-    { name: "Iceland", note: "Wait for the aurora together and tuck the cold wind and stars into this year's wishes.", tone: "sea" }
-  ];
   var QUOTES = {
     white: ["Keep the little things carefully today.", "Take it slowly; the nest will grow bit by bit.", "If the breeze is right, stay in the sun a little longer."],
     brown: ["Write down the places first; the road will appear slowly.", "Today is good for one small cute thing.", "Before leaving, tuck the anticipation into your pocket."]
@@ -499,67 +493,9 @@
     });
   }
 
-  function createPlaceCard(place) {
-    var tone = place.tone || "night";
-    var card = document.createElement("article");
-    card.className = "place-card place-card--" + tone;
-    card.tabIndex = 0;
-    card.innerHTML =
-      '<div class="place-card__art"><span class="' + (tone === "night" ? "place-card__moon" : "place-card__sun") + '"></span><span class="place-card__land"></span></div>' +
-      '<div class="place-card__content"><h3 class="place-card__name"></h3><p class="place-card__note"></p></div>';
-    card.querySelector(".place-card__name").textContent = place.name;
-    card.querySelector(".place-card__note").textContent = place.note;
-    return card;
-  }
-
-  function renderPlaces() {
-    var list = document.getElementById("placeList");
-    var count = document.getElementById("placeCount");
-    if (!list) return;
-    var saved = readJson(PLACES_KEY, []);
-    var places = saved.concat(DEFAULT_PLACES);
-    list.textContent = "";
-    places.forEach(function (place) {
-      list.appendChild(createPlaceCard(place));
-    });
-    if (count) count.textContent = places.length + " destinations";
-  }
-
-  function setupPlaces() {
-    var toggle = document.getElementById("placeToggle");
-    var form = document.getElementById("placeForm");
-    var cancel = document.getElementById("placeCancel");
-    var name = document.getElementById("placeName");
-    var note = document.getElementById("placeNote");
-    var tone = document.getElementById("placeTone");
-    function setOpen(open) {
-      if (!form || !toggle) return;
-      form.classList.toggle("is-hidden", !open);
-      toggle.setAttribute("aria-expanded", open ? "true" : "false");
-      toggle.textContent = open ? "Close form" : "Add place";
-      if (open && name) name.focus();
-    }
-    if (toggle && form) toggle.addEventListener("click", function () { setOpen(form.classList.contains("is-hidden")); });
-    if (cancel) cancel.addEventListener("click", function () { setOpen(false); });
-    if (form) {
-      form.addEventListener("submit", function (ev) {
-        ev.preventDefault();
-        if (!name.value.trim() || !note.value.trim()) return;
-        var saved = readJson(PLACES_KEY, []);
-        saved.unshift({ name: name.value.trim(), note: note.value.trim(), tone: tone.value || "night", createdAt: Date.now() });
-        writeJson(PLACES_KEY, saved);
-        form.reset();
-        setOpen(false);
-        renderPlaces();
-      });
-    }
-    renderPlaces();
-  }
-
   setPeriod(periodForHour(new Date().getHours()));
   renderStatus();
   setupWeather();
   setupStatusActions();
   setupPhotos();
-  setupPlaces();
 })();
