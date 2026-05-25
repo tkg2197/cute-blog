@@ -381,6 +381,13 @@ body {
 .note--white .note__author { color: var(--white-accent); }
 .note--brown .note__author { color: var(--brown-accent); }
 .note__mood { font-size: 13px; font-weight: 600; color: #6b7385; }
+.note__time {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: #97a3b8;
+  font-variant-numeric: tabular-nums;
+}
 
 /* 内容：折叠时限高，展开时弹簧打开 */
 .note__body {

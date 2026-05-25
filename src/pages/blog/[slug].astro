@@ -24,7 +24,8 @@ const authorName = authorDisplayName(post.profiles, author);
 const dateValue = post.published_at || post.created_at;
 const formatDate = (value: string) => {
   const d = new Date(value);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 const sections = renderArticleSections(post.content_markdown || "");
 const displayTitle = markdownToPlainText(post.title || "") || firstMarkdownHeading(post.content_markdown || "") || post.title;

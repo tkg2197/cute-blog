@@ -75,6 +75,13 @@ function prettyDate(value: string) {
   return `${Number(mm)}/${Number(dd)}`;
 }
 
+function recordTime(value: string) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 const today = new Date().toISOString().slice(0, 10);
 const moods: Array<{ key: string; label: string }> = [
   { key: "happy", label: "😄 Happy" },
@@ -192,6 +199,7 @@ const deleted = Astro.url.searchParams.get("deleted");
                       <span class="note__tape" aria-hidden="true"></span>
                       <div class="note__top">
                         <span class="note__author">{author === "white" ? "🐶" : "🐕"} {authorDisplayName(record.profiles, author, authorNames)}</span>
+                        <span class="note__time" title={record.created_at}>{recordTime(record.created_at)}</span>
                         <span class="note__mood">{MOOD_LABELS[record.mood] || record.mood}</span>
                       </div>
                       {samePhotos.length > 0 && (
