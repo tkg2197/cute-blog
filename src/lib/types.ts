@@ -56,6 +56,18 @@ export interface LifeRecord {
   profiles?: Pick<Profile, "display_name" | "author_key"> | null;
 }
 
+export type CommentTarget = "blog" | "record";
+
+export interface Comment {
+  id: string;
+  target_type: CommentTarget;
+  target_id: string;
+  author_id: string;
+  body: string;
+  created_at: string;
+  profiles?: Pick<Profile, "display_name" | "author_key"> | null;
+}
+
 export type PlaceTone = "night" | "desert" | "forest" | "sea";
 
 export interface Place {

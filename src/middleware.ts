@@ -3,7 +3,7 @@ import { getAccessToken, readSession } from "./lib/auth";
 import { createServiceClient, createUserClient } from "./lib/supabase";
 import type { Profile } from "./lib/types";
 
-const protectedPrefixes = ["/admin", "/api/blog", "/api/photos", "/api/records", "/api/activity"];
+const protectedPrefixes = ["/admin", "/api/blog", "/api/photos", "/api/records", "/api/activity", "/api/comments"];
 const authPages = ["/auth/login", "/auth/register"];
 
 export const onRequest = defineMiddleware(async (context, next) => {

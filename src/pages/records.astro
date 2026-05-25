@@ -2,8 +2,9 @@
 import PrototypeLayout from "../layouts/PrototypeLayout.astro";
 import { createServiceClient } from "../lib/supabase";
 import { authorDisplayName, makeAuthorNames } from "../lib/author-display";
+import { formatCommentTime } from "../lib/comments-display";
 import { MOOD_LABELS } from "../lib/types";
-import type { AuthorKey, LifeRecord, Photo } from "../lib/types";
+import type { AuthorKey, Comment, LifeRecord, Photo } from "../lib/types";
 
 const supabase = createServiceClient();
 const user = Astro.locals.user;
@@ -27,6 +28,23 @@ const [{ data: recordsData }, { data: photosData }, { data: authorRows }] = awai
 
 const records = (recordsData || []) as LifeRecord[];
 const authorNames = makeAuthorNames(authorRows || []);
+
+// 一次性拉所有记录的评论，按 record_id 分组
+const recordIds = records.map((r) => r.id);
+const { data: commentRows } = recordIds.length
+  ? await supabase
+      .from("comments")
+      .select("id,target_type,target_id,author_id,body,created_at,profiles(display_name,author_key)")
+      .eq("target_type", "record")
+      .in("target_id", recordIds)
+      .order("created_at", { ascending: true })
+  : { data: [] };
+const commentsByRecord = new Map<string, Comment[]>();
+((commentRows || []) as Comment[]).forEach((c) => {
+  const list = commentsByRecord.get(c.target_id) || [];
+  list.push(c);
+  commentsByRecord.set(c.target_id, list);
+});
 const currentAuthor = (profile?.author_key || "white") as AuthorKey;
 const currentAuthorName = authorDisplayName(profile, currentAuthor, authorNames);
 const photos = ((photosData || []) as Photo[]).map((photo) => ({
@@ -75,6 +93,7 @@ const deleted = Astro.url.searchParams.get("deleted");
 <PrototypeLayout title="Records · Our Nest" current="records" bgClass="rec-bg" backHref="/?skipCover=1#home">
   <Fragment slot="head">
     <link rel="stylesheet" href="/styles/records.css" />
+    <link rel="stylesheet" href="/styles/comments.css" />
   </Fragment>
 
   <main class="rec-main">
@@ -166,6 +185,7 @@ const deleted = Astro.url.searchParams.get("deleted");
                 const author = (record.profiles?.author_key || "white") as AuthorKey;
                 const samePhotos = photosByKey.get(`${author}|${record.record_on}`) || [];
                 const tilt = (Math.random() * 11 - 5.5).toFixed(1);
+                const recordComments = commentsByRecord.get(record.id) || [];
                 return (
                   <article class={`note note--${author}`} data-who={author} style={`--tilt:${tilt}deg`}>
                     <div class="note__card" role="button" tabindex="0" aria-expanded="false">
@@ -194,6 +214,49 @@ const deleted = Astro.url.searchParams.get("deleted");
                           <button class="note-delete__btn" type="submit">Delete</button>
                         </form>
                       )}
+
+                      <section class="cmt-section cmt-section--compact" id={`rc-${record.id}`} aria-label="Comments">
+                        <p class="cmt-title">💬 {recordComments.length || ""} {recordComments.length === 1 ? "comment" : "comments"}</p>
+                        {recordComments.length > 0 && (
+                          <div class="cmt-list">
+                            {recordComments.map((c) => {
+                              const who = (c.profiles?.author_key || "white") as AuthorKey;
+                              const name = authorDisplayName(c.profiles, who, authorNames);
+                              return (
+                                <div class={`cmt-row cmt-row--${who}`}>
+                                  <div class="cmt-meta">
+                                    <span class="cmt-meta__name">{who === "white" ? "🐶" : "🐕"} {name}</span>
+                                    <span class="cmt-meta__time">{formatCommentTime(c.created_at)}</span>
+                                  </div>
+                                  <div class="cmt-bubble">
+                                    {c.body}
+                                    {user?.id === c.author_id && (
+                                      <span class="cmt-bubble__delete">
+                                        <form action="/api/comments/delete" method="post" data-confirm="Delete this comment?" data-confirm-title="Delete comment?">
+                                          <input type="hidden" name="id" value={c.id} />
+                                          <input type="hidden" name="return_to" value="/records" />
+                                          <button type="submit" aria-label="Delete comment">Delete</button>
+                                        </form>
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                        {user ? (
+                          <form class="cmt-form" action="/api/comments/create" method="post">
+                            <input type="hidden" name="target_type" value="record" />
+                            <input type="hidden" name="target_id" value={record.id} />
+                            <input type="hidden" name="return_to" value="/records" />
+                            <textarea name="body" maxlength="500" rows="1" placeholder="Leave a comment..." required></textarea>
+                            <button class="cmt-form__send" type="submit">Send</button>
+                          </form>
+                        ) : (
+                          <p class="cmt-login-prompt"><a href="/auth/login?redirect=/records">Log in</a> to comment.</p>
+                        )}
+                      </section>
                     </div>
                   </article>
                 );
@@ -272,7 +335,11 @@ const deleted = Astro.url.searchParams.get("deleted");
             if (hint) hint.textContent = open ? "Click to collapse ▴" : "Click to expand ▾";
           }
           card.addEventListener("click", function (ev) {
-            if (ev.target.closest(".note__photo") || ev.target.closest(".note-delete")) return;
+            if (
+              ev.target.closest(".note__photo") ||
+              ev.target.closest(".note-delete") ||
+              ev.target.closest(".cmt-section")
+            ) return;
             toggle();
           });
           card.addEventListener("keydown", function (ev) {
