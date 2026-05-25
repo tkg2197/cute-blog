@@ -123,8 +123,50 @@
     if (weather && text) weather.textContent = text;
   }
 
+  function serverWeatherFor(who) {
+    var prefix = who === "brown" ? "brown" : "white";
+    var el = document.getElementById(prefix + "Weather");
+    return el ? (el.getAttribute("data-server-weather") || "") : "";
+  }
+
+  function serverFieldText(who, field) {
+    var prefix = who === "brown" ? "brown" : "white";
+    var suffix = field === "mood" ? "Mood" : "Doing";
+    var el = document.getElementById(prefix + suffix);
+    return el ? (el.getAttribute("data-server-text") || "") : "";
+  }
+
+  function postFieldToServer(field, value) {
+    if (!window.fetch) return;
+    try {
+      fetch("/api/status/field", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ field: field, value: value })
+      }).catch(function () {});
+    } catch (e) {}
+  }
+
+  function currentWeatherWho() {
+    var home = document.getElementById("home");
+    var who = home && home.getAttribute("data-current-weather-who");
+    return who === "white" || who === "brown" ? who : "";
+  }
+
+  function postWeatherToServer(text) {
+    if (!window.fetch || !text) return;
+    try {
+      fetch("/api/status/weather", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ text: text })
+      }).catch(function () {});
+    } catch (e) {}
+  }
+
   function renderStatus() {
     var saved = readJson(STATUS_KEY, {});
+    var meWho = currentWeatherWho();
     [
       { who: "white", prefix: "white", mood: "Softly happy", doing: "Sorting today's small notes" },
       { who: "brown", prefix: "brown", mood: "Full of energy", doing: "Planning the next outing" }
@@ -132,9 +174,36 @@
       var mood = document.getElementById(item.prefix + "Mood");
       var doing = document.getElementById(item.prefix + "Doing");
       var weather = document.getElementById(item.prefix + "Weather");
-      if (mood) mood.textContent = manualValue(saved, item.who, "mood") || item.mood;
-      if (doing) doing.textContent = manualValue(saved, item.who, "doing") || item.doing;
-      if (weather) weather.textContent = storedWeatherText(saved[item.who] && saved[item.who].weather) || "Location pending · Weather pending";
+
+      // mood / doing：自己那侧 localStorage 今日值优先（本人刚改的），否则用服务器 SSR 值（已按当天过滤）；
+      // 对方那侧只读 SSR 值（本设备的 localStorage 可能是过期身份留下的，不可信）
+      if (mood) {
+        var serverMood = serverFieldText(item.who, "mood");
+        if (meWho === item.who) {
+          mood.textContent = manualValue(saved, item.who, "mood") || serverMood || item.mood;
+        } else {
+          mood.textContent = serverMood || item.mood;
+        }
+      }
+      if (doing) {
+        var serverDoing = serverFieldText(item.who, "doing");
+        if (meWho === item.who) {
+          doing.textContent = manualValue(saved, item.who, "doing") || serverDoing || item.doing;
+        } else {
+          doing.textContent = serverDoing || item.doing;
+        }
+      }
+
+      // 天气：当前用户优先用本地缓存（更新鲜），其次服务器值；对方只看服务器值
+      if (weather) {
+        var serverText = serverWeatherFor(item.who);
+        if (meWho === item.who) {
+          var cached = storedWeatherText(saved[item.who] && saved[item.who].weather);
+          weather.textContent = cached || serverText || "Location pending · Weather pending";
+        } else {
+          weather.textContent = serverText || "Location pending · Weather pending";
+        }
+      }
     });
   }
 
@@ -270,6 +339,8 @@
         if (!text) throw new Error("empty weather");
         setWeatherText(who, text);
         saveWeatherValue(who, { text: text, updatedAt: Date.now() });
+        // 同步到服务器，让对方在 ta 的设备上也能看到
+        postWeatherToServer(text);
       })
       .catch(function () {
         if (!cachedText) setWeatherText(who, "Location pending · Weather pending");
@@ -319,7 +390,12 @@
         var current = document.getElementById(prefix + (field === "mood" ? "Mood" : "Doing"));
         var value = window.prompt("Edit " + statusName(who) + "'s " + label + ". Leave blank to restore the default:", current ? current.textContent : "");
         if (value === null) return;
-        saveManualValue(who, field, value.trim());
+        var trimmed = value.trim();
+        saveManualValue(who, field, trimmed);
+        // 只有自己那侧才同步到服务器（SSR 已经保证按钮只在自己那侧出现，这里再防一手）
+        if (currentWeatherWho() === who) {
+          postFieldToServer(field, trimmed);
+        }
         renderStatus();
       });
     });

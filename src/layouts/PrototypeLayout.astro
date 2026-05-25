@@ -125,45 +125,51 @@ const authorKey = (profile?.author_key || "white") as AuthorKey;
     align-items: center;
     margin: 0;
   }
+  /* 用户名 / 退出：和导航栏其他链接一样的纯文字样式，不要圆角框 */
   .auth-pill {
-    padding: 5px 14px;
-    border-radius: 999px;
-    color: #fff;
-    font-size: 13px;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    font-size: 15px;
     font-weight: 650;
-    line-height: 1.4;
-    box-shadow: 0 4px 12px rgba(70,80,110,.16);
+    line-height: 1.2;
     max-width: 9em;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    opacity: 0.92;
   }
-  .auth-pill--white { background: #7aa6d4; }
-  .auth-pill--brown { background: #d49356; }
+  /* 保留作者色作为文字色，仍是身份标识 */
+  .auth-pill--white { color: #7aa6d4; }
+  .auth-pill--brown { color: #d49356; }
   .auth-link {
-    padding: 6px 14px;
-    border-radius: 999px;
-    background: rgba(255,255,255,.6);
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
     color: #3f5a72;
-    font-size: 13px;
+    font-family: inherit;
+    font-size: 15px;
     font-weight: 650;
-    line-height: 1.4;
+    line-height: 1.2;
     text-decoration: none;
-    border: 1px solid rgba(122,166,212,.32);
     cursor: pointer;
-    transition: background .15s ease, transform .15s ease, box-shadow .15s ease;
+    opacity: 0.82;
+    transition: opacity .22s ease, transform .22s ease;
   }
   .auth-link:hover {
-    background: #fff;
+    opacity: 1;
     transform: translateY(-1px);
-    box-shadow: 0 6px 14px rgba(70,80,110,.16);
+    background: transparent;
+    box-shadow: none;
   }
   @media (max-width: 760px) {
     .site-nav__auth { margin-left: 0; gap: 10px; }
     .site-nav__auth form { gap: 10px; }
     .auth-pill, .auth-link {
-      padding: 4px 10px;
-      font-size: 12px;
+      font-size: 13px;
     }
     .auth-pill { max-width: 6em; }
   }

@@ -43,23 +43,44 @@ const photoFallbacks = [
   { publicUrl: "/assets/晚上-白狗.png", title: "Evening", caption: "", taken_on: "Evening", profiles: { display_name: "White" } },
 ];
 const displayPhotos = [...recentPhotos, ...photoFallbacks].slice(0, 5);
-const { data: profileRows } = user
-  ? await supabase
-      .from("profiles")
-      .select("id,email,author_key,display_name,created_at")
-      .order("created_at", { ascending: true })
-      .limit(2)
-  : { data: [] };
+// 不论是否登录都拉两个作者的资料 + 已同步的状态，让访客也能看到双方的状态
+const { data: profileRows } = await supabase
+  .from("profiles")
+  .select("id,email,author_key,display_name,weather_text,weather_updated_at,mood_text,mood_date,doing_text,doing_date,created_at")
+  .in("author_key", ["white", "brown"]);
 const homeProfiles = (profileRows || []) as Profile[];
-const brownDisplayName = user ? homeProfiles[0]?.display_name || "Brown" : "Brown";
-const whiteDisplayName = user ? homeProfiles[1]?.display_name || "White" : "White";
-const currentWeatherWho = user
-  ? homeProfiles[0]?.id === user.id
-    ? "brown"
-    : homeProfiles[1]?.id === user.id
-      ? "white"
-      : profile?.author_key || ""
-  : "";
+const whiteProfile = homeProfiles.find((p) => p.author_key === "white");
+const brownProfile = homeProfiles.find((p) => p.author_key === "brown");
+const whiteDisplayName = whiteProfile?.display_name || "White";
+const brownDisplayName = brownProfile?.display_name || "Brown";
+const whiteWeather = whiteProfile?.weather_text || "";
+const brownWeather = brownProfile?.weather_text || "";
+const currentWeatherWho = user ? profile?.author_key || "" : "";
+
+// mood / doing 当日才有效，过期就回到默认占位
+const todayKey = (() => {
+  const d = new Date();
+  const pad = (n: number) => (n < 10 ? `0${n}` : String(n));
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+})();
+const todayField = (p: Profile | undefined, field: "mood" | "doing") => {
+  if (!p) return "";
+  const date = field === "mood" ? p.mood_date : p.doing_date;
+  const text = field === "mood" ? p.mood_text : p.doing_text;
+  return date === todayKey && text ? text : "";
+};
+const whiteMoodDefault = "Softly happy";
+const brownMoodDefault = "Full of energy";
+const whiteDoingDefault = "Sorting today's small notes";
+const brownDoingDefault = "Planning the next outing";
+const whiteMood = todayField(whiteProfile, "mood") || whiteMoodDefault;
+const brownMood = todayField(brownProfile, "mood") || brownMoodDefault;
+const whiteDoing = todayField(whiteProfile, "doing") || whiteDoingDefault;
+const brownDoing = todayField(brownProfile, "doing") || brownDoingDefault;
+
+// 只能编辑自己那一侧；未登录则双方都不可编辑
+const canEditWhite = currentWeatherWho === "white";
+const canEditBrown = currentWeatherWho === "brown";
 const postFallbacks = [
   { href: "/blog", date: "2026.05.22", title: "Turning our nest into a place we can keep writing" },
   { href: "/photos", date: "2026.05.21", title: "The first version of photos, records, and activity" },
@@ -174,20 +195,24 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
             <dl>
               <div>
                 <dt>Local weather</dt>
-                <dd id="whiteWeather">Location pending · Weather pending</dd>
+                <dd id="whiteWeather" data-server-weather={whiteWeather}>{whiteWeather || "Location pending · Weather pending"}</dd>
               </div>
               <div>
                 <dt>Mood</dt>
                 <dd class="home-status__editable">
-                  <span id="whiteMood">Softly happy</span>
-                  <button class="home-status__edit" type="button" data-who="white" data-field="mood" aria-label={`Edit ${whiteDisplayName}'s mood`}>Edit</button>
+                  <span id="whiteMood" data-server-text={whiteMood}>{whiteMood}</span>
+                  {canEditWhite && (
+                    <button class="home-status__edit" type="button" data-who="white" data-field="mood" aria-label={`Edit ${whiteDisplayName}'s mood`}>Edit</button>
+                  )}
                 </dd>
               </div>
               <div>
                 <dt>Doing</dt>
                 <dd class="home-status__editable">
-                  <span id="whiteDoing">Sorting today's small notes</span>
-                  <button class="home-status__edit" type="button" data-who="white" data-field="doing" aria-label={`Edit what ${whiteDisplayName} is doing`}>Edit</button>
+                  <span id="whiteDoing" data-server-text={whiteDoing}>{whiteDoing}</span>
+                  {canEditWhite && (
+                    <button class="home-status__edit" type="button" data-who="white" data-field="doing" aria-label={`Edit what ${whiteDisplayName} is doing`}>Edit</button>
+                  )}
                 </dd>
               </div>
             </dl>
@@ -201,20 +226,24 @@ const formatPostDate = (date: string) => new Date(date).toLocaleDateString("zh-C
             <dl>
               <div>
                 <dt>Local weather</dt>
-                <dd id="brownWeather">Location pending · Weather pending</dd>
+                <dd id="brownWeather" data-server-weather={brownWeather}>{brownWeather || "Location pending · Weather pending"}</dd>
               </div>
               <div>
                 <dt>Mood</dt>
                 <dd class="home-status__editable">
-                  <span id="brownMood">Full of energy</span>
-                  <button class="home-status__edit" type="button" data-who="brown" data-field="mood" aria-label={`Edit ${brownDisplayName}'s mood`}>Edit</button>
+                  <span id="brownMood" data-server-text={brownMood}>{brownMood}</span>
+                  {canEditBrown && (
+                    <button class="home-status__edit" type="button" data-who="brown" data-field="mood" aria-label={`Edit ${brownDisplayName}'s mood`}>Edit</button>
+                  )}
                 </dd>
               </div>
               <div>
                 <dt>Doing</dt>
                 <dd class="home-status__editable">
-                  <span id="brownDoing">Planning the next outing</span>
-                  <button class="home-status__edit" type="button" data-who="brown" data-field="doing" aria-label={`Edit what ${brownDisplayName} is doing`}>Edit</button>
+                  <span id="brownDoing" data-server-text={brownDoing}>{brownDoing}</span>
+                  {canEditBrown && (
+                    <button class="home-status__edit" type="button" data-who="brown" data-field="doing" aria-label={`Edit what ${brownDisplayName} is doing`}>Edit</button>
+                  )}
                 </dd>
               </div>
             </dl>

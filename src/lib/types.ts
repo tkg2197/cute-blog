@@ -6,6 +6,12 @@ export interface Profile {
   author_key: AuthorKey;
   display_name: string;
   created_at: string;
+  weather_text?: string | null;
+  weather_updated_at?: string | null;
+  mood_text?: string | null;
+  mood_date?: string | null;
+  doing_text?: string | null;
+  doing_date?: string | null;
 }
 
 export interface BlogPost {
