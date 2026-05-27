@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { storageSafeName } from "../../../lib/files";
 import { parseMarkdown, slugify } from "../../../lib/markdown";
 import { ensureStorageBuckets } from "../../../lib/storage";
 import { createServiceClient } from "../../../lib/supabase";
@@ -26,7 +27,8 @@ export const POST: APIRoute = async ({ request, cookies, locals, redirect }) => 
   const parsed = parseMarkdown(content, file.name.replace(/\.md$/i, ""));
   const slug = slugify(manualSlug || parsed.title);
   const supabase = createServiceClient();
-  const storagePath = `${user.id}/${slug}-${Date.now()}-${crypto.randomUUID()}.md`;
+  const storageName = storageSafeName(slug, "post");
+  const storagePath = `${user.id}/${storageName}-${Date.now()}-${crypto.randomUUID()}.md`;
 
   try {
     await ensureStorageBuckets();
