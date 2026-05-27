@@ -544,7 +544,7 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
   grid-template-columns: minmax(0, 760px) minmax(270px, 340px);
   gap: clamp(70px, 8vw, 130px);
   max-width: 1260px;
-  padding-top: 176px;
+  padding-top: 142px;
 }
 
 .article {
@@ -552,7 +552,7 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
 }
 
 .article-head {
-  margin-bottom: 76px;
+  margin-bottom: 34px;
 }
 
 .blog-detail-actions {
@@ -675,6 +675,14 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
   font-size: 16px;
   font-style: italic;
   line-height: 1.7;
+}
+
+.article-head + .article-section {
+  padding-top: 0;
+}
+
+.article-head + .article-section h2 {
+  margin-top: 0;
 }
 
 .toc__inner {

@@ -93,6 +93,11 @@ export function parseTagList(value: string) {
     });
 }
 
+export function estimatedReadMinutes(markdown: string) {
+  const text = markdownToPlainText(markdown || "");
+  return Math.max(3, Math.ceil(text.length / 280));
+}
+
 export function slugify(value: string) {
   const base = value
     .normalize("NFKD")

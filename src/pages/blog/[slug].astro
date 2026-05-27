@@ -1,7 +1,7 @@
 ---
 import PrototypeLayout from "../../layouts/PrototypeLayout.astro";
 import { createServiceClient } from "../../lib/supabase";
-import { firstMarkdownHeading, markdownToPlainText, renderArticleSections } from "../../lib/markdown";
+import { estimatedReadMinutes, firstMarkdownHeading, markdownToPlainText, renderArticleSections } from "../../lib/markdown";
 import { authorDisplayName } from "../../lib/author-display";
 import { formatCommentTime } from "../../lib/comments-display";
 import { shanghaiParts } from "../../lib/datetime";
@@ -39,7 +39,7 @@ const formatDate = (value: string) => {
 const sections = renderArticleSections(post.content_markdown || "");
 const displayTitle = markdownToPlainText(post.title || "") || firstMarkdownHeading(post.content_markdown || "") || post.title;
 const displayExcerpt = post.excerpt ? markdownToPlainText(post.excerpt) : "";
-const readMinutes = Math.max(3, Math.ceil((post.content_markdown || "").length / 280));
+const readMinutes = estimatedReadMinutes(post.content_markdown || "");
 const user = Astro.locals.user;
 
 const { data: commentRows } = await supabase
@@ -84,7 +84,7 @@ const commentError = Astro.url.searchParams.get("error");
 
       {sections.map((section) => (
         <section class="article-section" id={section.id} data-toc-title={section.title}>
-          <h2>{section.title}</h2>
+          {section.title !== "Content" && <h2>{section.title}</h2>}
           <Fragment set:html={section.html} />
         </section>
       ))}
