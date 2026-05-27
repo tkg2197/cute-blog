@@ -431,16 +431,16 @@ body {
 .todo-heatmap {
   display: grid;
   grid-auto-flow: column;
-  grid-template-rows: repeat(7, 10px);
-  grid-auto-columns: 10px;
-  gap: 4px;
+  grid-template-rows: repeat(8, clamp(6px, 1.35vw, 10px));
+  grid-auto-columns: clamp(6px, 1.35vw, 10px);
+  gap: clamp(2px, .55vw, 4px);
   margin-top: 26px;
-  overflow-x: auto;
-  padding-bottom: 2px;
+  overflow: visible;
+  max-width: 100%;
 }
 .todo-square {
-  width: 10px;
-  height: 10px;
+  width: 100%;
+  height: 100%;
   border-radius: 3px;
   background: #edf1e6;
 }
