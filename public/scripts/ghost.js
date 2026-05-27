@@ -28,8 +28,9 @@
   var SIDE_MIN = 140;
   var SIDE_MAX = 280;
 
-  // 鼠标悬停时随机说一句（≥15 句），跑掉前停留 ~1.2s 给用户读
+  // 鼠标悬停时随机说一句，跑掉前停留 ~1.2s 给用户读
   var BUBBLE_PHRASES = [
+    // 经典俏皮
     "You can't catch me~",
     "Hehe, you found me?",
     "I can disappear, you know.",
@@ -49,7 +50,51 @@
     "Shhh.",
     "I'm going to hide now.",
     "I see you too.",
-    "Good night~"
+    "Good night~",
+    // 藏猫猫 / 转移
+    "Blink and I'm gone~",
+    "Counting to three... one... two...",
+    "Catch the other corner instead.",
+    "I'll pop up where you don't expect.",
+    "Hide and seek, round two!",
+    "You blink, I poof.",
+    "Was I here? Or was it a dream?",
+    "Whoosh~ off I go.",
+    "Try the other side of the page.",
+    "I left a star behind, that's all.",
+    // 小窝主题
+    "The nest looks cozy from up here.",
+    "I float, the dogs guard. Teamwork.",
+    "I read your blog while you scroll.",
+    "Your photos make me smile a little.",
+    "Saw a new place on the wishlist!",
+    "Brown waved at me earlier.",
+    "White is busy in the corner again.",
+    "Today's mood... ghostly soft.",
+    "Did you write something today?",
+    "I'm rooting for your tiny tasks.",
+    // 哲思 / 温柔
+    "Empty spaces are nice too.",
+    "Floating is also a kind of working.",
+    "I dream of marshmallow clouds.",
+    "Breathing in... and out.",
+    "Tiny stars, big feelings.",
+    "Be soft with yourself today.",
+    "Even ghosts need a break.",
+    "The page is brighter with you here.",
+    "Quiet corners hold the best secrets.",
+    "I keep a tiny lantern for you.",
+    // 调皮 / 反应
+    "Ack! Too close, too close!",
+    "Are you trying to boop me?",
+    "Click? Why click a ghost?",
+    "Pfft, hover at your own risk.",
+    "Tag, you're it~",
+    "Wheee~",
+    "Oops, gotta go.",
+    "I'll just slip through this paragraph.",
+    "Don't tell the dogs I was here.",
+    "Catch me on the next scroll."
   ];
   var BUBBLE_HOLD = 700;    // 气泡停留时间(ms)，到点鬼魂就跑掉
   var lastPhraseIdx = -1;
