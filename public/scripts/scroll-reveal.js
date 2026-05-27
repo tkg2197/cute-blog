@@ -11,7 +11,7 @@
     ".rec-header", ".rec-filter", ".rec-timeline > *",
     ".pw-header", ".pw-toolbar", ".pw-stacks > *", ".pw-detail__bar", ".pw-grid > *",
     ".bi-head", ".bi-toolbar", ".post-item", ".tag-panel", ".archive-panel", ".bi-pager",
-    ".article-head", ".article-section", ".quote-pair__item",
+    ".article-head", ".quote-pair__item",
     ".act-head", ".act-form", ".act-section", ".act-stat", ".time-block", ".act-periods > *", ".act-bars > *"
   ].join(",");
 

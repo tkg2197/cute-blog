@@ -685,6 +685,11 @@ html.pt-leaving .site-nav.is-nav-hidden ~ .blog-back-btn {
   margin-top: 0;
 }
 
+.article-section.sr-reveal {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 .toc__inner {
   top: 154px;
 }
