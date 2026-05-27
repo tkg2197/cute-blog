@@ -64,10 +64,18 @@ function parseFrontmatter(source: string) {
   const body = source.slice(end + 4).trim();
   const attrs = new Map<string, string>();
   raw.split(/\r?\n/).forEach((line) => {
-    const hit = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+    const hit = line.match(/^([\p{L}\p{N}_-]+)\s*[:：]\s*(.*)$/u);
     if (hit) attrs.set(hit[1].toLowerCase(), hit[2].replace(/^["']|["']$/g, "").trim());
   });
   return { attrs, body };
+}
+
+function frontmatterValue(attrs: Map<string, string>, keys: string[]) {
+  for (const key of keys) {
+    const value = attrs.get(key.toLowerCase());
+    if (value) return value;
+  }
+  return "";
 }
 
 export function slugify(value: string) {
@@ -84,12 +92,12 @@ export function slugify(value: string) {
 export function parseMarkdown(source: string, fallbackTitle: string): ParsedMarkdown {
   const { attrs, body } = parseFrontmatter(source);
   const heading = firstMarkdownHeading(body);
-  const title = attrs.get("title") || heading || fallbackTitle;
+  const title = frontmatterValue(attrs, ["title", "标题"]) || heading || fallbackTitle;
   const excerpt =
-    attrs.get("excerpt") ||
+    frontmatterValue(attrs, ["excerpt", "description", "summary", "desc", "简介", "摘要"]) ||
     plainTextExcerpt(body) ||
     "";
-  const tags = (attrs.get("tags") || "")
+  const tags = (frontmatterValue(attrs, ["tags", "tag", "标签"]) || "")
     .split(",")
     .map((tag) => tag.trim())
     .filter(Boolean);

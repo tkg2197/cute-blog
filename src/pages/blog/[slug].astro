@@ -7,7 +7,15 @@ import { formatCommentTime } from "../../lib/comments-display";
 import { shanghaiParts } from "../../lib/datetime";
 import type { AuthorKey, BlogPost, Comment } from "../../lib/types";
 
-const slug = Astro.params.slug || "";
+function safeDecode(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+const slug = safeDecode(Astro.params.slug || "");
 const supabase = createServiceClient();
 const { data } = await supabase
   .from("blog_posts")
@@ -41,7 +49,7 @@ const { data: commentRows } = await supabase
   .eq("target_id", post.id)
   .order("created_at", { ascending: true });
 const comments = (commentRows || []) as Comment[];
-const returnTo = `/blog/${post.slug}`;
+const returnTo = `/blog/${encodeURIComponent(post.slug)}`;
 const commentError = Astro.url.searchParams.get("error");
 ---
 

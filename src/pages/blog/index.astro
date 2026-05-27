@@ -121,7 +121,7 @@ const currentYear = posts.length ? postYear(posts[0]) : new Date().getFullYear()
           const dateValue = post.published_at || post.created_at;
           return (
             <article class="post-item" data-authors={author} data-tags={(post.tags || []).join(" ")}>
-              <a class="post-item__link" href={`/blog/${post.slug}`}>
+              <a class="post-item__link" href={`/blog/${encodeURIComponent(post.slug)}`}>
                 <time class="post-item__date" datetime={dateValue}>{formatDate(dateValue)}</time>
                 <h2>{displayPostTitle(post)}</h2>
                 <p>{displayPostExcerpt(post)}</p>

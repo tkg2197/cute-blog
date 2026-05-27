@@ -19,12 +19,12 @@ export const POST: APIRoute = async ({ request, cookies, locals, redirect }) => 
     return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Please choose a Markdown file to upload.")}`, 303);
   }
 
-  if (!file.name.toLowerCase().endsWith(".md")) {
-    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Blog uploads only accept .md files.")}`, 303);
+  if (!/\.(md|markdown)$/i.test(file.name)) {
+    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Blog uploads only accept .md or .markdown files.")}`, 303);
   }
 
   const content = await file.text();
-  const parsed = parseMarkdown(content, file.name.replace(/\.md$/i, ""));
+  const parsed = parseMarkdown(content, file.name.replace(/\.(md|markdown)$/i, ""));
   const slug = slugify(manualSlug || parsed.title);
   const supabase = createServiceClient();
   const storageName = storageSafeName(slug, "post");
@@ -64,5 +64,5 @@ export const POST: APIRoute = async ({ request, cookies, locals, redirect }) => 
     return redirect(`${safeReturn}${sep}error=${encodeURIComponent(upsertError.message)}`, 303);
   }
 
-  return redirect(`/blog/${slug}`, 303);
+  return redirect(`/blog/${encodeURIComponent(slug)}`, 303);
 };
