@@ -8,7 +8,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
   const supabase = createServiceClient();
   const { data, error } = await supabase
     .from("todos")
-    .select("id,owner_id,title,completed,completed_on,completed_start_time,completed_end_time,completed_minutes,activity_entry_id,created_at,updated_at,profiles(display_name,author_key)")
+    .select("id,owner_id,title,completed,completed_on,completed_start_time,completed_end_time,completed_minutes,activity_entry_id,archived_at,created_at,updated_at,profiles(display_name,author_key)")
     .order("created_at", { ascending: true });
 
   if (error) return json({ error: error.message }, 500);

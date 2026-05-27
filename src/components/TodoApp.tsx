@@ -95,6 +95,10 @@ function sumMinutes(todos: TodoItem[]) {
   return todos.reduce((sum, todo) => sum + Number(todo.completed_minutes || 0), 0);
 }
 
+function isArchived(todo: TodoItem) {
+  return Boolean(todo.archived_at);
+}
+
 function streakDays(minutesByDay: Map<string, number>) {
   let streak = 0;
   let day = new Date();
@@ -122,10 +126,12 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
   const inputRef = useRef<HTMLInputElement>(null);
 
   const selectedName = authorNames[view];
-  const activeTodos = todos.filter((todo) => !todo.completed);
+  const listTodos = todos.filter((todo) => !isArchived(todo));
+  const activeTodos = listTodos.filter((todo) => !todo.completed);
   const completedTodos = todos.filter((todo) => todo.completed);
+  const listCompletedTodos = listTodos.filter((todo) => todo.completed);
   const doneToday = completedTodos.filter((todo) => todo.completed_on === todayKey());
-  const visibleTodos = todos.filter((todo) => {
+  const visibleTodos = listTodos.filter((todo) => {
     if (filter === "active") return !todo.completed;
     if (filter === "completed") return todo.completed;
     return true;
@@ -276,8 +282,8 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
       setCompletionIds(activeTodos.map((todo) => todo.id));
       setCompletionDate(todayKey());
       setCompletionRanges([newRange()]);
-    } else if (completedTodos.length) {
-      Promise.all(completedTodos.map((todo) => postForm("/api/todos/uncomplete", { id: todo.id })))
+    } else if (listCompletedTodos.length) {
+      Promise.all(listCompletedTodos.map((todo) => postForm("/api/todos/uncomplete", { id: todo.id })))
         .then(() => loadTodos())
         .catch((error) => setMessage(error instanceof Error ? error.message : "Could not reopen tasks"));
     }
@@ -379,7 +385,7 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
               </button>
             ))}
             <span>{activeTodos.length} left</span>
-            <button type="button" onClick={clearCompleted} disabled={!canEdit || !completedTodos.length}>Clear completed</button>
+            <button type="button" onClick={clearCompleted} disabled={!canEdit || !listCompletedTodos.length}>Clear completed</button>
           </div>
 
           <div className="todo-list">

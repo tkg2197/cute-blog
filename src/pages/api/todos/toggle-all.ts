@@ -11,7 +11,8 @@ export const POST: APIRoute = async ({ locals }) => {
     .from("todos")
     .select("id")
     .eq("owner_id", user.id)
-    .eq("completed", false);
+    .eq("completed", false)
+    .is("archived_at", null);
 
   if (readError) return json({ error: readError.message }, 500);
   if (activeTodos?.length) {
@@ -22,7 +23,8 @@ export const POST: APIRoute = async ({ locals }) => {
     .from("todos")
     .select("id,activity_entry_id")
     .eq("owner_id", user.id)
-    .eq("completed", true);
+    .eq("completed", true)
+    .is("archived_at", null);
 
   if (completedReadError) return json({ error: completedReadError.message }, 500);
 
@@ -40,9 +42,10 @@ export const POST: APIRoute = async ({ locals }) => {
       completed_end_time: null,
       completed_minutes: 0,
       activity_entry_id: null,
+      archived_at: null,
     })
     .eq("owner_id", user.id)
-    .eq("completed", true);
+    .in("id", todoIds);
 
   if (error) return json({ error: error.message }, 500);
   return json({ ok: true });

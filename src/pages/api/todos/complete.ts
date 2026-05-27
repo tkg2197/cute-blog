@@ -91,10 +91,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       completed_end_time: lastEnd,
       completed_minutes: totalMinutes,
       activity_entry_id: activityEntryId,
+      archived_at: null,
     })
     .eq("id", id)
     .eq("owner_id", user.id)
-    .select("id,owner_id,title,completed,completed_on,completed_start_time,completed_end_time,completed_minutes,activity_entry_id,created_at,updated_at,profiles(display_name,author_key)")
+    .select("id,owner_id,title,completed,completed_on,completed_start_time,completed_end_time,completed_minutes,activity_entry_id,archived_at,created_at,updated_at,profiles(display_name,author_key)")
     .maybeSingle();
 
   if (error) return json({ error: error.message }, 500);

@@ -113,6 +113,7 @@ export interface TodoItem {
   completed_end_time: string | null;
   completed_minutes: number;
   activity_entry_id: string | null;
+  archived_at?: string | null;
   created_at: string;
   updated_at: string;
   profiles?: Pick<Profile, "display_name" | "author_key"> | null;

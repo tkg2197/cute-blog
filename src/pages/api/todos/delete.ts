@@ -13,13 +13,23 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const supabase = createServiceClient();
   const { data: todo, error: readError } = await supabase
     .from("todos")
-    .select("id,activity_entry_id")
+    .select("id,completed,activity_entry_id")
     .eq("id", id)
     .eq("owner_id", user.id)
     .maybeSingle();
 
   if (readError) return json({ error: readError.message }, 500);
   if (!todo) return json({ error: "Task not found." }, 404);
+
+  if (todo.completed) {
+    const { error } = await supabase
+      .from("todos")
+      .update({ archived_at: new Date().toISOString() })
+      .eq("id", id)
+      .eq("owner_id", user.id);
+    if (error) return json({ error: error.message }, 500);
+    return json({ ok: true, archived: true });
+  }
 
   const activityError = await deleteLinkedTodoActivities(
     supabase,
