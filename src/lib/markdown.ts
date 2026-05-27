@@ -78,6 +78,21 @@ function frontmatterValue(attrs: Map<string, string>, keys: string[]) {
   return "";
 }
 
+export function parseTagList(value: string) {
+  const seen = new Set<string>();
+  return value
+    .replace(/^\s*\[|\]\s*$/g, "")
+    .split(/[,，、\n]+/u)
+    .map((tag) => tag.trim().replace(/^["']|["']$/g, ""))
+    .filter(Boolean)
+    .filter((tag) => {
+      const key = tag.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
 export function slugify(value: string) {
   const base = value
     .normalize("NFKD")
@@ -97,10 +112,7 @@ export function parseMarkdown(source: string, fallbackTitle: string): ParsedMark
     frontmatterValue(attrs, ["excerpt", "description", "summary", "desc", "简介", "摘要"]) ||
     plainTextExcerpt(body) ||
     "";
-  const tags = (frontmatterValue(attrs, ["tags", "tag", "标签"]) || "")
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean);
+  const tags = parseTagList(frontmatterValue(attrs, ["tags", "tag", "标签"]) || "");
 
   return { title, excerpt, tags, body };
 }

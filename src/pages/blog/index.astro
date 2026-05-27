@@ -108,8 +108,13 @@ const currentYear = posts.length ? postYear(posts[0]) : new Date().getFullYear()
             <span class="bi-upload__slug-label">Custom slug (optional, generated from title if empty)</span>
             <input name="slug" type="text" maxlength="90" placeholder="our-first-post" class="bi-upload__slug-input" />
           </label>
+          <label class="bi-upload__slug">
+            <span class="bi-upload__slug-label">Tags</span>
+            <input name="tags" type="text" maxlength="180" placeholder="life, cache, debug" class="bi-upload__slug-input" />
+            <small class="bi-upload__tag-help">Separate tags with commas, Chinese commas, or pauses.</small>
+          </label>
           <div class="bi-upload__actions">
-            <p class="bi-upload__hint" id="blogUploadHint">Supports front matter: title, excerpt, tags (comma-separated).</p>
+            <p class="bi-upload__hint" id="blogUploadHint">Supports front matter: title, excerpt, tags. Tags entered here will be added too.</p>
             <button class="bi-upload__save" type="submit">Publish post</button>
           </div>
         </form>
@@ -351,6 +356,12 @@ const currentYear = posts.length ? postYear(posts[0]) : new Date().getFullYear()
         border-color: #8fc7e8;
         background: #fff;
         box-shadow: 0 0 0 4px rgba(143,199,232,.18);
+      }
+      .bi-upload__tag-help {
+        color: #7a8aa0;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.5;
       }
 
       @media (max-width: 560px) {

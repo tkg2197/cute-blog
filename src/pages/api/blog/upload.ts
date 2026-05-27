@@ -1,8 +1,21 @@
 import type { APIRoute } from "astro";
 import { storageSafeName } from "../../../lib/files";
-import { parseMarkdown, slugify } from "../../../lib/markdown";
+import { parseMarkdown, parseTagList, slugify } from "../../../lib/markdown";
 import { ensureStorageBuckets } from "../../../lib/storage";
 import { createServiceClient } from "../../../lib/supabase";
+
+function mergeTags(...groups: string[][]) {
+  const seen = new Set<string>();
+  const tags: string[] = [];
+  groups.flat().forEach((tag) => {
+    const clean = tag.trim();
+    const key = clean.toLowerCase();
+    if (!clean || seen.has(key)) return;
+    seen.add(key);
+    tags.push(clean.slice(0, 32));
+  });
+  return tags.slice(0, 12);
+}
 
 export const POST: APIRoute = async ({ request, cookies, locals, redirect }) => {
   const user = locals.user;
@@ -11,6 +24,7 @@ export const POST: APIRoute = async ({ request, cookies, locals, redirect }) => 
   const form = await request.formData();
   const file = form.get("markdown");
   const manualSlug = String(form.get("slug") || "").trim();
+  const manualTags = parseTagList(String(form.get("tags") || ""));
   const rawReturn = String(form.get("return_to") || "").trim();
   const safeReturn = rawReturn.startsWith("/") ? rawReturn : "/blog";
   const sep = safeReturn.includes("?") ? "&" : "?";
@@ -25,6 +39,7 @@ export const POST: APIRoute = async ({ request, cookies, locals, redirect }) => 
 
   const content = await file.text();
   const parsed = parseMarkdown(content, file.name.replace(/\.(md|markdown)$/i, ""));
+  const tags = mergeTags(parsed.tags, manualTags);
   const slug = slugify(manualSlug || parsed.title);
   const supabase = createServiceClient();
   const storageName = storageSafeName(slug, "post");
@@ -54,7 +69,7 @@ export const POST: APIRoute = async ({ request, cookies, locals, redirect }) => 
       content_markdown: content,
       storage_path: storagePath,
       author_id: user.id,
-      tags: parsed.tags,
+      tags,
       published_at: new Date().toISOString(),
     },
     { onConflict: "slug" },
