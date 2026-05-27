@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { createServiceClient } from "../../../lib/supabase";
-import { json } from "../../../lib/todo-utils";
+import { deleteLinkedTodoActivities, json } from "../../../lib/todo-utils";
 
 export const POST: APIRoute = async ({ locals }) => {
   const user = locals.user;
@@ -15,15 +15,10 @@ export const POST: APIRoute = async ({ locals }) => {
 
   if (readError) return json({ error: readError.message }, 500);
 
-  const activityIds = (todos || []).map((todo) => todo.activity_entry_id).filter(Boolean);
-  if (activityIds.length) {
-    const { error: activityError } = await supabase
-      .from("activity_entries")
-      .delete()
-      .in("id", activityIds)
-      .eq("owner_id", user.id);
-    if (activityError) return json({ error: activityError.message }, 500);
-  }
+  const todoIds = (todos || []).map((todo) => todo.id).filter(Boolean);
+  const activityIds = (todos || []).map((todo) => todo.activity_entry_id).filter(Boolean) as string[];
+  const activityError = await deleteLinkedTodoActivities(supabase, user.id, todoIds, activityIds);
+  if (activityError) return json({ error: activityError.message }, 500);
 
   const { error } = await supabase.from("todos").delete().eq("owner_id", user.id).eq("completed", true);
   if (error) return json({ error: error.message }, 500);

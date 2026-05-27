@@ -2,11 +2,13 @@ import type { APIRoute } from "astro";
 import { createServiceClient } from "../../../lib/supabase";
 import {
   TODO_ACTIVITY_CATEGORY,
-  durationMinutes,
+  deleteLinkedTodoActivities,
   json,
   normalizeDate,
   normalizeTime,
+  parseTimeRanges,
   periodForTime,
+  summarizeTimeRanges,
 } from "../../../lib/todo-utils";
 
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -18,12 +20,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const completedOn = normalizeDate(form.get("completed_on"));
   const startTime = normalizeTime(form.get("start_time"));
   const endTime = normalizeTime(form.get("end_time"));
+  const ranges = parseTimeRanges(form.get("ranges"), { start: startTime, end: endTime });
   if (!id) return json({ error: "Missing task id." }, 400);
-  if (!completedOn || !startTime || !endTime) return json({ error: "Please enter a valid completion date and time range." }, 400);
+  if (!completedOn || !ranges.length) return json({ error: "Please enter at least one valid completion time range." }, 400);
+  if (ranges.length > 12) return json({ error: "Please keep one completion to 12 time ranges or fewer." }, 400);
 
-  const minutes = durationMinutes(startTime, endTime);
-  if (!Number.isInteger(minutes) || minutes < 1 || minutes > 1440) {
-    return json({ error: "Completion time must be between 1 minute and 24 hours." }, 400);
+  const { totalMinutes, firstStart, lastEnd } = summarizeTimeRanges(ranges);
+  if (!Number.isInteger(totalMinutes) || totalMinutes < 1 || totalMinutes > 1440) {
+    return json({ error: "Completion time must total between 1 minute and 24 hours." }, 400);
   }
 
   const supabase = createServiceClient();
@@ -37,33 +41,42 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (readError) return json({ error: readError.message }, 500);
   if (!todo) return json({ error: "Task not found." }, 404);
 
-  let activityEntryId = todo.activity_entry_id as string | null;
-  const activityPayload = {
+  const cleanupError = await deleteLinkedTodoActivities(
+    supabase,
+    user.id,
+    [id],
+    todo.activity_entry_id ? [todo.activity_entry_id as string] : [],
+  );
+  if (cleanupError) return json({ error: cleanupError.message }, 500);
+
+  const activityPayloads = ranges.map((range) => ({
     owner_id: user.id,
     activity_on: completedOn,
-    period: periodForTime(startTime),
+    period: periodForTime(range.start_time),
     category: TODO_ACTIVITY_CATEGORY,
-    minutes,
+    minutes: range.minutes,
     body: todo.title,
-    start_time: startTime,
-    end_time: endTime,
-  };
+    start_time: range.start_time,
+    end_time: range.end_time,
+  }));
 
-  if (activityEntryId) {
-    const { error: activityError } = await supabase
-      .from("activity_entries")
-      .update(activityPayload)
-      .eq("id", activityEntryId)
-      .eq("owner_id", user.id);
-    if (activityError) return json({ error: activityError.message }, 500);
-  } else {
-    const { data: activity, error: activityError } = await supabase
-      .from("activity_entries")
-      .insert(activityPayload)
-      .select("id")
-      .single();
-    if (activityError) return json({ error: activityError.message }, 500);
-    activityEntryId = activity.id;
+  const { data: activities, error: activityError } = await supabase
+    .from("activity_entries")
+    .insert(activityPayloads)
+    .select("id");
+  if (activityError) return json({ error: activityError.message }, 500);
+
+  const activityEntryIds = (activities || []).map((activity: { id: string }) => activity.id);
+  const activityEntryId = activityEntryIds[0] || null;
+
+  if (activityEntryIds.length) {
+    const { error: linkError } = await supabase.from("todo_activity_entries").insert(
+      activityEntryIds.map((activityId: string) => ({
+        todo_id: id,
+        activity_entry_id: activityId,
+      })),
+    );
+    if (linkError) return json({ error: linkError.message }, 500);
   }
 
   const { data, error } = await supabase
@@ -71,9 +84,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     .update({
       completed: true,
       completed_on: completedOn,
-      completed_start_time: startTime,
-      completed_end_time: endTime,
-      completed_minutes: minutes,
+      completed_start_time: firstStart,
+      completed_end_time: lastEnd,
+      completed_minutes: totalMinutes,
       activity_entry_id: activityEntryId,
     })
     .eq("id", id)

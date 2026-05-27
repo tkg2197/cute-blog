@@ -4,6 +4,12 @@ import type { AuthorKey, Profile, TodoItem } from "../lib/types";
 
 type Filter = "all" | "active" | "completed";
 
+interface CompletionRange {
+  id: string;
+  start: string;
+  end: string;
+}
+
 interface Props {
   initialView: AuthorKey;
   authorNames: Record<AuthorKey, string>;
@@ -36,6 +42,43 @@ function fmtMinutes(minutes: number) {
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
   return `${hours} hr${hours > 1 ? "s" : ""}${rest ? ` ${rest} min` : ""}`;
+}
+
+function newRange(start = "09:00", end = "10:00"): CompletionRange {
+  return { id: `${Date.now()}-${Math.random().toString(16).slice(2)}`, start, end };
+}
+
+function normalizeClock(value: string) {
+  const hit = value.trim().match(/^(\d{1,2}):?(\d{2})$/);
+  if (!hit) return value.trim();
+  const hours = Number(hit[1]);
+  const minutes = Number(hit[2]);
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return value.trim();
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function isClock(value: string) {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
+}
+
+function minutesOfClock(value: string) {
+  const [hours, minutes] = value.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+function rangeMinutes(range: CompletionRange) {
+  if (!isClock(range.start) || !isClock(range.end)) return 0;
+  const start = minutesOfClock(range.start);
+  const end = minutesOfClock(range.end);
+  return end > start ? end - start : end + 1440 - start;
+}
+
+function addClockMinutes(value: string, amount: number) {
+  if (!isClock(value)) return "10:00";
+  const total = (minutesOfClock(value) + amount) % 1440;
+  const hours = Math.floor(total / 60);
+  const minutes = total % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
 function postForm(path: string, fields: Record<string, string>) {
@@ -73,8 +116,7 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
   const [message, setMessage] = useState("");
   const [completionIds, setCompletionIds] = useState<string[]>([]);
   const [completionDate, setCompletionDate] = useState(todayKey());
-  const [completionStart, setCompletionStart] = useState("09:00");
-  const [completionEnd, setCompletionEnd] = useState("10:00");
+  const [completionRanges, setCompletionRanges] = useState<CompletionRange[]>(() => [newRange()]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const selectedName = authorNames[view];
@@ -173,18 +215,26 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
   function requestCompletion(id: string) {
     setCompletionIds([id]);
     setCompletionDate(todayKey());
-    setCompletionStart("09:00");
-    setCompletionEnd("10:00");
+    setCompletionRanges([newRange()]);
   }
 
   async function completeSelected() {
     try {
+      const normalizedRanges = completionRanges.map((range) => ({
+        start_time: normalizeClock(range.start),
+        end_time: normalizeClock(range.end),
+      }));
+      if (!normalizedRanges.length || normalizedRanges.some((range) => !isClock(range.start_time) || !isClock(range.end_time))) {
+        setMessage("Use 24-hour time like 09:30 or 18:05.");
+        return;
+      }
       for (const id of completionIds) {
         await postForm("/api/todos/complete", {
           id,
           completed_on: completionDate,
-          start_time: completionStart,
-          end_time: completionEnd,
+          start_time: normalizedRanges[0].start_time,
+          end_time: normalizedRanges[0].end_time,
+          ranges: JSON.stringify(normalizedRanges),
         });
       }
       setCompletionIds([]);
@@ -215,6 +265,8 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
   function toggleAll() {
     if (activeTodos.length) {
       setCompletionIds(activeTodos.map((todo) => todo.id));
+      setCompletionDate(todayKey());
+      setCompletionRanges([newRange()]);
     } else if (completedTodos.length) {
       Promise.all(completedTodos.map((todo) => postForm("/api/todos/uncomplete", { id: todo.id })))
         .then(() => loadTodos())
@@ -225,6 +277,27 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
   const completionTitle = completionIds.length === 1
     ? todos.find((todo) => todo.id === completionIds[0])?.title || "Complete task"
     : `Complete ${completionIds.length} tasks`;
+  const completionTotalMinutes = completionRanges.reduce((sum, range) => sum + rangeMinutes(range), 0);
+
+  function updateCompletionRange(id: string, patch: Partial<Pick<CompletionRange, "start" | "end">>) {
+    setCompletionRanges((ranges) => ranges.map((range) => (range.id === id ? { ...range, ...patch } : range)));
+  }
+
+  function normalizeCompletionRange(id: string, field: "start" | "end") {
+    setCompletionRanges((ranges) =>
+      ranges.map((range) => (range.id === id ? { ...range, [field]: normalizeClock(range[field]) } : range)),
+    );
+  }
+
+  function addCompletionRange() {
+    const last = completionRanges[completionRanges.length - 1];
+    const start = last?.end && isClock(last.end) ? last.end : "09:00";
+    setCompletionRanges((ranges) => [...ranges, newRange(start, addClockMinutes(start, 60))]);
+  }
+
+  function removeCompletionRange(id: string) {
+    setCompletionRanges((ranges) => (ranges.length > 1 ? ranges.filter((range) => range.id !== id) : ranges));
+  }
 
   return (
     <main className="todo-shell">
@@ -428,16 +501,43 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
               <input type="date" value={completionDate} onChange={(event) => setCompletionDate(event.target.value)} />
             </label>
             <div className="todo-modal__row">
-              <label>
-                <span>Start (24-hour)</span>
-                <input type="time" step="60" inputMode="numeric" lang="en-GB" value={completionStart} onChange={(event) => setCompletionStart(event.target.value)} />
-              </label>
-              <label>
-                <span>End (24-hour)</span>
-                <input type="time" step="60" inputMode="numeric" lang="en-GB" value={completionEnd} onChange={(event) => setCompletionEnd(event.target.value)} />
-              </label>
+              <span>Time ranges</span>
+              <strong>{fmtMinutes(completionTotalMinutes)}</strong>
+            </div>
+            <div className="todo-range-list">
+              {completionRanges.map((range, index) => (
+                <div className="todo-range-row" key={range.id}>
+                  <span>{index + 1}</span>
+                  <label>
+                    <span>Start</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="^([01]\d|2[0-3]):[0-5]\d$"
+                      placeholder="09:00"
+                      value={range.start}
+                      onChange={(event) => updateCompletionRange(range.id, { start: event.target.value })}
+                      onBlur={() => normalizeCompletionRange(range.id, "start")}
+                    />
+                  </label>
+                  <label>
+                    <span>End</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="^([01]\d|2[0-3]):[0-5]\d$"
+                      placeholder="10:00"
+                      value={range.end}
+                      onChange={(event) => updateCompletionRange(range.id, { end: event.target.value })}
+                      onBlur={() => normalizeCompletionRange(range.id, "end")}
+                    />
+                  </label>
+                  <button type="button" onClick={() => removeCompletionRange(range.id)} disabled={completionRanges.length === 1} aria-label="Remove time range">-</button>
+                </div>
+              ))}
             </div>
             <div className="todo-modal__actions">
+              <button type="button" onClick={addCompletionRange}>Add range</button>
               <button type="button" onClick={() => setCompletionIds([])}>Cancel</button>
               <button type="button" onClick={completeSelected}>Save completion</button>
             </div>

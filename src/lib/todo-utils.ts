@@ -46,3 +46,91 @@ export function periodForTime(startTime: string) {
   if (minutes >= 19 * 60 && minutes < 23 * 60) return "evening";
   return "midnight";
 }
+
+export interface TimeRange {
+  start_time: string;
+  end_time: string;
+  minutes: number;
+}
+
+export function parseTimeRanges(raw: FormDataEntryValue | string | null, fallback?: { start: string | null; end: string | null }) {
+  const ranges: TimeRange[] = [];
+  const source = String(raw || "").trim();
+
+  if (source) {
+    try {
+      const parsed = JSON.parse(source);
+      if (Array.isArray(parsed)) {
+        parsed.forEach((item) => {
+          const start = normalizeTime(item?.start_time ?? item?.start);
+          const end = normalizeTime(item?.end_time ?? item?.end);
+          if (!start || !end) return;
+          const minutes = durationMinutes(start, end);
+          if (Number.isInteger(minutes) && minutes >= 1 && minutes <= 1440) {
+            ranges.push({ start_time: start, end_time: end, minutes });
+          }
+        });
+      }
+    } catch {
+      // Ignore malformed JSON and let the caller return a validation error.
+    }
+  }
+
+  if (!ranges.length && fallback?.start && fallback?.end) {
+    const minutes = durationMinutes(fallback.start, fallback.end);
+    if (Number.isInteger(minutes) && minutes >= 1 && minutes <= 1440) {
+      ranges.push({ start_time: fallback.start, end_time: fallback.end, minutes });
+    }
+  }
+
+  return ranges;
+}
+
+export function summarizeTimeRanges(ranges: TimeRange[]) {
+  const totalMinutes = ranges.reduce((sum, range) => sum + range.minutes, 0);
+  return {
+    totalMinutes,
+    firstStart: ranges[0]?.start_time || null,
+    lastEnd: ranges[ranges.length - 1]?.end_time || null,
+  };
+}
+
+export async function deleteLinkedTodoActivities(
+  supabase: any,
+  userId: string,
+  todoIds: string[],
+  legacyActivityIds: string[] = [],
+) {
+  const ids = Array.from(new Set(todoIds.filter(Boolean)));
+  const activityIds = new Set(legacyActivityIds.filter(Boolean));
+
+  if (ids.length) {
+    const { data, error } = await supabase
+      .from("todo_activity_entries")
+      .select("activity_entry_id")
+      .in("todo_id", ids);
+    if (error) return error;
+
+    (data || []).forEach((row: { activity_entry_id?: string | null }) => {
+      if (row.activity_entry_id) activityIds.add(row.activity_entry_id);
+    });
+
+    const { error: linkError } = await supabase
+      .from("todo_activity_entries")
+      .delete()
+      .in("todo_id", ids);
+    if (linkError) return linkError;
+  }
+
+  const deleteIds = Array.from(activityIds);
+  if (deleteIds.length) {
+    const { error } = await supabase
+      .from("activity_entries")
+      .delete()
+      .in("id", deleteIds)
+      .eq("owner_id", userId);
+    if (error) return error;
+  }
+
+  return null;
+}

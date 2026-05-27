@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { createServiceClient } from "../../../lib/supabase";
-import { json } from "../../../lib/todo-utils";
+import { deleteLinkedTodoActivities, json } from "../../../lib/todo-utils";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const user = locals.user;
@@ -21,14 +21,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (readError) return json({ error: readError.message }, 500);
   if (!todo) return json({ error: "Task not found." }, 404);
 
-  if (todo.activity_entry_id) {
-    const { error: activityError } = await supabase
-      .from("activity_entries")
-      .delete()
-      .eq("id", todo.activity_entry_id)
-      .eq("owner_id", user.id);
-    if (activityError) return json({ error: activityError.message }, 500);
-  }
+  const activityError = await deleteLinkedTodoActivities(
+    supabase,
+    user.id,
+    [id],
+    todo.activity_entry_id ? [todo.activity_entry_id as string] : [],
+  );
+  if (activityError) return json({ error: activityError.message }, 500);
 
   const { data, error } = await supabase
     .from("todos")

@@ -623,6 +623,70 @@ body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+  align-items: end;
+  margin-top: 12px;
+  color: #66778c;
+  font-size: 13px;
+  font-weight: 750;
+}
+.todo-modal__row > span,
+.todo-modal__row > strong {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+}
+.todo-modal__row > strong {
+  justify-content: flex-end;
+  color: var(--todo-ink);
+  font-size: 14px;
+  font-weight: 850;
+}
+.todo-range-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+.todo-range-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) minmax(0, 1fr) 32px;
+  gap: 8px;
+  align-items: end;
+  padding: 10px;
+  border: 1px solid rgba(103,122,140,.14);
+  border-radius: 14px;
+  background: rgba(255,255,255,.46);
+}
+.todo-range-row > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  color: #8b98aa;
+  font-size: 12px;
+  font-weight: 850;
+}
+.todo-range-row label {
+  margin-top: 0;
+}
+.todo-range-row input {
+  font-variant-numeric: tabular-nums;
+}
+.todo-range-row > button {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 5px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(103,122,140,.1);
+  color: #718197;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 850;
+  cursor: pointer;
+}
+.todo-range-row > button:disabled {
+  opacity: .34;
+  cursor: not-allowed;
 }
 .todo-modal__actions {
   display: flex;
@@ -640,6 +704,11 @@ body {
   cursor: pointer;
 }
 .todo-modal__actions button:first-child {
+  margin-right: auto;
+  background: #dcebd4;
+  color: #54724f;
+}
+.todo-modal__actions button:nth-child(2) {
   background: rgba(103,122,140,.1);
   color: #66778c;
 }
@@ -697,5 +766,12 @@ body {
   }
   .todo-modal__row {
     grid-template-columns: 1fr;
+  }
+  .todo-range-row {
+    grid-template-columns: 20px 1fr;
+  }
+  .todo-range-row > button {
+    grid-column: 2;
+    justify-self: end;
   }
 }

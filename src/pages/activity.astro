@@ -281,11 +281,11 @@ const timeTicks = Array.from({ length: 9 }, (_item, index) => index * 180);
               </label>
               <label class="act-field">
                 <span>Start (24-hour)</span>
-                <input name="start_time" id="actStartTime" type="time" step="60" inputmode="numeric" lang="en-GB" value="09:00" required />
+                <input name="start_time" id="actStartTime" type="text" inputmode="numeric" pattern="^([01]\d|2[0-3]):[0-5]\d$" placeholder="09:00" value="09:00" data-clock-input required />
               </label>
               <label class="act-field">
                 <span>End (24-hour)</span>
-                <input name="end_time" id="actEndTime" type="time" step="60" inputmode="numeric" lang="en-GB" value="10:00" required />
+                <input name="end_time" id="actEndTime" type="text" inputmode="numeric" pattern="^([01]\d|2[0-3]):[0-5]\d$" placeholder="10:00" value="10:00" data-clock-input required />
               </label>
             </div>
 
@@ -476,6 +476,16 @@ const timeTicks = Array.from({ length: 9 }, (_item, index) => index * 180);
             toggle.textContent = open ? "Close form" : "Add activity";
           });
         }
+        document.querySelectorAll("[data-clock-input]").forEach(function (input) {
+          input.addEventListener("blur", function () {
+            var hit = String(input.value || "").trim().match(/^(\d{1,2}):?(\d{2})$/);
+            if (!hit) return;
+            var hours = Number(hit[1]);
+            var minutes = Number(hit[2]);
+            if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return;
+            input.value = String(hours).padStart(2, "0") + ":" + String(minutes).padStart(2, "0");
+          });
+        });
       })();
     </script>
   </Fragment>
