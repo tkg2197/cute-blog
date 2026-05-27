@@ -95,6 +95,11 @@ export function summarizeTimeRanges(ranges: TimeRange[]) {
   };
 }
 
+export function isMissingTodoActivityLinkTable(error: { code?: string; message?: string } | null | undefined) {
+  if (!error) return false;
+  return error.code === "42P01" || /todo_activity_entries|relation .* does not exist/i.test(error.message || "");
+}
+
 export async function deleteLinkedTodoActivities(
   supabase: any,
   userId: string,
@@ -109,17 +114,19 @@ export async function deleteLinkedTodoActivities(
       .from("todo_activity_entries")
       .select("activity_entry_id")
       .in("todo_id", ids);
-    if (error) return error;
+    if (error) {
+      if (!isMissingTodoActivityLinkTable(error)) return error;
+    } else {
+      (data || []).forEach((row: { activity_entry_id?: string | null }) => {
+        if (row.activity_entry_id) activityIds.add(row.activity_entry_id);
+      });
 
-    (data || []).forEach((row: { activity_entry_id?: string | null }) => {
-      if (row.activity_entry_id) activityIds.add(row.activity_entry_id);
-    });
-
-    const { error: linkError } = await supabase
-      .from("todo_activity_entries")
-      .delete()
-      .in("todo_id", ids);
-    if (linkError) return linkError;
+      const { error: linkError } = await supabase
+        .from("todo_activity_entries")
+        .delete()
+        .in("todo_id", ids);
+      if (linkError && !isMissingTodoActivityLinkTable(linkError)) return linkError;
+    }
   }
 
   const deleteIds = Array.from(activityIds);

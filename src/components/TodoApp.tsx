@@ -114,6 +114,8 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
   const [message, setMessage] = useState("");
+  const [completionMessage, setCompletionMessage] = useState("");
+  const [isCompleting, setIsCompleting] = useState(false);
   const [completionIds, setCompletionIds] = useState<string[]>([]);
   const [completionDate, setCompletionDate] = useState(todayKey());
   const [completionRanges, setCompletionRanges] = useState<CompletionRange[]>(() => [newRange()]);
@@ -214,18 +216,22 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
 
   function requestCompletion(id: string) {
     setCompletionIds([id]);
+    setCompletionMessage("");
     setCompletionDate(todayKey());
     setCompletionRanges([newRange()]);
   }
 
   async function completeSelected() {
     try {
+      if (isCompleting) return;
+      setIsCompleting(true);
+      setCompletionMessage("");
       const normalizedRanges = completionRanges.map((range) => ({
         start_time: normalizeClock(range.start),
         end_time: normalizeClock(range.end),
       }));
       if (!normalizedRanges.length || normalizedRanges.some((range) => !isClock(range.start_time) || !isClock(range.end_time))) {
-        setMessage("Use 24-hour time like 09:30 or 18:05.");
+        setCompletionMessage("Use 24-hour time like 09:30 or 18:05.");
         return;
       }
       for (const id of completionIds) {
@@ -238,9 +244,12 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
         });
       }
       setCompletionIds([]);
+      setCompletionMessage("");
       await loadTodos();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not complete task");
+      setCompletionMessage(error instanceof Error ? error.message : "Could not complete task");
+    } finally {
+      setIsCompleting(false);
     }
   }
 
@@ -496,6 +505,7 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
             <button type="button" className="todo-modal__close" onClick={() => setCompletionIds([])} aria-label="Close">×</button>
             <p>Completion time</p>
             <h2 id="todoCompleteTitle">{completionTitle}</h2>
+            {completionMessage && <div className="todo-modal__message">{completionMessage}</div>}
             <label>
               <span>Date</span>
               <input type="date" value={completionDate} onChange={(event) => setCompletionDate(event.target.value)} />
@@ -538,8 +548,8 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
             </div>
             <div className="todo-modal__actions">
               <button type="button" onClick={addCompletionRange}>Add range</button>
-              <button type="button" onClick={() => setCompletionIds([])}>Cancel</button>
-              <button type="button" onClick={completeSelected}>Save completion</button>
+              <button type="button" onClick={() => setCompletionIds([])} disabled={isCompleting}>Cancel</button>
+              <button type="button" onClick={completeSelected} disabled={isCompleting}>{isCompleting ? "Saving..." : "Save completion"}</button>
             </div>
           </section>
         </div>

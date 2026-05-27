@@ -8,6 +8,7 @@ import {
   normalizeTime,
   parseTimeRanges,
   periodForTime,
+  isMissingTodoActivityLinkTable,
   summarizeTimeRanges,
 } from "../../../lib/todo-utils";
 
@@ -76,7 +77,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
         activity_entry_id: activityId,
       })),
     );
-    if (linkError) return json({ error: linkError.message }, 500);
+    if (linkError && !isMissingTodoActivityLinkTable(linkError)) {
+      return json({ error: linkError.message }, 500);
+    }
   }
 
   const { data, error } = await supabase
