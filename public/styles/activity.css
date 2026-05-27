@@ -316,7 +316,12 @@ body {
   gap: 9px;
 }
 .act-who__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 43px;
+  min-width: 0;
+  text-align: center;
   border: 2px solid rgba(255, 255, 255, 0.72);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.68);
