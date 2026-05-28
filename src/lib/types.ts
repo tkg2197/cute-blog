@@ -114,9 +114,16 @@ export interface TodoItem {
   completed_minutes: number;
   activity_entry_id: string | null;
   archived_at?: string | null;
+  completion_ranges?: TodoCompletionRange[];
   created_at: string;
   updated_at: string;
   profiles?: Pick<Profile, "display_name" | "author_key"> | null;
+}
+
+export interface TodoCompletionRange {
+  start_time: string | null;
+  end_time: string | null;
+  minutes: number | null;
 }
 
 export const AUTHOR_LABELS: Record<AuthorKey, string> = {

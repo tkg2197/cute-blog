@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import { todoCompletionTimeLabels } from "../lib/todo-display";
 import type { AuthorKey, Profile, TodoItem } from "../lib/types";
 
 type Filter = "all" | "active" | "completed";
@@ -432,12 +433,12 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
                       <>
                         <i>·</i>
                 <span>{todo.completed_on}</span>
-                {todo.completed_start_time && todo.completed_end_time && (
-                  <>
+                {todoCompletionTimeLabels(todo).map((label) => (
+                  <Fragment key={`${todo.id}-${label}`}>
                     <i>·</i>
-                    <span>{todo.completed_start_time.slice(0, 5)}-{todo.completed_end_time.slice(0, 5)}</span>
-                  </>
-                )}
+                    <span>{label}</span>
+                  </Fragment>
+                ))}
                 <i>·</i>
                 <span>{fmtMinutes(todo.completed_minutes)}</span>
               </>
