@@ -107,6 +107,7 @@ export interface TodoItem {
   id: string;
   owner_id: string;
   title: string;
+  due_on: string | null;
   completed: boolean;
   completed_on: string | null;
   completed_start_time: string | null;

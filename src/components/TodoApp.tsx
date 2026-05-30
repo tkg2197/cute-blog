@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { todoCompletionTimeLabels } from "../lib/todo-display";
+import { todoCompletionTimeLabels, todoOutcome, todoWinStreak } from "../lib/todo-display";
 import type { AuthorKey, Profile, TodoItem } from "../lib/types";
 
 type Filter = "all" | "active" | "completed";
@@ -129,6 +129,7 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [canEdit, setCanEdit] = useState(false);
   const [draft, setDraft] = useState("");
+  const [draftDue, setDraftDue] = useState(todayKey());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
   const [message, setMessage] = useState("");
@@ -180,6 +181,7 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
   const yearMinutes = sumMinutes(completedTodos);
   const activeDays = Array.from(minutesByDay.values()).filter(Boolean).length;
   const streak = streakDays(minutesByDay);
+  const winStreak = useMemo(() => todoWinStreak(todos, todayKey()), [todos]);
   const weeklyAverage = Array.from({ length: 7 }, (_item, index) => {
     const key = dateKey(addDays(new Date(), -index));
     return minutesByDay.get(key) || 0;
@@ -201,8 +203,12 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
   async function addTodo() {
     const title = draft.trim();
     if (!title) return;
+    if (!draftDue) {
+      setMessage("Please pick a due date first.");
+      return;
+    }
     try {
-      await postForm("/api/todos/create", { title });
+      await postForm("/api/todos/create", { title, due_on: draftDue });
       setDraft("");
       await loadTodos();
     } catch (error) {
@@ -389,7 +395,16 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
               placeholder={canEdit ? "Write a small thing to do..." : "Switch to your own list to add tasks"}
               disabled={!canEdit}
             />
-            <button type="button" onClick={addTodo} disabled={!canEdit || !draft.trim()} aria-label="Add task">↗</button>
+            <input
+              className="todo-new-due"
+              type="date"
+              value={draftDue}
+              onChange={(event) => setDraftDue(event.target.value)}
+              disabled={!canEdit}
+              aria-label="Due date"
+              title="Due date"
+            />
+            <button type="button" onClick={addTodo} disabled={!canEdit || !draft.trim() || !draftDue} aria-label="Add task">↗</button>
           </div>
 
           <div className="todo-filters" aria-label="Task filters">
@@ -403,8 +418,13 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
           </div>
 
           <div className="todo-list">
-            {visibleTodos.map((todo) => (
-              <article key={todo.id} className={`todo-item ${todo.completed ? "is-completed" : ""}`}>
+            {visibleTodos.map((todo) => {
+              const outcome = todoOutcome(todo, todayKey());
+              return (
+              <article
+                key={todo.id}
+                className={`todo-item ${todo.completed ? "is-completed" : ""} ${!todo.completed && outcome === "failure" ? "is-failed" : ""} ${todo.completed && outcome === "failure" ? "is-late" : ""}`}
+              >
                 <button
                   className="todo-check"
                   type="button"
@@ -441,11 +461,23 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
                     </button>
                   )}
                   <p>
-                    <span>{todo.completed ? "done" : "open"}</span>
+                    <span>{todo.completed ? "done" : outcome === "failure" ? "missed" : "open"}</span>
+                    {!todo.completed && todo.due_on && (
+                      <>
+                        <i>·</i>
+                        <span>{outcome === "failure" ? `was due ${todo.due_on}` : `due ${todo.due_on}`}</span>
+                      </>
+                    )}
                     {todo.completed && todo.completed_on && (
                       <>
                         <i>·</i>
                 <span>{todo.completed_on}</span>
+                {outcome === "failure" && (
+                  <>
+                    <i>·</i>
+                    <span>late · was due {todo.due_on}</span>
+                  </>
+                )}
                 {todoCompletionTimeLabels(todo).map((label) => (
                   <Fragment key={`${todo.id}-${label}`}>
                     <i>·</i>
@@ -460,7 +492,8 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
                 </div>
                 <button className="todo-destroy" type="button" onClick={() => deleteTodo(todo.id)} disabled={!canEdit} aria-label="Delete task">×</button>
               </article>
-            ))}
+              );
+            })}
             {!visibleTodos.length && <p className="todo-empty">Nothing here yet. Tiny plans are welcome.</p>}
           </div>
         </section>
@@ -505,7 +538,8 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
             </div>
             <dl>
               <div><dt>Completed</dt><dd>{doneToday.length} / {todayTotalCount}</dd></div>
-              <div><dt>Streak</dt><dd>{streak} days</dd></div>
+              <div><dt>Win streak</dt><dd>{winStreak} {winStreak === 1 ? "task" : "tasks"}</dd></div>
+              <div><dt>Day streak</dt><dd>{streak} days</dd></div>
               <div><dt>Weekly avg</dt><dd>{(weeklyAverage / 60).toFixed(1)} hr</dd></div>
             </dl>
           </div>

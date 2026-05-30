@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { createServiceClient } from "../../../lib/supabase";
-import { json } from "../../../lib/todo-utils";
+import { json, normalizeDate } from "../../../lib/todo-utils";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const user = locals.user;
@@ -11,11 +11,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (!title) return json({ error: "Please enter a task." }, 400);
   if (title.length > 120) return json({ error: "Tasks must be 120 characters or fewer." }, 400);
 
+  const dueOn = normalizeDate(form.get("due_on"));
+  if (!dueOn) return json({ error: "Please pick a due date (YYYY-MM-DD)." }, 400);
+
   const supabase = createServiceClient();
   const { data, error } = await supabase
     .from("todos")
-    .insert({ owner_id: user.id, title })
-    .select("id,owner_id,title,completed,completed_on,completed_start_time,completed_end_time,completed_minutes,activity_entry_id,archived_at,created_at,updated_at,profiles(display_name,author_key)")
+    .insert({ owner_id: user.id, title, due_on: dueOn })
+    .select("id,owner_id,title,due_on,completed,completed_on,completed_start_time,completed_end_time,completed_minutes,activity_entry_id,archived_at,created_at,updated_at,profiles(display_name,author_key)")
     .single();
 
   if (error) return json({ error: error.message }, 500);

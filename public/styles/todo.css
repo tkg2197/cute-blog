@@ -241,7 +241,7 @@ body {
 
 .todo-new {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) 44px;
+  grid-template-columns: 34px minmax(0, 1fr) auto 44px;
   gap: 10px;
   align-items: center;
   margin-top: 20px;
@@ -249,6 +249,20 @@ body {
   border: 1px dashed rgba(111,129,145,.24);
   border-radius: 16px;
   background: rgba(255,255,255,.42);
+}
+.todo-new-due {
+  width: auto;
+  flex: none;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.8);
+  color: #6f8295;
+  font-size: 12px;
+  font-weight: 700;
+}
+.todo-new-due:disabled {
+  opacity: .45;
+  cursor: not-allowed;
 }
 .todo-new input {
   min-width: 0;
@@ -389,6 +403,26 @@ body {
   border-radius: 999px;
   background: #dcebd4;
   color: #56764f;
+}
+/* 逾期未完成：失落的暖色基调，仍温柔不刺眼。 */
+.todo-item.is-failed {
+  background: rgba(228,160,160,.08);
+  border-radius: 12px;
+}
+.todo-item.is-failed .todo-title {
+  color: #b3787c;
+}
+.todo-item.is-failed .todo-check {
+  border-color: #e1a9ac;
+}
+.todo-item.is-failed .todo-item__body p span:first-child {
+  background: #f4dcde;
+  color: #b06168;
+}
+/* 逾期补完：已完成但晚了，标一个浅红 late。 */
+.todo-item.is-late .todo-item__body p span:first-child {
+  background: #f4e3d6;
+  color: #b07c52;
 }
 .todo-destroy {
   width: 28px;
