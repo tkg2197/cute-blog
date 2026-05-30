@@ -1,32 +1,35 @@
 import type { APIRoute } from "astro";
-import { extensionFromFile } from "../../../lib/files";
-import { ensureStorageBuckets } from "../../../lib/storage";
 import { createServiceClient } from "../../../lib/supabase";
 
 const validMoods = new Set(["happy", "loved", "calm", "tired", "down", "moody"]);
 
-export const POST: APIRoute = async ({ request, locals, redirect }) => {
-  const user = locals.user;
-  if (!user) return redirect("/auth/login", 303);
+function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json; charset=utf-8" },
+  });
+}
 
-  const form = await request.formData();
-  const recordOn = String(form.get("record_on") || "").trim();
-  const mood = String(form.get("mood") || "happy").trim();
-  const body = String(form.get("body") || "").trim();
-  const rawReturn = String(form.get("return_to") || "").trim();
-  const safeReturn = rawReturn.startsWith("/") ? rawReturn : "/records";
-  const sep = safeReturn.includes("?") ? "&" : "?";
+// 生活记录创建。照片已由浏览器直传到 Storage，这里只接收文本字段和
+// 已上传照片的路径列表（JSON），不再接收文件字节，避免触发 Vercel 4.5MB 限制。
+export const POST: APIRoute = async ({ request, locals }) => {
+  const user = locals.user;
+  if (!user) return json({ error: "Please log in." }, 401);
+
+  const payload = await request.json().catch(() => null);
+  const recordOn = String(payload?.record_on || "").trim();
+  const mood = String(payload?.mood || "happy").trim();
+  const body = String(payload?.body || "").trim();
+  const photos = Array.isArray(payload?.photos) ? payload.photos : [];
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(recordOn)) {
-    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Please choose a life record date.")}`, 303);
+    return json({ error: "Please choose a life record date." }, 400);
   }
-
   if (!body) {
-    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Please write the life record body.")}`, 303);
+    return json({ error: "Please write the life record body." }, 400);
   }
-
   if (!validMoods.has(mood)) {
-    return redirect(`${safeReturn}${sep}error=${encodeURIComponent("Please choose a valid mood.")}`, 303);
+    return json({ error: "Please choose a valid mood." }, 400);
   }
 
   const supabase = createServiceClient();
@@ -38,48 +41,28 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   });
 
   if (insertError) {
-    return redirect(`${safeReturn}${sep}error=${encodeURIComponent(insertError.message)}`, 303);
+    return json({ error: insertError.message }, 500);
   }
 
-  const files = form
-    .getAll("photos")
-    .filter((item): item is File => item instanceof File && item.size > 0);
+  for (const item of photos) {
+    const path = String(item?.path || "").trim();
+    const mimeType = String(item?.mime_type || "").trim();
+    // 只接受属于当前用户目录的路径。
+    if (!path || !path.startsWith(`${user.id}/`)) continue;
 
-  if (files.length) {
-    try {
-      await ensureStorageBuckets();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Storage initialization failed";
-      return redirect(`${safeReturn}${sep}error=${encodeURIComponent(message)}`, 303);
-    }
+    const { error: photoError } = await supabase.from("photos").insert({
+      owner_id: user.id,
+      title: null,
+      caption: body.slice(0, 120),
+      taken_on: recordOn,
+      storage_path: path,
+      mime_type: mimeType || null,
+    });
 
-    for (const file of files) {
-      if (!file.type.startsWith("image/")) continue;
-
-      const path = `${user.id}/${Date.now()}-${crypto.randomUUID()}.${extensionFromFile(file)}`;
-      const { error: uploadError } = await supabase.storage.from("photos").upload(path, file, {
-        contentType: file.type,
-        upsert: false,
-      });
-
-      if (uploadError) {
-        return redirect(`${safeReturn}${sep}error=${encodeURIComponent(uploadError.message)}`, 303);
-      }
-
-      const { error: photoError } = await supabase.from("photos").insert({
-        owner_id: user.id,
-        title: null,
-        caption: body.slice(0, 120),
-        taken_on: recordOn,
-        storage_path: path,
-        mime_type: file.type,
-      });
-
-      if (photoError) {
-        return redirect(`${safeReturn}${sep}error=${encodeURIComponent(photoError.message)}`, 303);
-      }
+    if (photoError) {
+      return json({ error: photoError.message }, 500);
     }
   }
 
-  return redirect(`${safeReturn}${sep}created=record`, 303);
+  return json({ ok: true });
 };

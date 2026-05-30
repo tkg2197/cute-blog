@@ -1,6 +1,7 @@
 ---
 import PrototypeLayout from "../layouts/PrototypeLayout.astro";
 import { createServiceClient } from "../lib/supabase";
+import { getSupabaseEnv } from "../lib/env";
 import { authorDisplayName, makeAuthorNames } from "../lib/author-display";
 import { formatCommentTime } from "../lib/comments-display";
 import { shanghaiParts } from "../lib/datetime";
@@ -8,6 +9,7 @@ import { MOOD_LABELS } from "../lib/types";
 import type { AuthorKey, Comment, LifeRecord, Photo } from "../lib/types";
 
 const supabase = createServiceClient();
+const { url: supabaseUrl, anonKey: supabaseAnonKey } = getSupabaseEnv();
 const user = Astro.locals.user;
 const profile = Astro.locals.profile;
 const canCreate = !!user;
@@ -159,6 +161,7 @@ const deleted = Astro.url.searchParams.get("deleted");
           <p class="rec-file__hint" id="recPhotoHint">Photos will also appear in Photos.</p>
         </div>
 
+        <p class="rec-file__hint" id="recFormStatus" role="status"></p>
         <div class="rec-form__actions">
           <button class="rec-form__cancel" id="recCancel" type="button">Cancel</button>
           <button class="rec-form__save" type="submit">Save record</button>
@@ -292,6 +295,51 @@ const deleted = Astro.url.searchParams.get("deleted");
       ])
     )
   )}></script>
+  <script id="supabaseConfig" type="application/json" set:html={JSON.stringify({ url: supabaseUrl, anonKey: supabaseAnonKey })}></script>
+
+  {canCreate && (
+    <script>
+      import { uploadImageFile } from "../lib/upload-browser";
+
+      const form = document.getElementById("recForm") as HTMLFormElement | null;
+      const status = document.getElementById("recFormStatus");
+      if (form) {
+        const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const recordOn = (form.querySelector('input[name="record_on"]') as HTMLInputElement | null)?.value.trim() || "";
+          const mood = (form.querySelector('input[name="mood"]') as HTMLInputElement | null)?.value.trim() || "happy";
+          const body = (form.querySelector('textarea[name="body"]') as HTMLTextAreaElement | null)?.value.trim() || "";
+          const fileInput = form.querySelector('input[name="photos"]') as HTMLInputElement | null;
+          const files = Array.from(fileInput?.files || []).filter((f) => f.type.startsWith("image/"));
+
+          if (submitBtn) submitBtn.disabled = true;
+
+          try {
+            const photos = [];
+            for (let i = 0; i < files.length; i++) {
+              if (status) status.textContent = `Uploading photo ${i + 1} of ${files.length}…`;
+              photos.push(await uploadImageFile(files[i]));
+            }
+            if (status) status.textContent = "Saving…";
+            const res = await fetch("/api/records/create", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ record_on: recordOn, mood, body, photos }),
+            });
+            if (!res.ok) {
+              const data = await res.json().catch(() => ({}));
+              throw new Error(data.error || "Could not save the record.");
+            }
+            window.location.href = "/records?created=record";
+          } catch (err) {
+            if (status) status.textContent = err instanceof Error ? err.message : "Save failed.";
+            if (submitBtn) submitBtn.disabled = false;
+          }
+        });
+      }
+    </script>
+  )}
 
   <Fragment slot="scripts">
     <script is:inline>

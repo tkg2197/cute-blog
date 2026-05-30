@@ -1,11 +1,13 @@
 ---
 import PrototypeLayout from "../layouts/PrototypeLayout.astro";
 import { createServiceClient } from "../lib/supabase";
+import { getSupabaseEnv } from "../lib/env";
 import { authorDisplayName, makeAuthorNames } from "../lib/author-display";
 import { MOOD_LABELS } from "../lib/types";
 import type { AuthorKey, LifeRecord, Photo } from "../lib/types";
 
 const supabase = createServiceClient();
+const { url: supabaseUrl, anonKey: supabaseAnonKey } = getSupabaseEnv();
 const user = Astro.locals.user;
 const profile = Astro.locals.profile;
 const myAuthorKey = (profile?.author_key || "white") as AuthorKey;
@@ -154,7 +156,7 @@ const deleted = Astro.url.searchParams.get("deleted");
   {user && (
     <div class="pw-modal is-hidden" id="pwModal" role="dialog" aria-modal="true" aria-label="Upload photo">
       <div class="pw-modal__mask" id="pwModalMask"></div>
-      <form class="pw-modal__card" action="/api/photos/upload" method="post" enctype="multipart/form-data">
+      <form class="pw-modal__card" id="pwUploadForm" action="/api/photos/upload" method="post" enctype="multipart/form-data">
         <input type="hidden" name="return_to" value="/photos" />
         <h2 class="pw-modal__title">Upload photo</h2>
         <div class="pw-field">
@@ -204,6 +206,51 @@ const deleted = Astro.url.searchParams.get("deleted");
   </div>
 
   <script id="photoBundles" type="application/json" set:html={JSON.stringify(photoBundles)}></script>
+  <script id="supabaseConfig" type="application/json" set:html={JSON.stringify({ url: supabaseUrl, anonKey: supabaseAnonKey })}></script>
+
+  {user && (
+    <script>
+      import { uploadImageFile } from "../lib/upload-browser";
+
+      const form = document.getElementById("pwUploadForm") as HTMLFormElement | null;
+      const status = document.getElementById("pwStatus");
+      if (form) {
+        const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const fileInput = form.querySelector('input[name="photo"]') as HTMLInputElement | null;
+          const file = fileInput?.files?.[0];
+          if (!file) {
+            if (status) status.textContent = "Please choose a photo to upload.";
+            return;
+          }
+
+          const title = (form.querySelector('input[name="title"]') as HTMLInputElement | null)?.value.trim() || "";
+          const takenOn = (form.querySelector('input[name="taken_on"]') as HTMLInputElement | null)?.value.trim() || "";
+
+          if (submitBtn) submitBtn.disabled = true;
+          if (status) status.textContent = "Uploading…";
+
+          try {
+            const { path, mime_type } = await uploadImageFile(file);
+            const res = await fetch("/api/photos/commit", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ path, mime_type, title, taken_on: takenOn }),
+            });
+            if (!res.ok) {
+              const data = await res.json().catch(() => ({}));
+              throw new Error(data.error || "Could not save the photo.");
+            }
+            window.location.href = "/photos?uploaded=photo";
+          } catch (err) {
+            if (status) status.textContent = err instanceof Error ? err.message : "Upload failed.";
+            if (submitBtn) submitBtn.disabled = false;
+          }
+        });
+      }
+    </script>
+  )}
 
   <Fragment slot="scripts">
     <script is:inline>
