@@ -445,12 +445,15 @@ body {
   background: #edf1e6;
 }
 .todo-square.is-blank { visibility: hidden; }
-.todo-square.level-0 { background: #edf1e6; }
-.todo-square.level-1 { background: #dcebd4; }
-.todo-square.level-2 { background: #c6dfbd; }
-.todo-square.level-3 { background: #a8ca9e; }
-.todo-square.level-4 { background: #83ad78; }
-.todo-square.level-5 { background: #5f8f5d; }
+.todo-square.level-0, .todo-heat-legend i.level-0 { background: #edf1e6; }
+.todo-square.level-1, .todo-heat-legend i.level-1 { background: #e0eed7; }
+.todo-square.level-2, .todo-heat-legend i.level-2 { background: #cfe6c2; }
+.todo-square.level-3, .todo-heat-legend i.level-3 { background: #bbdcab; }
+.todo-square.level-4, .todo-heat-legend i.level-4 { background: #a3cd92; }
+.todo-square.level-5, .todo-heat-legend i.level-5 { background: #88bd79; }
+.todo-square.level-6, .todo-heat-legend i.level-6 { background: #6daa61; }
+.todo-square.level-7, .todo-heat-legend i.level-7 { background: #54914c; }
+.todo-square.level-8, .todo-heat-legend i.level-8 { background: #3d7438; }
 .todo-heat-legend {
   display: flex;
   justify-content: end;

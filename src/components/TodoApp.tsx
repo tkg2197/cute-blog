@@ -38,6 +38,19 @@ function dateKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
+// 把当天完成的总分钟数映射到 0-8 的色阶。阈值按真实的一天铺开，
+// 让短时长的一天也能呈现浅色，而不是动辄就到最深。
+const HEAT_THRESHOLDS = [30, 60, 120, 180, 240, 360, 480];
+function heatLevel(minutes: number) {
+  if (minutes <= 0) return 0;
+  let level = 1;
+  for (const threshold of HEAT_THRESHOLDS) {
+    if (minutes < threshold) break;
+    level += 1;
+  }
+  return level;
+}
+
 function fmtMinutes(minutes: number) {
   if (minutes < 60) return `${minutes} min`;
   const hours = Math.floor(minutes / 60);
@@ -468,7 +481,7 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
               day ? (
                 <span
                   key={day.key}
-                  className={`todo-square level-${Math.min(5, Math.ceil(day.minutes / 60))}`}
+                  className={`todo-square level-${heatLevel(day.minutes)}`}
                   title={`${day.key}: ${fmtMinutes(day.minutes)}`}
                 ></span>
               ) : <span key={`blank-${index}`} className="todo-square is-blank"></span>
@@ -476,7 +489,7 @@ export default function TodoApp({ initialView, authorNames, currentAuthor, profi
           </div>
           <div className="todo-heat-legend">
             <span>quiet</span>
-            {[0, 1, 2, 3, 4, 5].map((level) => <i key={level} className={`level-${level}`}></i>)}
+            {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((level) => <i key={level} className={`level-${level}`}></i>)}
             <span>a full day</span>
           </div>
         </section>
